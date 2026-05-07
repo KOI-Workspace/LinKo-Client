@@ -125,7 +125,7 @@ export default function LandingPage() {
                   Explore Videos
                 </button>
                 <button className="rounded-pill bg-white text-neutral-950 text-sm font-medium px-5 py-2.5 border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 transition-colors">
-                  Start Building
+                  Start Studying
                 </button>
               </div>
 
