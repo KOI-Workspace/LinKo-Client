@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm create *)",
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "Bash(corepack enable *)",
+      "Bash(npm install *)",
+      "Bash(sudo npm install -g pnpm)",
+      "Read(//Users/leehyunsoo/.local/share/**)",
+      "Read(//Users/leehyunsoo/Library/**)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(brew list *)",
+      "Bash(~/.local/bin/pnpm --version)",
+      "Bash(~/.local/bin/pnpm create *)",
+      "Bash(~/.local/bin/pnpm dev *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(~/.local/bin/pnpm type-check *)",
+      "Bash(~/.local/bin/pnpm lint *)"
+    ]
+  }
+}
