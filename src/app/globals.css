@@ -20,4 +20,13 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* 스크롤바 숨기기 (가로 스크롤 섹션용) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
