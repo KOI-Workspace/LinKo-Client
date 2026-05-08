@@ -160,16 +160,6 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <span className="text-lg font-bold text-neutral-950 tracking-tight">LinKo</span>
-          <nav className="hidden md:flex items-center gap-6">
-            {['Features', 'How it works', 'FAQ'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm text-neutral-500 hover:text-neutral-950 transition-colors">
-                {item}
-              </a>
-            ))}
-          </nav>
-          <button className="rounded-pill bg-neutral-950 text-white text-sm font-medium px-4 py-2 hover:bg-neutral-800 transition-colors">
-            Start for Free
-          </button>
         </div>
       </header>
 
@@ -197,6 +187,15 @@ export default function LandingPage() {
             <p className="text-lg text-neutral-500 mb-10 max-w-lg mx-auto leading-relaxed">
               Paste any YouTube link and get a personalized Korean lesson — vocabulary, grammar, and subtitles in seconds.
             </p>
+
+            <div className="flex items-center justify-center gap-3 mb-10">
+              <button className="rounded-pill bg-white text-neutral-950 text-sm font-medium px-5 py-2.5 border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 transition-colors">
+                Explore Videos
+              </button>
+              <button className="rounded-pill bg-neutral-950 text-white text-sm font-medium px-5 py-2.5 hover:bg-neutral-800 transition-colors">
+                Start Studying
+              </button>
+            </div>
 
             {/* URL 입력 */}
             <div className="max-w-xl mx-auto flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 shadow-md">
