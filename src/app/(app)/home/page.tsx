@@ -3,16 +3,10 @@ import Link from 'next/link'
 import UrlInput from '@/components/features/home/UrlInput'
 import VideoCard from '@/components/features/home/VideoCard'
 import MyLessonsSection from '@/components/features/home/MyLessonsSection'
+import MyChannelsSection from '@/components/features/home/MyChannelsSection'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
 
 // ─── Mock 데이터 ─────────────────────────────────────────────────────────────
-
-interface MockChannel {
-  id: string
-  name: string
-  /** YouTube Data API V3로 가져올 채널 프로필 이미지 URL (백엔드 연동 전 undefined) */
-  profileImageUrl?: string
-}
 
 const MOCK_MY_LESSONS: LessonData[] = [
   {
@@ -65,8 +59,7 @@ const MOCK_MY_LESSONS: LessonData[] = [
   },
 ]
 
-// 최근 추가 순 — 가장 왼쪽이 가장 최근 (실제 정렬은 백엔드 담당)
-const MOCK_CHANNELS: MockChannel[] = [
+const MOCK_CHANNELS = [
   { id: '1', name: 'BLACKPINK' },
   { id: '2', name: 'Learn Korean' },
   { id: '3', name: 'KBS Drama' },
@@ -108,28 +101,6 @@ const MOCK_RECOMMENDATIONS: LessonData[] = [
   },
 ]
 
-// ─── 서브 컴포넌트 ────────────────────────────────────────────────────────────
-
-/** 채널 버블 — profileImageUrl이 있으면 프로필 이미지, 없으면 이름 첫 글자 표시 */
-function ChannelBubble({ name, profileImageUrl }: MockChannel) {
-  return (
-    <div className="flex flex-col items-center gap-2 cursor-pointer group">
-      <div className="w-14 h-14 rounded-full bg-neutral-200 overflow-hidden ring-2 ring-transparent group-hover:ring-primary-200 transition-all">
-        {profileImageUrl ? (
-          <img src={profileImageUrl} alt={name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm font-bold text-neutral-500">
-            {name[0].toUpperCase()}
-          </div>
-        )}
-      </div>
-      <span className="text-xs text-neutral-500 group-hover:text-neutral-700 transition-colors max-w-[64px] text-center truncate">
-        {name}
-      </span>
-    </div>
-  )
-}
-
 // ─── 홈 페이지 ───────────────────────────────────────────────────────────────
 
 export default function HomePage() {
@@ -159,43 +130,20 @@ export default function HomePage() {
         <MyLessonsSection lessons={MOCK_MY_LESSONS} />
 
         {/* My Channels */}
-        <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-neutral-950">My Channels</h2>
-            <Link href="/channels" className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
-              View All
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <div className="flex items-start gap-5">
-            {MOCK_CHANNELS.map((channel) => (
-              <ChannelBubble key={channel.id} {...channel} />
-            ))}
-            {/* 채널 추가 */}
-            <div className="flex flex-col items-center gap-2">
-              <button
-                className="w-14 h-14 rounded-full bg-white border-2 border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xl hover:border-primary-400 hover:text-primary hover:bg-primary-50 transition-all"
-                aria-label="채널 추가"
-              >
-                +
-              </button>
-              <span className="text-xs text-neutral-400">Add</span>
-            </div>
-          </div>
-        </section>
+        <MyChannelsSection initialChannels={MOCK_CHANNELS} />
 
         {/* Recommendations — 학습 상태 미표시 */}
         <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-neutral-950">Recommendations</h2>
-            <Link href="/recommendations" className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <h2 className="text-xl font-bold text-neutral-950 truncate">Recommendations</h2>
+            <Link href="/recommendations" className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors shrink-0">
               View All
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
-            {MOCK_RECOMMENDATIONS.map((item) => (
-              <VideoCard key={item.id} {...item} showLearning={false} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            {MOCK_RECOMMENDATIONS.slice(0, 9).map((item) => (
+              <VideoCard key={item.id} {...item} showLearning={false} fluid />
             ))}
           </div>
         </section>

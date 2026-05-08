@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ArrowUpDown, ExternalLink, Youtube, ChevronRight, Play, Loader2, CreditCard, Captions } from 'lucide-react'
+import { Search, ArrowUpDown, Youtube, X, Plus, Check } from 'lucide-react'
 import UrlInput from '@/components/features/home/UrlInput'
-import { deriveDisplayStatus } from '@/components/features/home/VideoCard'
+import VideoCard from '@/components/features/home/VideoCard'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
@@ -156,72 +156,6 @@ function ChannelAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md'
   )
 }
 
-/** 미니 비디오 카드 (채널 상세 내부용) */
-function MiniVideoCard({ lesson }: { lesson: LessonData }) {
-  const isGenerating = lesson.generationStatus === 'generating'
-  const displayStatus = isGenerating
-    ? null
-    : deriveDisplayStatus(lesson.generationStatus, lesson.flashcardDone, lesson.subtitleDone)
-
-  const doneCount = isGenerating ? 0
-    : (lesson.flashcardDone ? 1 : 0) + (lesson.subtitleDone ? 1 : 0)
-
-  return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-50 transition-colors cursor-pointer group">
-      {/* 썸네일 */}
-      <div className="relative w-24 aspect-video rounded-md bg-neutral-100 shrink-0 overflow-hidden">
-        {isGenerating ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <Loader2 className="w-4 h-4 text-neutral-400 animate-spin" strokeWidth={1.5} />
-          </div>
-        ) : (
-          <>
-            <div className="w-full h-full bg-neutral-200 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Play className="w-3 h-3 text-neutral-600" fill="currentColor" />
-            </div>
-            {lesson.duration && (
-              <span className="absolute bottom-0.5 right-0.5 text-[9px] font-medium px-1 py-0.5 rounded bg-black/70 text-white">
-                {lesson.duration}
-              </span>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* 정보 */}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-neutral-950 truncate group-hover:text-primary transition-colors">
-          {lesson.title}
-        </p>
-        <p className="text-[10px] text-neutral-400 mt-0.5">{lesson.date}</p>
-      </div>
-
-      {/* 활동 상태 */}
-      <div className="shrink-0">
-        {isGenerating ? (
-          <span className="text-[10px] text-neutral-400 flex items-center gap-1">
-            <Loader2 className="w-2.5 h-2.5 animate-spin" />
-            {lesson.minutesLeft != null ? `~${lesson.minutesLeft}min` : '...'}
-          </span>
-        ) : (
-          <div className="flex gap-1">
-            <div className={`w-5 h-5 rounded flex items-center justify-center border ${
-              lesson.flashcardDone ? 'bg-primary-50 border-primary-200 text-primary' : 'bg-neutral-50 border-neutral-200 text-neutral-300'
-            }`}>
-              <CreditCard className="w-2.5 h-2.5" />
-            </div>
-            <div className={`w-5 h-5 rounded flex items-center justify-center border ${
-              lesson.subtitleDone ? 'bg-primary-50 border-primary-200 text-primary' : 'bg-neutral-50 border-neutral-200 text-neutral-300'
-            }`}>
-              <Captions className="w-2.5 h-2.5" />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 /** 선택된 채널 상세 패널 */
 function ChannelDetail({ channel }: { channel: ChannelData }) {
   return (
@@ -236,25 +170,16 @@ function ChannelDetail({ channel }: { channel: ChannelData }) {
             {channel.subscriberCount} subscribers · You&apos;ve made {channel.lessonCount} {channel.lessonCount === 1 ? 'lesson' : 'lessons'} from this channel
           </p>
         </div>
-        <a
-          href={channel.youtubeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium text-neutral-600 hover:border-neutral-400 hover:text-neutral-950 transition-colors shrink-0"
-        >
-          <ExternalLink className="w-3 h-3" />
-          View on YouTube
-        </a>
       </div>
 
-      {/* 최신 영상 목록 */}
-      <div className="px-4 py-4">
-        <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3 px-2">
+      {/* 최신 영상 카드 그리드 */}
+      <div className="px-6 py-5">
+        <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
           Latest Videos
         </p>
-        <div className="flex flex-col gap-0.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {channel.videos.map((video) => (
-            <MiniVideoCard key={video.id} lesson={video} />
+            <VideoCard key={video.id} {...video} showLearning={false} fluid />
           ))}
         </div>
       </div>
@@ -262,33 +187,97 @@ function ChannelDetail({ channel }: { channel: ChannelData }) {
   )
 }
 
+// ─── 채널 추가 모달 검색용 Mock 결과 ─────────────────────────────────────────
+
+interface SearchResult {
+  id: string
+  name: string
+  handle: string
+  subscriberCount: string
+}
+
+const SEARCHABLE_CHANNELS: SearchResult[] = [
+  { id: 's1', name: 'SMTOWN', handle: '@SMTOWN', subscriberCount: '33.8M' },
+  { id: 's2', name: 'HYBE LABELS', handle: '@HYBELABELS', subscriberCount: '24.5M' },
+  { id: 's3', name: 'KBS World TV', handle: '@KBSWorldTV', subscriberCount: '8.1M' },
+  { id: 's4', name: 'tvN Drama', handle: '@tvNDrama', subscriberCount: '5.6M' },
+  { id: 's5', name: 'Korean Unnie', handle: '@KoreanUnnie', subscriberCount: '2.3M' },
+  { id: 's6', name: 'Seoul Eats', handle: '@SeoulEats', subscriberCount: '980K' },
+  { id: 's7', name: 'GO! Billy Korean', handle: '@GoBillyKorean', subscriberCount: '1.1M' },
+  { id: 's8', name: 'Arirang TV', handle: '@ArirangTV', subscriberCount: '3.7M' },
+]
+
 // ─── 메인 페이지 ─────────────────────────────────────────────────────────────
 
 export default function ChannelsPage() {
   const router = useRouter()
+  const [channels, setChannels] = useState<ChannelData[]>(MOCK_CHANNELS)
   const [search, setSearch] = useState('')
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [popoverId, setPopoverId] = useState<string | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addSearch, setAddSearch] = useState('')
+  const popoverRef = useRef<HTMLDivElement>(null)
+
+  // 팝오버 외부 클릭 시 닫기
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setPopoverId(null)
+      }
+    }
+    if (popoverId) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [popoverId])
 
   const filtered = useMemo(() => {
-    let result = MOCK_CHANNELS
-
+    let result = channels
     if (search.trim()) {
       const q = search.toLowerCase()
       result = result.filter((c) => c.name.toLowerCase().includes(q))
     }
-
-    result = [...result].sort((a, b) =>
+    return [...result].sort((a, b) =>
       sortOrder === 'newest' ? a.addedOrder - b.addedOrder : b.addedOrder - a.addedOrder
     )
+  }, [channels, search, sortOrder])
 
-    return result
-  }, [search, sortOrder])
+  const selectedChannel = filtered.find((c) => c.id === selectedId) ?? filtered[0] ?? null
 
-  const selectedChannel = MOCK_CHANNELS.find((c) => c.id === selectedId) ?? null
+  const addedIds = new Set(channels.map((c) => c.id))
 
-  const handleChannelClick = (id: string) => {
-    setSelectedId((prev) => (prev === id ? null : id))
+  const addSearchResults = useMemo(() => {
+    if (!addSearch.trim()) return SEARCHABLE_CHANNELS
+    const q = addSearch.toLowerCase()
+    return SEARCHABLE_CHANNELS.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q)
+    )
+  }, [addSearch])
+
+  const handleBubbleClick = (id: string) => {
+    setSelectedId(id)
+    setPopoverId((prev) => (prev === id ? null : id))
+  }
+
+  const handleUnsubscribe = (id: string) => {
+    setChannels((prev) => prev.filter((c) => c.id !== id))
+    setPopoverId(null)
+    if (selectedId === id) setSelectedId(null)
+  }
+
+  const handleAddChannel = (result: SearchResult) => {
+    if (addedIds.has(result.id)) return
+    const newChannel: ChannelData = {
+      id: result.id,
+      name: result.name,
+      handle: result.handle,
+      subscriberCount: result.subscriberCount,
+      lessonCount: 0,
+      youtubeUrl: `https://youtube.com/${result.handle}`,
+      addedOrder: channels.length + 1,
+      videos: [],
+    }
+    setChannels((prev) => [...prev, newChannel])
   }
 
   return (
@@ -314,35 +303,32 @@ export default function ChannelsPage() {
       {/* 콘텐츠 */}
       <div className="px-10 py-8">
         {/* 브레드크럼 */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-2 min-w-0">
             <button
               onClick={() => router.push('/home')}
-              className="text-sm text-neutral-400 hover:text-neutral-600 hover:underline transition-colors"
+              className="text-sm text-neutral-400 hover:text-neutral-600 hover:underline transition-colors shrink-0"
             >
               Home
             </button>
-            <span className="text-neutral-300 text-sm">/</span>
-            <span className="text-sm font-semibold text-primary">My Channels</span>
+            <span className="text-neutral-300 text-sm shrink-0">/</span>
+            <span className="text-sm font-semibold text-primary truncate">My Channels</span>
           </div>
-          <span className="text-sm text-neutral-400">{filtered.length} channels</span>
+          <span className="text-sm text-neutral-400 shrink-0">{filtered.length} channels</span>
         </div>
 
         {/* 컨트롤 바 */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          {/* 검색 */}
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search channels..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setSelectedId(null) }}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-neutral-400"
             />
           </div>
-
-          {/* 정렬 토글 */}
           <button
             onClick={() => setSortOrder((prev) => prev === 'newest' ? 'oldest' : 'newest')}
             className="flex items-center gap-1.5 px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-700 hover:border-neutral-400 hover:text-neutral-950 transition-colors"
@@ -350,47 +336,43 @@ export default function ChannelsPage() {
             <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400" />
             {sortOrder === 'newest' ? 'Recently Added' : 'Oldest First'}
           </button>
-
-          {/* YouTube 연동 */}
           <button className="ml-auto flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-white border border-neutral-200 rounded-lg text-neutral-600 hover:border-red-300 hover:text-red-600 transition-colors">
             <Youtube className="w-4 h-4" />
             Connect YouTube
           </button>
         </div>
 
-        {/* 채널 그리드 */}
-        {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-sm font-semibold text-neutral-950 mb-1">No channels found</p>
-            <p className="text-xs text-neutral-400">Try adjusting the search.</p>
+        {/* 채널 버블 목록 */}
+        <div className="flex flex-wrap gap-5 mb-2" ref={popoverRef}>
+          {/* 채널 추가 버튼 */}
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={() => { setShowAddModal(true); setAddSearch('') }}
+              className="w-14 h-14 rounded-full bg-white border-2 border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xl hover:border-primary-400 hover:text-primary hover:bg-primary-50 transition-all"
+            >
+              +
+            </button>
+            <span className="text-xs text-neutral-400">Add</span>
           </div>
-        ) : (
-          <div className="flex flex-wrap gap-4">
-            {/* 채널 추가 버튼 */}
-            <div className="flex flex-col items-center gap-2">
-              <button className="w-14 h-14 rounded-full bg-white border-2 border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xl hover:border-primary-400 hover:text-primary hover:bg-primary-50 transition-all">
-                +
-              </button>
-              <span className="text-xs text-neutral-400">Add</span>
-            </div>
 
-            {/* 채널 버블들 */}
-            {filtered.map((channel) => {
-              const isSelected = selectedId === channel.id
-              return (
-                <div
-                  key={channel.id}
-                  className="flex flex-col items-center gap-2 cursor-pointer group"
-                  onClick={() => handleChannelClick(channel.id)}
+          {filtered.length === 0 && (
+            <p className="text-sm text-neutral-400 self-center">No channels found.</p>
+          )}
+
+          {/* 채널 버블들 */}
+          {filtered.map((channel) => {
+            const isSelected = (selectedChannel?.id === channel.id)
+            const isPopoverOpen = popoverId === channel.id
+            return (
+              <div key={channel.id} className="relative flex flex-col items-center gap-2">
+                <button
+                  onClick={() => handleBubbleClick(channel.id)}
+                  className="flex flex-col items-center gap-2 group"
                 >
-                  <div className={`w-14 h-14 rounded-full bg-primary-100 overflow-hidden ring-2 transition-all ${
-                    isSelected
-                      ? 'ring-primary ring-offset-2'
-                      : 'ring-transparent group-hover:ring-primary-200'
-                  } flex items-center justify-center`}>
-                    <span className={`text-sm font-bold transition-colors ${
-                      isSelected ? 'text-primary' : 'text-primary group-hover:text-primary-700'
-                    }`}>
+                  <div className={`w-14 h-14 rounded-full bg-primary-100 ring-2 transition-all flex items-center justify-center ${
+                    isSelected ? 'ring-primary ring-offset-2' : 'ring-transparent group-hover:ring-primary-200'
+                  }`}>
+                    <span className={`text-sm font-bold ${isSelected ? 'text-primary' : 'text-primary group-hover:text-primary-700'}`}>
                       {channel.name[0].toUpperCase()}
                     </span>
                   </div>
@@ -399,15 +381,109 @@ export default function ChannelsPage() {
                   }`}>
                     {channel.name}
                   </span>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                </button>
+
+                {/* Unsubscribe 팝오버 */}
+                {isPopoverOpen && (
+                  <div className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 z-20 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 min-w-[120px]">
+                    <button
+                      onClick={() => handleUnsubscribe(channel.id)}
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      Unsubscribe
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
 
         {/* 선택된 채널 상세 */}
         {selectedChannel && <ChannelDetail channel={selectedChannel} />}
       </div>
+
+      {/* 채널 추가 모달 */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* 배경 오버레이 */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowAddModal(false)}
+          />
+
+          {/* 모달 */}
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col max-h-[70vh]">
+            {/* 헤더 */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-100">
+              <div>
+                <p className="text-base font-bold text-neutral-950">Add Channel</p>
+                <p className="text-xs text-neutral-400 mt-0.5">Search for a YouTube channel to follow</p>
+              </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 rounded-md hover:bg-neutral-100 text-neutral-400 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 검색 입력 */}
+            <div className="px-6 py-4 border-b border-neutral-100">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search YouTube channels..."
+                  value={addSearch}
+                  onChange={(e) => setAddSearch(e.target.value)}
+                  autoFocus
+                  className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 border border-neutral-200 rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-neutral-400"
+                />
+              </div>
+            </div>
+
+            {/* 검색 결과 */}
+            <div className="overflow-y-auto flex-1 px-3 py-2">
+              {addSearchResults.length === 0 ? (
+                <p className="text-sm text-neutral-400 text-center py-8">No channels found.</p>
+              ) : (
+                addSearchResults.map((result) => {
+                  const isAdded = addedIds.has(result.id)
+                  return (
+                    <div
+                      key={result.id}
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-neutral-50 transition-colors"
+                    >
+                      {/* 아바타 */}
+                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                        {result.name[0]}
+                      </div>
+                      {/* 정보 */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-neutral-950 truncate">{result.name}</p>
+                        <p className="text-xs text-neutral-400">{result.handle} · {result.subscriberCount}</p>
+                      </div>
+                      {/* 추가 버튼 */}
+                      <button
+                        onClick={() => handleAddChannel(result)}
+                        disabled={isAdded}
+                        className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          isAdded
+                            ? 'bg-neutral-100 text-neutral-400 cursor-default'
+                            : 'bg-primary text-white hover:bg-primary-700'
+                        }`}
+                      >
+                        {isAdded ? <><Check className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add</>}
+                      </button>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
