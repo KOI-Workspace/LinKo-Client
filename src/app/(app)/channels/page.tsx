@@ -9,6 +9,11 @@ import type { LessonData } from '@/components/features/home/MyLessonsSection'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
+/** LessonData 확장 — isLesson이 false면 아직 학습 자료로 만들지 않은 채널 영상 */
+interface ChannelVideo extends LessonData {
+  isLesson?: boolean
+}
+
 interface ChannelData {
   id: string
   name: string
@@ -18,7 +23,7 @@ interface ChannelData {
   youtubeUrl: string
   /** 채널 추가 순서 (낮을수록 최근) */
   addedOrder: number
-  videos: LessonData[]
+  videos: ChannelVideo[]
 }
 
 type SortOrder = 'newest' | 'oldest'
@@ -35,14 +40,14 @@ const MOCK_CHANNELS: ChannelData[] = [
     youtubeUrl: 'https://youtube.com/@BANGTANTV',
     addedOrder: 1,
     videos: [
-      { id: 'v1', title: "BTS 'Spring Day' Live Stage @ Music Bank 2026", channelName: 'BANGTANTV', duration: '5:42', date: '2026.05.07', generationStatus: 'generating', minutesLeft: 3 },
-      { id: 'v2', title: 'BTS Behind the Scenes — World Tour Practice Room Talk', channelName: 'BANGTANTV', duration: '8:11', date: '2026.05.05', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
-      { id: 'v3', title: 'BTS - Butter MV Reaction', channelName: 'BANGTANTV', duration: '3:52', date: '2026.05.04', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v3b', title: 'BTS RM Solo — 한국어 인터뷰 Full', channelName: 'BANGTANTV', duration: '24:05', date: '2026.05.02', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v3c', title: "BTS 'Dynamite' Official MV", channelName: 'BANGTANTV', duration: '3:43', date: '2026.04.30', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v3d', title: 'BTS SUGA Agust D Tour — After Movie', channelName: 'BANGTANTV', duration: '18:27', date: '2026.04.27', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v3e', title: 'BTS V — 한국어 일상 브이로그 ep.7', channelName: 'BANGTANTV', duration: '11:52', date: '2026.04.24', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
-      { id: 'v3f', title: "BTS 'Yet To Come' Concert Highlight Reel", channelName: 'BANGTANTV', duration: '7:09', date: '2026.04.20', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
+      { id: 'v1',  title: "BTS 'Spring Day' Live Stage @ Music Bank 2026", channelName: 'BANGTANTV', duration: '5:42',  date: '2026.05.07', generationStatus: 'generating', minutesLeft: 3, isLesson: true },
+      { id: 'v2',  title: 'BTS Behind the Scenes — World Tour Practice Room Talk', channelName: 'BANGTANTV', duration: '8:11',  date: '2026.05.05', generationStatus: 'ready', flashcardDone: true,  subtitleDone: false, isLesson: true },
+      { id: 'v3',  title: 'BTS - Butter MV Reaction', channelName: 'BANGTANTV', duration: '3:52',  date: '2026.05.04', generationStatus: 'ready', flashcardDone: true,  subtitleDone: true,  isLesson: true },
+      { id: 'v3b', title: 'BTS RM Solo — 한국어 인터뷰 Full', channelName: 'BANGTANTV', duration: '24:05', date: '2026.05.02', generationStatus: 'ready', isLesson: false },
+      { id: 'v3c', title: "BTS 'Dynamite' Official MV", channelName: 'BANGTANTV', duration: '3:43',  date: '2026.04.30', generationStatus: 'ready', flashcardDone: true,  subtitleDone: true,  isLesson: true },
+      { id: 'v3d', title: 'BTS SUGA Agust D Tour — After Movie', channelName: 'BANGTANTV', duration: '18:27', date: '2026.04.27', generationStatus: 'ready', isLesson: false },
+      { id: 'v3e', title: 'BTS V — 한국어 일상 브이로그 ep.7', channelName: 'BANGTANTV', duration: '11:52', date: '2026.04.24', generationStatus: 'ready', flashcardDone: true,  subtitleDone: false, isLesson: true },
+      { id: 'v3f', title: "BTS 'Yet To Come' Concert Highlight Reel", channelName: 'BANGTANTV', duration: '7:09',  date: '2026.04.20', generationStatus: 'ready', isLesson: false },
     ],
   },
   {
@@ -54,13 +59,13 @@ const MOCK_CHANNELS: ChannelData[] = [
     youtubeUrl: 'https://youtube.com/@TalkToMeInKorean',
     addedOrder: 2,
     videos: [
-      { id: 'v4', title: '10 Must-Know Korean Slang Words', channelName: 'Learn Korean', duration: '6:42', date: '2026.05.06', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v5', title: 'Korean Pronunciation Guide for Beginners', channelName: 'Learn Korean', duration: '8:15', date: '2026.05.04', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v5b', title: '고급 한국어 패턴 10선 — 드라마에서 자주 나오는', channelName: 'Learn Korean', duration: '14:30', date: '2026.05.01', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
-      { id: 'v5c', title: 'Korean ㄱㄴㄷ 완전 정복 — 받침 발음 규칙', channelName: 'Learn Korean', duration: '11:18', date: '2026.04.28', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v5d', title: 'How to Use -아/어요 vs -습니다', channelName: 'Learn Korean', duration: '9:05', date: '2026.04.25', generationStatus: 'generating', minutesLeft: 5 },
-      { id: 'v5e', title: '한국어 숫자 완전 정복 — 고유어 vs 한자어', channelName: 'Learn Korean', duration: '7:33', date: '2026.04.22', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v5f', title: 'Top 20 Korean Particles You Must Know', channelName: 'Learn Korean', duration: '16:44', date: '2026.04.18', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
+      { id: 'v4',  title: '10 Must-Know Korean Slang Words', channelName: 'Learn Korean', duration: '6:42',  date: '2026.05.06', generationStatus: 'ready', flashcardDone: true,  subtitleDone: true,  isLesson: true },
+      { id: 'v5',  title: 'Korean Pronunciation Guide for Beginners', channelName: 'Learn Korean', duration: '8:15',  date: '2026.05.04', generationStatus: 'ready', flashcardDone: false, subtitleDone: false, isLesson: true },
+      { id: 'v5b', title: '고급 한국어 패턴 10선 — 드라마에서 자주 나오는', channelName: 'Learn Korean', duration: '14:30', date: '2026.05.01', generationStatus: 'ready', flashcardDone: true,  subtitleDone: false, isLesson: true },
+      { id: 'v5c', title: 'Korean ㄱㄴㄷ 완전 정복 — 받침 발음 규칙', channelName: 'Learn Korean', duration: '11:18', date: '2026.04.28', generationStatus: 'ready', isLesson: false },
+      { id: 'v5d', title: 'How to Use -아/어요 vs -습니다', channelName: 'Learn Korean', duration: '9:05',  date: '2026.04.25', generationStatus: 'generating', minutesLeft: 5, isLesson: true },
+      { id: 'v5e', title: '한국어 숫자 완전 정복 — 고유어 vs 한자어', channelName: 'Learn Korean', duration: '7:33',  date: '2026.04.22', generationStatus: 'ready', isLesson: false },
+      { id: 'v5f', title: 'Top 20 Korean Particles You Must Know', channelName: 'Learn Korean', duration: '16:44', date: '2026.04.18', generationStatus: 'ready', isLesson: false },
     ],
   },
   {
@@ -72,12 +77,12 @@ const MOCK_CHANNELS: ChannelData[] = [
     youtubeUrl: 'https://youtube.com/@KBSDrama',
     addedOrder: 3,
     videos: [
-      { id: 'v6', title: '눈물의 여왕 EP.16 마지막 회 — 해변 장면', channelName: 'KBS Drama', duration: '9:47', date: '2026.05.06', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v7', title: 'K-drama Vocabulary Basics', channelName: 'KBS Drama', duration: '12:30', date: '2026.05.03', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
-      { id: 'v7b', title: 'Intermediate Korean Conversation Scene', channelName: 'KBS Drama', duration: '9:20', date: '2026.04.30', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v7c', title: '연세대 한국어 수업 — 중급 문법 시간', channelName: 'KBS Drama', duration: '52:10', date: '2026.04.27', generationStatus: 'generating', minutesLeft: 8 },
-      { id: 'v7d', title: '사랑의 불시착 명장면 모음 — 대사 학습', channelName: 'KBS Drama', duration: '14:55', date: '2026.04.24', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v7e', title: '이태원 클라쓰 — 박새로이 명대사 Top 10', channelName: 'KBS Drama', duration: '8:44', date: '2026.04.20', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
+      { id: 'v6',  title: '눈물의 여왕 EP.16 마지막 회 — 해변 장면', channelName: 'KBS Drama', duration: '9:47',  date: '2026.05.06', generationStatus: 'ready', flashcardDone: true,  subtitleDone: true,  isLesson: true },
+      { id: 'v7',  title: 'K-drama Vocabulary Basics', channelName: 'KBS Drama', duration: '12:30', date: '2026.05.03', generationStatus: 'ready', flashcardDone: true,  subtitleDone: false, isLesson: true },
+      { id: 'v7b', title: 'Intermediate Korean Conversation Scene', channelName: 'KBS Drama', duration: '9:20',  date: '2026.04.30', generationStatus: 'ready', isLesson: false },
+      { id: 'v7c', title: '연세대 한국어 수업 — 중급 문법 시간', channelName: 'KBS Drama', duration: '52:10', date: '2026.04.27', generationStatus: 'generating', minutesLeft: 8, isLesson: true },
+      { id: 'v7d', title: '사랑의 불시착 명장면 모음 — 대사 학습', channelName: 'KBS Drama', duration: '14:55', date: '2026.04.24', generationStatus: 'ready', isLesson: false },
+      { id: 'v7e', title: '이태원 클라쓰 — 박새로이 명대사 Top 10', channelName: 'KBS Drama', duration: '8:44',  date: '2026.04.20', generationStatus: 'ready', isLesson: false },
     ],
   },
   {
@@ -89,12 +94,12 @@ const MOCK_CHANNELS: ChannelData[] = [
     youtubeUrl: 'https://youtube.com/@BLACKPINK',
     addedOrder: 4,
     videos: [
-      { id: 'v8', title: 'BLACKPINK — Shut Down MV Reaction & Lyrics', channelName: 'BLACKPINK', duration: '7:55', date: '2026.05.03', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
-      { id: 'v8b', title: 'IVE 아이브 "해야 (HEYA)" Dance Practice', channelName: 'BLACKPINK', duration: '4:22', date: '2026.05.01', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v8c', title: 'Learn Korean with BLACKPINK', channelName: 'BLACKPINK', duration: '5:21', date: '2026.04.28', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v8d', title: "BLACKPINK 'Pink Venom' MV — 가사 분석", channelName: 'BLACKPINK', duration: '6:13', date: '2026.04.24', generationStatus: 'generating', minutesLeft: 4 },
-      { id: 'v8e', title: "BLACKPINK 'How You Like That' Lyrics Breakdown", channelName: 'BLACKPINK', duration: '5:58', date: '2026.04.20', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v8f', title: 'BLACKPINK LISA Solo — 한국어 인터뷰', channelName: 'BLACKPINK', duration: '12:40', date: '2026.04.17', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
+      { id: 'v8',  title: 'BLACKPINK — Shut Down MV Reaction & Lyrics', channelName: 'BLACKPINK', duration: '7:55',  date: '2026.05.03', generationStatus: 'ready', flashcardDone: true,  subtitleDone: false, isLesson: true },
+      { id: 'v8b', title: 'IVE 아이브 "해야 (HEYA)" Dance Practice', channelName: 'BLACKPINK', duration: '4:22',  date: '2026.05.01', generationStatus: 'ready', flashcardDone: true,  subtitleDone: true,  isLesson: true },
+      { id: 'v8c', title: 'Learn Korean with BLACKPINK', channelName: 'BLACKPINK', duration: '5:21',  date: '2026.04.28', generationStatus: 'ready', isLesson: false },
+      { id: 'v8d', title: "BLACKPINK 'Pink Venom' MV — 가사 분석", channelName: 'BLACKPINK', duration: '6:13',  date: '2026.04.24', generationStatus: 'generating', minutesLeft: 4, isLesson: true },
+      { id: 'v8e', title: "BLACKPINK 'How You Like That' Lyrics Breakdown", channelName: 'BLACKPINK', duration: '5:58',  date: '2026.04.20', generationStatus: 'ready', isLesson: false },
+      { id: 'v8f', title: 'BLACKPINK LISA Solo — 한국어 인터뷰', channelName: 'BLACKPINK', duration: '12:40', date: '2026.04.17', generationStatus: 'ready', isLesson: false },
     ],
   },
   {
@@ -106,12 +111,12 @@ const MOCK_CHANNELS: ChannelData[] = [
     youtubeUrl: 'https://youtube.com/@Maangchi',
     addedOrder: 5,
     videos: [
-      { id: 'v9', title: '오늘 뭐 먹을 거야? 2026년 5월 음식 브이로그', channelName: 'Maangchi', duration: '12:03', date: '2026.05.06', generationStatus: 'ready', flashcardDone: false, subtitleDone: true },
-      { id: 'v9b', title: 'Korean Food Vocabulary with Chef', channelName: 'Maangchi', duration: '15:20', date: '2026.05.03', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v9c', title: '서울 골목 먹방 투어 — 광장시장 편', channelName: 'Maangchi', duration: '18:41', date: '2026.04.29', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v9d', title: '김치찌개 레시피 — 요리 한국어 총정리', channelName: 'Maangchi', duration: '22:10', date: '2026.04.25', generationStatus: 'generating', minutesLeft: 6 },
-      { id: 'v9e', title: '떡볶이 만들기 — 한국어로 요리 배우기', channelName: 'Maangchi', duration: '9:47', date: '2026.04.21', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
-      { id: 'v9f', title: '순두부찌개 vs 된장찌개 — 비교 요리 수업', channelName: 'Maangchi', duration: '17:33', date: '2026.04.18', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
+      { id: 'v9',  title: '오늘 뭐 먹을 거야? 2026년 5월 음식 브이로그', channelName: 'Maangchi', duration: '12:03', date: '2026.05.06', generationStatus: 'ready', isLesson: false },
+      { id: 'v9b', title: 'Korean Food Vocabulary with Chef', channelName: 'Maangchi', duration: '15:20', date: '2026.05.03', generationStatus: 'ready', flashcardDone: true,  subtitleDone: true,  isLesson: true },
+      { id: 'v9c', title: '서울 골목 먹방 투어 — 광장시장 편', channelName: 'Maangchi', duration: '18:41', date: '2026.04.29', generationStatus: 'ready', isLesson: false },
+      { id: 'v9d', title: '김치찌개 레시피 — 요리 한국어 총정리', channelName: 'Maangchi', duration: '22:10', date: '2026.04.25', generationStatus: 'generating', minutesLeft: 6, isLesson: true },
+      { id: 'v9e', title: '떡볶이 만들기 — 한국어로 요리 배우기', channelName: 'Maangchi', duration: '9:47',  date: '2026.04.21', generationStatus: 'ready', isLesson: false },
+      { id: 'v9f', title: '순두부찌개 vs 된장찌개 — 비교 요리 수업', channelName: 'Maangchi', duration: '17:33', date: '2026.04.18', generationStatus: 'ready', isLesson: false },
     ],
   },
   {
@@ -123,12 +128,12 @@ const MOCK_CHANNELS: ChannelData[] = [
     youtubeUrl: 'https://youtube.com/@JYPE',
     addedOrder: 6,
     videos: [
-      { id: 'v10', title: 'TWICE Dance Practice — Korean Lyrics', channelName: 'JYP Entertainment', duration: '3:34', date: '2026.05.05', generationStatus: 'generating', minutesLeft: 2 },
-      { id: 'v10b', title: 'NewJeans How Sweet — 세번째 EP A', channelName: 'JYP Entertainment', duration: '22:33', date: '2026.05.02', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
-      { id: 'v10c', title: 'STRAY KIDS — 한국어 팬미팅 하이라이트', channelName: 'JYP Entertainment', duration: '31:15', date: '2026.04.28', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v10d', title: 'DAY6 Every Day6 — 가사 해설', channelName: 'JYP Entertainment', duration: '8:22', date: '2026.04.24', generationStatus: 'ready', flashcardDone: true, subtitleDone: true },
-      { id: 'v10e', title: 'ITZY "LOCO" MV — 한국어 가사 분석', channelName: 'JYP Entertainment', duration: '6:50', date: '2026.04.20', generationStatus: 'ready', flashcardDone: false, subtitleDone: false },
-      { id: 'v10f', title: 'GOT7 Korean Interview — 자연스러운 한국어 표현', channelName: 'JYP Entertainment', duration: '14:08', date: '2026.04.16', generationStatus: 'ready', flashcardDone: true, subtitleDone: false },
+      { id: 'v10',  title: 'TWICE Dance Practice — Korean Lyrics', channelName: 'JYP Entertainment', duration: '3:34',  date: '2026.05.05', generationStatus: 'generating', minutesLeft: 2, isLesson: true },
+      { id: 'v10b', title: 'NewJeans How Sweet — 세번째 EP A', channelName: 'JYP Entertainment', duration: '22:33', date: '2026.05.02', generationStatus: 'ready', flashcardDone: true,  subtitleDone: false, isLesson: true },
+      { id: 'v10c', title: 'STRAY KIDS — 한국어 팬미팅 하이라이트', channelName: 'JYP Entertainment', duration: '31:15', date: '2026.04.28', generationStatus: 'ready', isLesson: false },
+      { id: 'v10d', title: 'DAY6 Every Day6 — 가사 해설', channelName: 'JYP Entertainment', duration: '8:22',  date: '2026.04.24', generationStatus: 'ready', isLesson: false },
+      { id: 'v10e', title: 'ITZY "LOCO" MV — 한국어 가사 분석', channelName: 'JYP Entertainment', duration: '6:50',  date: '2026.04.20', generationStatus: 'ready', isLesson: false },
+      { id: 'v10f', title: 'GOT7 Korean Interview — 자연스러운 한국어 표현', channelName: 'JYP Entertainment', duration: '14:08', date: '2026.04.16', generationStatus: 'ready', flashcardDone: true,  subtitleDone: false, isLesson: true },
     ],
   },
 ]
@@ -168,7 +173,7 @@ function ChannelDetail({ channel }: { channel: ChannelData }) {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {channel.videos.map((video) => (
-            <VideoCard key={video.id} {...video} fluid />
+            <VideoCard key={video.id} {...video} showLearning={video.isLesson === true} fluid />
           ))}
         </div>
       </div>
@@ -332,7 +337,7 @@ export default function ChannelsPage() {
         </div>
 
         {/* 채널 버블 목록 — 가로 스크롤 한 줄 고정 */}
-        <div className="flex gap-5 mb-2 overflow-x-auto pb-1" ref={popoverRef}>
+        <div className="flex gap-5 overflow-x-auto py-2" ref={popoverRef}>
           {/* 채널 추가 버튼 */}
           <div className="flex flex-col items-center gap-2">
             <button
