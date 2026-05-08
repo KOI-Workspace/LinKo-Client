@@ -54,6 +54,9 @@ src/app/
 - `generationStatus: 'ready'` → 썸네일 + 학습 상태 UI
 - `LessonData` 타입은 `MyLessonsSection.tsx`에서 export
 
+### UrlInput (`src/components/features/home/UrlInput.tsx`)
+YouTube URL을 받아 학습자료 생성을 요청하는 핵심 진입점. Home·Channels·Recommendations 히어로 섹션에서 공통 사용. 현재 `handleSubmit` 내부 API 연동이 TODO 상태.
+
 ### Sidebar (`src/components/ui/Sidebar.tsx`)
 - 접기/펼치기 토글 (w-16 ↔ w-60), `usePathname()`으로 active 감지
 - `NAV_ITEMS` 배열에 추가하면 자동 렌더링
