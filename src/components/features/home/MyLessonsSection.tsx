@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { ChevronRight, Clock, BookOpen, Check, Youtube, Sparkles } from 'lucide-react'
 import VideoCard, { deriveDisplayStatus } from './VideoCard'
 import type { VideoCardProps, LessonDisplayStatus, LessonFilterStatus } from './VideoCard'
@@ -75,10 +76,13 @@ export default function MyLessonsSection({ lessons }: MyLessonsSectionProps) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-xl font-bold text-neutral-950">My Lessons</h2>
         {lessons.length > 0 && (
-          <button className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+          <Link
+            href="/lessons"
+            className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+          >
             View All
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Link>
         )}
       </div>
 
