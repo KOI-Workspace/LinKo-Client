@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 import UrlInput from '@/components/features/home/UrlInput'
 import VideoCard from '@/components/features/home/VideoCard'
 import MyLessonsSection from '@/components/features/home/MyLessonsSection'
@@ -161,10 +162,10 @@ export default function HomePage() {
         <section>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-neutral-950">My Channels</h2>
-            <button className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+            <Link href="/channels" className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
               View All
               <ChevronRight className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
           <div className="flex items-start gap-5">
             {MOCK_CHANNELS.map((channel) => (
@@ -187,10 +188,10 @@ export default function HomePage() {
         <section>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-neutral-950">Recommendations</h2>
-            <button className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+            <Link href="/recommendations" className="flex items-center gap-0.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
               View All
               <ChevronRight className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
           <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
             {MOCK_RECOMMENDATIONS.map((item) => (
