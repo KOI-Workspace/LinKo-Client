@@ -67,38 +67,15 @@ const MOCK_CHANNELS = [
 
 // 이미 Lesson화된 영상은 Recommendations에서 제외 (백엔드 로직)
 const MOCK_RECOMMENDATIONS: LessonData[] = [
-  {
-    id: 'r1',
-    title: 'Korean Pronunciation Guide for Beginners',
-    channelName: 'Korean Class 101',
-    duration: '8:15',
-    date: '2026.05.07',
-    generationStatus: 'ready',
-  },
-  {
-    id: 'r2',
-    title: '10 Must-Know Korean Slang Words',
-    channelName: 'Talk To Me In Korean',
-    duration: '6:42',
-    date: '2026.05.06',
-    generationStatus: 'ready',
-  },
-  {
-    id: 'r3',
-    title: 'Korean Food Vocabulary with Chef',
-    channelName: 'Maangchi',
-    duration: '15:20',
-    date: '2026.05.06',
-    generationStatus: 'ready',
-  },
-  {
-    id: 'r4',
-    title: 'K-pop Lyrics Korean Lesson',
-    channelName: 'SMTOWN',
-    duration: '4:58',
-    date: '2026.05.05',
-    generationStatus: 'ready',
-  },
+  { id: 'r1', title: 'Korean Pronunciation Guide for Beginners', channelName: 'Korean Class 101', duration: '8:15', date: '2026.05.07', generationStatus: 'ready' },
+  { id: 'r2', title: '10 Must-Know Korean Slang Words', channelName: 'Talk To Me In Korean', duration: '6:42', date: '2026.05.06', generationStatus: 'ready' },
+  { id: 'r3', title: 'Korean Food Vocabulary with Chef', channelName: 'Maangchi', duration: '15:20', date: '2026.05.06', generationStatus: 'ready' },
+  { id: 'r4', title: 'K-pop Lyrics Korean Lesson', channelName: 'SMTOWN', duration: '4:58', date: '2026.05.05', generationStatus: 'ready' },
+  { id: 'r5', title: "BTS 'Spring Day' — 가사로 배우는 한국어", channelName: 'BANGTANTV', duration: '5:42', date: '2026.05.05', generationStatus: 'ready' },
+  { id: 'r6', title: '눈물의 여왕 EP.14 — 명장면 대사 분석', channelName: 'KBS Drama', duration: '9:47', date: '2026.05.04', generationStatus: 'ready' },
+  { id: 'r7', title: 'BLACKPINK — Shut Down 가사 완전 정복', channelName: 'BLACKPINK', duration: '7:55', date: '2026.05.04', generationStatus: 'ready' },
+  { id: 'r8', title: '서울 골목 먹방 투어 — 광장시장 편', channelName: 'Maangchi', duration: '18:41', date: '2026.05.03', generationStatus: 'ready' },
+  { id: 'r9', title: 'Top 20 Korean Particles You Must Know', channelName: 'Talk To Me In Korean', duration: '16:44', date: '2026.05.03', generationStatus: 'ready' },
 ]
 
 // ─── 홈 페이지 ───────────────────────────────────────────────────────────────
