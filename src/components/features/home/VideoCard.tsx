@@ -18,6 +18,8 @@ export interface VideoCardProps {
   thumbnailUrl?: string
   /** false이면 학습 상태 배지·진행률 미표시 (Recommendations 등에 사용) */
   showLearning?: boolean
+  /** true이면 w-full로 그리드 레이아웃에 맞춤 (기본값: false → w-[240px] 고정) */
+  fluid?: boolean
 }
 
 /** generationStatus + 학습 활동 조합으로 표시 상태 도출 */
@@ -101,12 +103,14 @@ export default function VideoCard({
   subtitleDone = false,
   thumbnailUrl,
   showLearning = true,
+  fluid = false,
 }: VideoCardProps) {
   const displayStatus = deriveDisplayStatus(generationStatus, flashcardDone, subtitleDone)
+  const sizeClass = fluid ? 'w-full' : 'w-[240px] shrink-0'
 
   if (displayStatus === 'generating') {
     return (
-      <div className="w-[240px] shrink-0 rounded-xl bg-neutral-900 overflow-hidden cursor-pointer flex flex-col">
+      <div className={`${sizeClass} rounded-xl bg-neutral-900 overflow-hidden cursor-pointer flex flex-col`}>
         <div className="w-full aspect-video flex flex-col items-center justify-center gap-2">
           <Loader2 className="w-6 h-6 text-neutral-400 animate-spin" strokeWidth={1.5} />
           <span className="text-sm font-medium text-neutral-300">Generating lesson...</span>
@@ -129,7 +133,7 @@ export default function VideoCard({
   }
 
   return (
-    <div className="w-[240px] shrink-0 rounded-xl bg-white border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all duration-200 flex flex-col">
+    <div className={`${sizeClass} rounded-xl bg-white border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all duration-200 flex flex-col`}>
       {/* 썸네일 */}
       <div className="relative w-full aspect-video bg-neutral-100">
         {thumbnailUrl && (
