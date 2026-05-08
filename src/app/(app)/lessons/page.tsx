@@ -365,12 +365,12 @@ export default function LessonsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push('/home')}
-              className="text-sm font-medium text-primary-600 hover:text-primary-800 hover:underline transition-colors"
+              className="text-sm text-neutral-400 hover:text-neutral-600 hover:underline transition-colors"
             >
               Home
             </button>
             <span className="text-neutral-300 text-sm">/</span>
-            <span className="text-sm font-semibold text-neutral-950">My Lessons</span>
+            <span className="text-sm font-semibold text-primary">My Lessons</span>
           </div>
           <span className="text-sm text-neutral-400">{filtered.length} lessons</span>
         </div>
