@@ -1,4 +1,4 @@
-import { Play, Loader2, Check, BookOpen, Clock } from 'lucide-react'
+import { Play, Loader2, CreditCard, Captions } from 'lucide-react'
 
 export type GenerationStatus = 'generating' | 'ready'
 export type LessonDisplayStatus = 'generating' | 'not_started' | 'in_progress' | 'completed'
@@ -33,25 +33,34 @@ export function deriveDisplayStatus(
   return 'completed'
 }
 
-/** 학습 상태 배지 */
-function StatusBadge({ status }: { status: Exclude<LessonDisplayStatus, 'generating'> }) {
-  const configs = {
-    completed:   { icon: Check,    label: 'Completed',   className: 'bg-emerald-500 text-white' },
-    in_progress: { icon: BookOpen, label: 'In Progress',  className: 'bg-primary text-white' },
-    not_started: { icon: Clock,    label: 'Not Started',  className: 'bg-white border border-neutral-200 text-neutral-600' },
-  } as const
-  const { icon: Icon, label, className } = configs[status]
+
+/** 학습 활동 독립 pill — 완료 여부에 따라 색상만 변경 */
+function ActivityPill({
+  done,
+  label,
+  icon: Icon,
+}: {
+  done: boolean
+  label: string
+  icon: React.ElementType
+}) {
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-pill shadow-sm ${className}`}>
-      <Icon className="w-3 h-3" strokeWidth={2.5} />
+    <div
+      className={`flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${
+        done
+          ? 'bg-primary-50 text-primary border-primary-200'
+          : 'bg-neutral-50 text-neutral-400 border-neutral-200'
+      }`}
+    >
+      <Icon className="w-3 h-3 shrink-0" />
       {label}
-    </span>
+    </div>
   )
 }
 
 /**
- * 플래시카드·시청 두 단계를 각각 세그먼트로 표시
- * — 영상 재생 타임라인과 혼동되지 않도록 카드 정보 영역 내에 레이블과 함께 배치
+ * 학습 상태 라벨 + 두 활동을 독립 pill로 표시
+ * — 순서 무관, 각 활동의 완료 여부만 반영
  */
 function LearningSteps({
   flashcardDone,
@@ -60,69 +69,25 @@ function LearningSteps({
   flashcardDone: boolean
   subtitleDone: boolean
 }) {
-  const pct = flashcardDone && subtitleDone ? '100%' : flashcardDone || subtitleDone ? '50%' : '0%'
+  const doneCount = (flashcardDone ? 1 : 0) + (subtitleDone ? 1 : 0)
+
+  const statusLabel = (
+    { 0: 'Not Started', 1: 'In Progress', 2: 'Completed' } as const
+  )[doneCount as 0 | 1 | 2]
 
   return (
     <div className="mt-3 pt-2.5 border-t border-neutral-100">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">
-          Learning
-        </span>
-        <span className="text-[10px] font-bold text-primary">{pct}</span>
-      </div>
-      <div className="flex gap-1.5">
-        {/* 플래시카드 세그먼트 */}
-        <div className="flex-1 flex flex-col gap-1">
-          <div
-            className={`h-1.5 rounded-full transition-colors duration-300 ${
-              flashcardDone ? 'bg-primary' : 'bg-neutral-200'
-            }`}
-          />
-          <span
-            className={`text-[10px] ${flashcardDone ? 'text-primary font-medium' : 'text-neutral-400'}`}
-          >
-            Flashcard
-          </span>
-        </div>
-        {/* 자막 시청 세그먼트 */}
-        <div className="flex-1 flex flex-col gap-1 items-end">
-          <div
-            className={`w-full h-1.5 rounded-full transition-colors duration-300 ${
-              subtitleDone ? 'bg-primary' : 'bg-neutral-200'
-            }`}
-          />
-          <span
-            className={`text-[10px] ${subtitleDone ? 'text-primary font-medium' : 'text-neutral-400'}`}
-          >
-            Watch
-          </span>
-        </div>
+      <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 text-neutral-500">
+        {statusLabel}
+      </p>
+      <div className="flex gap-2">
+        <ActivityPill done={flashcardDone} label="Flashcard" icon={CreditCard} />
+        <ActivityPill done={subtitleDone}  label="Watch"     icon={Captions} />
       </div>
     </div>
   )
 }
 
-/** generating 상태에서 카드 높이 통일용 빈 플레이스홀더 */
-function GeneratingHeightPlaceholder() {
-  return (
-    <div aria-hidden="true" className="mt-3 pt-2.5 border-t border-neutral-800">
-      <div className="flex items-center justify-between mb-2 opacity-0">
-        <span className="text-[10px] font-medium uppercase tracking-wider">Learning</span>
-        <span className="text-[10px] font-bold">0%</span>
-      </div>
-      <div className="flex gap-1.5 opacity-0">
-        <div className="flex-1 flex flex-col gap-1">
-          <div className="h-1.5 rounded-full bg-neutral-700" />
-          <span className="text-[10px]">Flashcard</span>
-        </div>
-        <div className="flex-1 flex flex-col gap-1 items-end">
-          <div className="w-full h-1.5 rounded-full bg-neutral-700" />
-          <span className="text-[10px]">Watch</span>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 /** 비디오 카드 */
 export default function VideoCard({
@@ -158,7 +123,6 @@ export default function VideoCard({
             {channelName && <span className="text-neutral-700 text-xs">·</span>}
             <p className="text-xs text-neutral-500">{date}</p>
           </div>
-          {showLearning && <GeneratingHeightPlaceholder />}
         </div>
       </div>
     )
@@ -176,11 +140,6 @@ export default function VideoCard({
             <Play className="w-4 h-4 text-neutral-800 ml-0.5" fill="currentColor" />
           </div>
         </div>
-        {showLearning && (
-          <div className="absolute top-2 left-2">
-            <StatusBadge status={displayStatus} />
-          </div>
-        )}
         {duration && (
           <div className="absolute bottom-2 right-2">
             <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-black/70 text-white">

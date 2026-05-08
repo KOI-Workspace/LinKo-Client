@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronRight, Clock, BookOpen, Check, Youtube } from 'lucide-react'
+import { ChevronRight, Clock, BookOpen, Check, Youtube, Sparkles } from 'lucide-react'
 import VideoCard, { deriveDisplayStatus } from './VideoCard'
 import type { VideoCardProps, LessonDisplayStatus, LessonFilterStatus } from './VideoCard'
 
@@ -15,10 +15,10 @@ const FILTER_OPTIONS: {
   icon?: React.ElementType
 }[] = [
   { value: 'all',         label: 'All' },
-  { value: 'generating',  label: 'Generating' },
   { value: 'not_started', label: 'Not Started',  icon: Clock },
   { value: 'in_progress', label: 'In Progress',  icon: BookOpen },
   { value: 'completed',   label: 'Completed',    icon: Check },
+  { value: 'generating',  label: 'Generating',  icon: Sparkles },
 ]
 
 interface MyLessonsSectionProps {
