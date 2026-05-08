@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ArrowUpDown, Youtube, X, Plus, Check } from 'lucide-react'
+import { Search, ArrowUpDown, Youtube, X, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import UrlInput from '@/components/features/home/UrlInput'
 import VideoCard from '@/components/features/home/VideoCard'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
@@ -150,8 +150,16 @@ function ChannelAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md'
   )
 }
 
+const CHANNEL_PAGE_SIZE = 12
+
 /** 선택된 채널 상세 패널 */
 function ChannelDetail({ channel }: { channel: ChannelData }) {
+  const [page, setPage] = useState(1)
+
+  const totalPages = Math.max(1, Math.ceil(channel.videos.length / CHANNEL_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paginated = channel.videos.slice((currentPage - 1) * CHANNEL_PAGE_SIZE, currentPage * CHANNEL_PAGE_SIZE)
+
   return (
     <div className="mt-5 rounded-xl border border-neutral-200 bg-white overflow-hidden">
       {/* 채널 헤더 */}
@@ -172,10 +180,43 @@ function ChannelDetail({ channel }: { channel: ChannelData }) {
           Latest Videos
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-          {channel.videos.map((video) => (
+          {paginated.map((video) => (
             <VideoCard key={video.id} {...video} showLearning={video.isLesson === true} fluid />
           ))}
         </div>
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-1 mt-6">
+            <button
+              onClick={() => setPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${
+                  p === currentPage
+                    ? 'bg-neutral-950 text-white'
+                    : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -393,8 +434,8 @@ export default function ChannelsPage() {
           })}
         </div>
 
-        {/* 선택된 채널 상세 */}
-        {selectedChannel && <ChannelDetail channel={selectedChannel} />}
+        {/* 선택된 채널 상세 — key로 채널 전환 시 페이지 초기화 */}
+        {selectedChannel && <ChannelDetail key={selectedChannel.id} channel={selectedChannel} />}
       </div>
 
       {/* 채널 추가 모달 */}
