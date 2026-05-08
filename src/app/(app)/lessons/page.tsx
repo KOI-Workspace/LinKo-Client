@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight, CreditCard, Captions, Loader2, ChevronDown, ArrowUpDown } from 'lucide-react'
-import Link from 'next/link'
 import UrlInput from '@/components/features/home/UrlInput'
 import { deriveDisplayStatus } from '@/components/features/home/VideoCard'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
@@ -333,6 +333,7 @@ export default function LessonsPage() {
   const currentPage = Math.min(page, totalPages)
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
+  const router = useRouter()
   const handleSearch = (v: string) => { setSearch(v); setPage(1) }
   const handleStatus = (v: StatusFilter) => { setStatusFilter(v); setPage(1) }
   const toggleSort = () => { setSortOrder((prev) => prev === 'newest' ? 'oldest' : 'newest'); setPage(1) }
@@ -362,12 +363,12 @@ export default function LessonsPage() {
         {/* 브레드크럼 + 총 개수 */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <Link
-              href="/home"
+            <button
+              onClick={() => router.push('/home')}
               className="text-sm font-medium text-primary-600 hover:text-primary-800 hover:underline transition-colors"
             >
               Home
-            </Link>
+            </button>
             <span className="text-neutral-300 text-sm">/</span>
             <span className="text-sm font-semibold text-neutral-950">My Lessons</span>
           </div>
