@@ -1,3 +1,9 @@
 .gh-config/
 node_modules/
 .next/
+
+# TypeScript 빌드 캐시
+tsconfig.tsbuildinfo
+
+# Claude Code 로컬 설정
+.claude/settings.local.json
