@@ -153,7 +153,7 @@ function ChannelAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md'
 const CHANNEL_PAGE_SIZE = 12
 
 /** 선택된 채널 상세 패널 */
-function ChannelDetail({ channel }: { channel: ChannelData }) {
+function ChannelDetail({ channel, onUnsubscribe }: { channel: ChannelData; onUnsubscribe: () => void }) {
   const [page, setPage] = useState(1)
 
   const totalPages = Math.max(1, Math.ceil(channel.videos.length / CHANNEL_PAGE_SIZE))
@@ -172,6 +172,12 @@ function ChannelDetail({ channel }: { channel: ChannelData }) {
             {channel.subscriberCount} subscribers · You&apos;ve made {channel.lessonCount} {channel.lessonCount === 1 ? 'lesson' : 'lessons'} from this channel
           </p>
         </div>
+        <button
+          onClick={onUnsubscribe}
+          className="shrink-0 px-3 py-1.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+        >
+          Unsubscribe
+        </button>
       </div>
 
       {/* 최신 영상 카드 그리드 */}
@@ -435,7 +441,13 @@ export default function ChannelsPage() {
         </div>
 
         {/* 선택된 채널 상세 — key로 채널 전환 시 페이지 초기화 */}
-        {selectedChannel && <ChannelDetail key={selectedChannel.id} channel={selectedChannel} />}
+        {selectedChannel && (
+          <ChannelDetail
+            key={selectedChannel.id}
+            channel={selectedChannel}
+            onUnsubscribe={() => handleUnsubscribe(selectedChannel.id)}
+          />
+        )}
       </div>
 
       {/* 채널 추가 모달 */}
