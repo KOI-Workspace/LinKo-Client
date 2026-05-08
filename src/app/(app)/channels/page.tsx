@@ -174,7 +174,7 @@ function ChannelDetail({ channel, onUnsubscribe }: { channel: ChannelData; onUns
         </div>
         <button
           onClick={onUnsubscribe}
-          className="shrink-0 px-3 py-1.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+          className="shrink-0 px-3 py-1.5 text-xs font-medium text-neutral-400 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors"
         >
           Unsubscribe
         </button>
