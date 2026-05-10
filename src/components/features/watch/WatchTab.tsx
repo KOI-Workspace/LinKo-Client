@@ -500,11 +500,11 @@ function VocabToken({
           <span
             className={`ml-[0.02em] flex h-[0.94em] w-[0.94em] shrink-0 items-center justify-center rounded-full ${
               isHidden
-                ? 'bg-white/10'
+                ? 'bg-white/14 ring-1 ring-white/10'
                 : 'bg-white/16 ring-1 ring-white/12'
             }`}
           >
-            <Check className={`h-[0.52em] w-[0.52em] ${isHidden ? 'text-transparent' : 'text-white'}`} />
+            <Check className={`h-[0.52em] w-[0.52em] ${isHidden ? 'text-white/75' : 'text-white'}`} />
           </span>
         )}
       </span>
