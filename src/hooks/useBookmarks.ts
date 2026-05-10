@@ -11,6 +11,8 @@ export interface BookmarkedCard {
   exampleSentence: string
   exampleTranslation: string
   savedAt: string
+  type?: 'sentence' | 'expression'
+  subType?: 'word' | 'ending'
 }
 
 const STORAGE_KEY = 'linko_bookmarks'

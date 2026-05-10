@@ -288,6 +288,8 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
           meaning: `(${card.ending}) ${card.endingMeaning}`,
           exampleSentence: card.scriptSentence,
           exampleTranslation: card.scriptTranslation,
+          type: 'expression',
+          subType: 'ending',
         })
       } else {
         addBookmark({
@@ -298,6 +300,8 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
           meaning: card.meaning,
           exampleSentence: card.exampleSentence,
           exampleTranslation: card.exampleTranslation,
+          type: 'expression',
+          subType: 'word',
         })
       }
     }

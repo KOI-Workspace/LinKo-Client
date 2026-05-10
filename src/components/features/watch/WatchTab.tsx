@@ -704,6 +704,8 @@ function SubtitleText({
             meaning: resolvedEntry?.meaning ?? expression,
             exampleSentence: resolvedEntry?.exampleSentence ?? text,
             exampleTranslation: resolvedEntry?.exampleTranslation ?? '',
+            type: 'expression',
+            subType: resolvedEntry && 'type' in resolvedEntry && resolvedEntry.type === 'ending' ? 'ending' : 'word',
           })
         }
 
@@ -840,8 +842,8 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
       meaning: line.english,
       exampleSentence: line.korean,
       exampleTranslation: line.english,
-    })
-  }
+      type: 'sentence',
+    })  }
 
   return (
     <div className="flex flex-1 min-h-0 overflow-hidden">
