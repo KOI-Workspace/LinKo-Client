@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Play, Pause, Languages, BookmarkCheck, Eye, EyeOff, Info, Check } from 'lucide-react'
+import { Play, Pause, BookmarkCheck, Eye, EyeOff, Info, Check } from 'lucide-react'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
@@ -266,8 +266,8 @@ const MOCK_SUBTITLES: SubtitleLine[] = [
   },
   {
     id: 's2', startSec: 5, endSec: 10,
-    korean: '이 시장은 다양하고 맛있는 음식 가게로 가득해요.',
-    english: 'This market is packed with diverse and delicious food stalls.',
+    korean: '이 시장은 현지인도 자주 와서 다양하고 맛있는 음식 가게로 가득해요.',
+    english: 'Locals come here often, so this market is packed with diverse and delicious food stalls.',
   },
   {
     id: 's3', startSec: 10, endSec: 16,
@@ -286,8 +286,8 @@ const MOCK_SUBTITLES: SubtitleLine[] = [
   },
   {
     id: 's6', startSec: 27, endSec: 32,
-    korean: '노점상 아저씨가 따뜻한 어묵 국물을 건네주셨어요.',
-    english: 'The street vendor handed me a warm cup of fish cake broth.',
+    korean: '포장마차 노점상 아저씨가 따뜻한 어묵 국물을 건네주셨어요.',
+    english: 'The street stall vendor handed me a warm cup of fish cake broth.',
   },
   {
     id: 's7', startSec: 32, endSec: 37,
@@ -306,8 +306,8 @@ const MOCK_SUBTITLES: SubtitleLine[] = [
   },
   {
     id: 's10', startSec: 49, endSec: 54,
-    korean: '다음에는 제가 제일 좋아하는 호떡 맛집을 소개할게요.',
-    english: "Next time, I'll introduce my favorite hotteok spot.",
+    korean: '다음에는 현지인이 추천한 제가 제일 좋아하는 호떡 맛집을 소개할게요.',
+    english: "Next time, I'll introduce my favorite hotteok spot recommended by a local.",
   },
   {
     id: 's11', startSec: 54, endSec: 60,
@@ -315,6 +315,51 @@ const MOCK_SUBTITLES: SubtitleLine[] = [
     english: "Thanks for watching today. See you in the next video!",
   },
 ]
+
+const MOCK_BOOKMARKS_BY_LESSON: Record<string, BookmarkedCard[]> = {
+  '3': [
+    {
+      cardId: 'fc-3-1',
+      lessonId: '3',
+      lessonTitle: 'Korean Street Food Tour Seoul',
+      expression: '길거리 음식',
+      meaning: 'Street food',
+      exampleSentence: '서울의 길거리 음식은 정말 다양하고 맛있어요.',
+      exampleTranslation: 'Street food in Seoul is incredibly diverse and delicious.',
+      savedAt: '2026-05-08T09:00:00.000Z',
+    },
+    {
+      cardId: 'fc-3-5',
+      lessonId: '3',
+      lessonTitle: 'Korean Street Food Tour Seoul',
+      expression: '저렴하다',
+      meaning: 'Affordable / inexpensive',
+      exampleSentence: '여기 길거리 음식은 놀랍도록 저렴해요.',
+      exampleTranslation: 'Street food here is surprisingly affordable.',
+      savedAt: '2026-05-08T09:05:00.000Z',
+    },
+    {
+      cardId: 'fc-mock-1',
+      lessonId: '9',
+      lessonTitle: 'K-pop Lyrics Korean Lesson',
+      expression: '현지인',
+      meaning: 'Local person',
+      exampleSentence: '현지인이 추천한 가게는 실패가 적어요.',
+      exampleTranslation: 'Places recommended by locals rarely disappoint.',
+      savedAt: '2026-05-07T14:00:00.000Z',
+    },
+    {
+      cardId: 'fc-mock-2',
+      lessonId: '10',
+      lessonTitle: 'Essential Korean Phrases for Travel',
+      expression: '포장마차',
+      meaning: 'Street stall / pojangmacha',
+      exampleSentence: '밤에는 포장마차에서 간단히 먹는 사람이 많아요.',
+      exampleTranslation: 'At night, many people grab a quick bite at street stalls.',
+      savedAt: '2026-05-07T14:10:00.000Z',
+    },
+  ],
+}
 
 const YOUTUBE_ID = 'dQw4w9WgXcQ'
 const TOTAL_DURATION = MOCK_SUBTITLES[MOCK_SUBTITLES.length - 1].endSec
@@ -416,13 +461,20 @@ function VocabToken({
     hideTimer.current = setTimeout(() => setOpen(false), 150)
   }
 
-  const pillClass = isCurrentLesson && bookmarked
-    ? 'bg-violet-600 text-white font-semibold'
+  const hasBookmarkBadge = isCurrentLesson && bookmarked
+  const tokenClass = isCurrentLesson && bookmarked
+    ? 'rounded-[0.32em] bg-violet-600 px-[0.26em] py-[0.08em] text-white font-semibold shadow-[0_8px_20px_rgba(124,58,237,0.2)]'
     : isCurrentLesson
-    ? 'bg-violet-500/25 text-violet-200'
-    : 'bg-neutral-600/80 text-neutral-200'
+    ? 'rounded-[0.28em] px-[0.22em] py-[0.05em] text-violet-300 font-medium'
+    : 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-neutral-600/80 text-neutral-100 font-medium'
 
   const isHidden = isBlind && !revealed
+  const hiddenTokenClass = hasBookmarkBadge
+    ? 'rounded-[0.32em] bg-violet-500/25 px-[0.26em] py-[0.08em] text-transparent'
+    : isCurrentLesson
+    ? 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-violet-500/25 text-transparent'
+    : 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-white/20 text-transparent ring-1 ring-white/10'
+  const wrapperClass = hasBookmarkBadge ? 'mr-[0.18em]' : ''
 
   const handleClick = (e: React.MouseEvent) => {
     if (isBlind) {
@@ -433,16 +485,26 @@ function VocabToken({
 
   return (
     <span
-      className="relative inline-block cursor-pointer"
+      className={`relative inline-block cursor-pointer ${wrapperClass}`}
       onMouseEnter={isBlind ? undefined : show}
       onMouseLeave={isBlind ? undefined : hide}
       onClick={handleClick}
     >
-      <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors ${pillClass} ${isHidden ? 'text-transparent select-none' : ''}`}>
+      <span
+        className={`inline-flex items-center gap-1 align-baseline leading-tight transition-colors ${
+          isHidden ? hiddenTokenClass : tokenClass
+        } ${isHidden ? 'select-none' : ''}`}
+      >
         {word}
-        {isCurrentLesson && bookmarked && !isHidden && (
-          <span className="w-4 h-4 rounded-full bg-violet-400/50 flex items-center justify-center shrink-0">
-            <Check className="w-2.5 h-2.5 text-white" />
+        {hasBookmarkBadge && (
+          <span
+            className={`ml-[0.02em] flex h-[0.94em] w-[0.94em] shrink-0 items-center justify-center rounded-full ${
+              isHidden
+                ? 'bg-white/10'
+                : 'bg-white/16 ring-1 ring-white/12'
+            }`}
+          >
+            <Check className={`h-[0.52em] w-[0.52em] ${isHidden ? 'text-transparent' : 'text-white'}`} />
           </span>
         )}
       </span>
@@ -546,7 +608,6 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   const [currentSec, setCurrentSec]     = useState(0)
   const [isPlaying, setIsPlaying]       = useState(false)
   const [speed, setSpeed]               = useState(1)
-  const [showEnglish, setShowEnglish]   = useState(true)
   const [isBlind, setIsBlind]           = useState(false)
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
   const lineRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -554,6 +615,19 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
   const vocabMap    = WATCH_VOCAB[lessonId] ?? {}
   const lessonTitle = MOCK_FLASHCARDS[lessonId]?.lessonTitle ?? ''
+  const mergedBookmarks = useMemo(() => {
+    const mockBookmarks = MOCK_BOOKMARKS_BY_LESSON[lessonId] ?? []
+    const bookmarkMap = new Map<string, BookmarkedCard>()
+
+    mockBookmarks.forEach((bookmark) => {
+      bookmarkMap.set(bookmark.cardId, bookmark)
+    })
+    bookmarks.forEach((bookmark) => {
+      bookmarkMap.set(bookmark.cardId, bookmark)
+    })
+
+    return Array.from(bookmarkMap.values())
+  }, [bookmarks, lessonId])
 
   // 현재 자막 (currentSec 기준 마지막으로 시작된 라인)
   const activeLine = MOCK_SUBTITLES.slice().reverse().find((s) => currentSec >= s.startSec) ?? MOCK_SUBTITLES[0]
@@ -607,7 +681,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   }
 
   const subtitleProps = {
-    vocabMap, bookmarks, currentLessonId: lessonId, lessonTitle, addBookmark,
+    vocabMap, bookmarks: mergedBookmarks, currentLessonId: lessonId, lessonTitle, addBookmark,
     isBlind, revealedCards, onRevealToggle: toggleReveal,
   }
 
@@ -633,11 +707,9 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
           <p className="text-white text-2xl font-semibold leading-snug">
             <SubtitleText text={activeLine.korean} {...subtitleProps} />
           </p>
-          {showEnglish && (
-            <p className="text-neutral-400 text-base mt-2 leading-relaxed">
-              {activeLine.english}
-            </p>
-          )}
+          <p className="text-neutral-400 text-base mt-2 leading-relaxed">
+            {activeLine.english}
+          </p>
         </div>
 
         {/* 컨트롤 바 */}
@@ -676,18 +748,6 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
             </select>
 
             <button
-              onClick={() => setShowEnglish((v) => !v)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
-                showEnglish
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-white/10 text-neutral-400 border-white/20 hover:border-white/40 hover:text-white'
-              }`}
-            >
-              <Languages className="w-3.5 h-3.5" />
-              English
-            </button>
-
-            <button
               onClick={toggleBlind}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
                 isBlind
@@ -718,21 +778,21 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
                 <p className="text-[10px] text-neutral-400 font-medium mb-2">Word labels</p>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="bg-neutral-600/80 text-neutral-200 rounded-md px-1.5 py-0.5 text-[10px] shrink-0">단어</span>
+                    <span className="rounded px-1 py-px text-[10px] font-medium text-neutral-100 bg-neutral-600/80 shrink-0">단어</span>
                     <span className="text-[10px] text-neutral-400">Previously bookmarked</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 bg-violet-600 text-white rounded-md px-1.5 py-0.5 text-[10px] font-semibold shrink-0">
+                    <span className="inline-flex items-center gap-1 rounded px-1 py-px text-[10px] font-semibold text-white bg-violet-600 shrink-0">
                       단어
-                      <span className="w-3.5 h-3.5 rounded-full bg-violet-400/60 flex items-center justify-center">
+                      <span className="flex h-3 w-3 items-center justify-center rounded-full bg-violet-400/60">
                         <Check className="w-2 h-2 text-white" />
                       </span>
                     </span>
-                    <span className="text-[10px] text-neutral-400">Bookmarked</span>
+                    <span className="text-[10px] text-neutral-400">Bookmarked in this flashcard lesson</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="bg-violet-500/25 text-violet-200 rounded-md px-1.5 py-0.5 text-[10px] shrink-0">단어</span>
-                    <span className="text-[10px] text-neutral-400">In this lesson</span>
+                    <span className="text-[10px] font-medium text-violet-300 shrink-0">단어</span>
+                    <span className="text-[10px] text-neutral-400">Appeared in this flashcard lesson</span>
                   </div>
                 </div>
               </div>
@@ -763,11 +823,9 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
                     <p className={`text-sm leading-relaxed ${isActive ? 'text-white font-medium' : 'text-neutral-300'}`}>
                       <SubtitleText text={line.korean} {...subtitleProps} />
                     </p>
-                    {showEnglish && (
-                      <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
-                        {line.english}
-                      </p>
-                    )}
+                    <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
+                      {line.english}
+                    </p>
                   </div>
                 </div>
               </div>
