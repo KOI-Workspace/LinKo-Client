@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import {
   Volume2, ChevronLeft, ChevronRight, Play,
   ExternalLink, Bookmark, BookmarkCheck,
-  Repeat, Gauge, MessageCircle, ChevronDown, ChevronUp,
+  Repeat, Gauge, MessageCircle, ChevronDown, ChevronUp, X,
 } from 'lucide-react'
 import { MOCK_FLASHCARDS } from './mockFlashcards'
 import { useBookmarks } from '@/hooks/useBookmarks'
@@ -345,24 +345,9 @@ export default function FlashcardTab({
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-white relative">
       
-      {/* 닫기 버튼 (리뷰 모드일 때만 혹은 상시) */}
-      {onClose && (
-        <button 
-          onClick={onClose}
-          className="absolute top-3 right-4 z-20 p-2 rounded-full hover:bg-neutral-100 text-neutral-400 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* 헤더: 학습 모드일 때만 프로그레스 바 표시 */}
-      {!isReviewMode ? (
+      {/* 헤더: 학습 모드일 때만 프로그레스 바 표시 (리뷰 모드 헤더는 부모에서 관리) */}
+      {!isReviewMode && (
         <div className="shrink-0 px-8 py-3 bg-white border-b border-neutral-100 flex items-center gap-3">
-          {cardIsEnding && (
-            <span className="shrink-0 text-[10px] font-bold text-primary uppercase tracking-widest bg-primary-50 px-2.5 py-0.5 rounded-full border border-primary-100">
-              어미
-            </span>
-          )}
           <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
             <div className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }} />
@@ -371,16 +356,6 @@ export default function FlashcardTab({
             <span className="font-bold text-neutral-700">{currentIndex + 1}</span>
             <span className="mx-1 text-neutral-300">/</span>
             {total}
-          </span>
-        </div>
-      ) : (
-        /* 리뷰 모드 헤더: 단순 카운트만 */
-        <div className="shrink-0 px-8 py-3 bg-white border-b border-neutral-50 flex items-center justify-between">
-          <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-            Bookmark Review
-          </p>
-          <span className="text-xs font-bold text-neutral-400">
-            {currentIndex + 1} / {total}
           </span>
         </div>
       )}
@@ -441,34 +416,22 @@ export default function FlashcardTab({
             </div>
           </div>
 
-          {/* 우: 카드 타입별 콘텐츠 */}
+            {/* 우: 카드 타입별 콘텐츠 */}
           <div className="p-8 flex flex-col gap-6">
 
             {/* ── 어미 변형 카드 ── */}
             {cardIsEnding ? (
               <div>
-                <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-5">
-                  Ending &amp; Usage
-                </p>
-
                 {/* 활용형 (영상에 나온 그대로) — 큰 글씨 */}
-                <div className="flex items-start gap-3 mb-1">
+                <div className="mb-1">
                   <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
                     {card.conjugatedForm}
                   </h2>
-                  <button onClick={handleSpeak}
-                    className={`mt-1.5 w-10 h-10 flex items-center justify-center rounded-xl border-2 transition-all duration-150 shrink-0 ${
-                      isSpeaking && !slowMode
-                        ? 'bg-primary text-white border-primary shadow-lg scale-95'
-                        : 'bg-white text-neutral-400 border-neutral-200 hover:border-primary hover:text-primary hover:shadow-sm'
-                    }`} title="활용형 발음 듣기">
-                    <Volume2 className="w-4 h-4" />
-                  </button>
                 </div>
 
                 {/* 원래 단어의 뜻 */}
                 {card.baseWordMeaning && (
-                  <p className="text-base text-neutral-400 mb-4">{card.baseWordMeaning}</p>
+                  <p className="text-xl font-semibold text-primary mb-4">{card.baseWordMeaning}</p>
                 )}
 
                 {/* 활용형 시각화: 사전형 + 배지 + 상세 토글 */}
@@ -476,7 +439,7 @@ export default function FlashcardTab({
                   const hasDetail = card.conjugationBadges.some(b => b.removedDetail || b.addedDetail)
                   return (
                     <>
-                      <div className="flex items-center gap-2 flex-wrap mb-3">
+                      <div className="flex items-center gap-2 flex-wrap mb-6">
                         <span className="text-sm font-medium text-neutral-500">{card.baseWord}</span>
                         {card.conjugationBadges.map((badge, i) => (
                           <ConjugationBadgeTag key={i} badge={badge} />
@@ -498,18 +461,7 @@ export default function FlashcardTab({
                   )
                 })()}
 
-                {/* 어미 이름 + 영어 의미 */}
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <span className="px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm font-bold border border-neutral-200">
-                    -{card.ending}
-                  </span>
-                </div>
-                <p className="text-xl font-semibold text-primary mb-3">{card.endingMeaning}</p>
-
-                {/* 한국어 설명 */}
-                <p className="text-sm text-neutral-500 leading-relaxed mb-6">
-                  {card.endingExplanation}
-                </p>
+                {/* 한국어 설명 (제거됨) */}
 
                 <div className="h-px bg-neutral-100 mb-6" />
 
@@ -532,21 +484,10 @@ export default function FlashcardTab({
             ) : (
               /* ── 단어 카드 (기존) ── */
               <div>
-                <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-5">
-                  Word &amp; Meaning
-                </p>
-                <div className="flex items-start gap-3 mb-2">
+                <div className="mb-2">
                   <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
                     {card.expression}
                   </h2>
-                  <button onClick={handleSpeak}
-                    className={`mt-1.5 w-10 h-10 flex items-center justify-center rounded-xl border-2 transition-all duration-150 shrink-0 ${
-                      isSpeaking && !slowMode
-                        ? 'bg-primary text-white border-primary shadow-lg scale-95'
-                        : 'bg-white text-neutral-400 border-neutral-200 hover:border-primary hover:text-primary hover:shadow-sm'
-                    }`} title="Play pronunciation">
-                    <Volume2 className="w-4 h-4" />
-                  </button>
                 </div>
 
                 <p className="text-xl font-semibold text-primary mb-6">{card.meaning}</p>
@@ -570,7 +511,7 @@ export default function FlashcardTab({
                     </div>
                     <div className="flex flex-col gap-3">
                       {card.dailyConversation.map((turn, i) => (
-                        <ConversationBubble key={i} turn={turn} onSpeak={(text) => speak(text, slowMode)} />
+                        <ConversationBubble key={i} turn={turn} onSpeak={() => {}} />
                       ))}
                     </div>
                   </div>

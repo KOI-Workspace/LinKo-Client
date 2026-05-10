@@ -260,7 +260,7 @@ export default function BookmarksPage() {
       </div>
 
       {/* 콘텐츠 */}
-      <div className="px-10 py-8 pb-12">
+      <div className="px-10 pt-3 pb-12">
 
         {/* 빈 상태 */}
         {filteredAndSortedBookmarks.length === 0 ? (
@@ -319,7 +319,10 @@ function BookmarkCard({
   const badges = b.conjugationBadges
 
   return (
-    <div className="group flex flex-col bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:border-primary-200 hover:shadow-sm transition-all">
+    <div 
+      onClick={onReview}
+      className="group flex flex-col bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:border-primary-200 hover:shadow-md transition-all cursor-pointer"
+    >
       <div className="flex-1 p-6">
         <div className="flex items-start justify-end mb-1">
           <button
@@ -365,7 +368,7 @@ function BookmarkCard({
       <div className="px-6 py-3.5 bg-white border-t border-neutral-100 flex items-center justify-end mt-auto">
         <button
           onClick={onReview}
-          className="flex items-center gap-1 text-[11px] font-bold text-neutral-600 hover:text-primary transition-colors"
+          className="flex items-center gap-1 text-[11px] font-semibold text-neutral-400 hover:text-primary transition-colors"
         >
           Review
           <ChevronRight className="w-3 h-3" />
