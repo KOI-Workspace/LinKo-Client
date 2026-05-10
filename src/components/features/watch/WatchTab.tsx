@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Play, Pause, BookmarkCheck, Eye, EyeOff, Info, Check } from 'lucide-react'
+import { Play, Pause, Bookmark, BookmarkCheck, Eye, EyeOff, Info, Check } from 'lucide-react'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
@@ -26,6 +26,15 @@ interface SubtitleLine {
 }
 
 type SubtitleDisplayMode = 'bilingual' | 'korean' | 'english'
+type SidePanelTab = 'transcript' | 'culture'
+
+interface CulturalNote {
+  id: string
+  subtitleId: string
+  title: string
+  keyword: string
+  explanation: string
+}
 
 // ─── 레슨별 단어 매핑 (자막에 나오는 텍스트 형태 → 플래시카드 정보) ─────────────────
 
@@ -363,6 +372,39 @@ const MOCK_BOOKMARKS_BY_LESSON: Record<string, BookmarkedCard[]> = {
   ],
 }
 
+const MOCK_CULTURAL_NOTES_BY_LESSON: Record<string, CulturalNote[]> = {
+  '3': [
+    {
+      id: 'culture-3-1',
+      subtitleId: 's2',
+      title: '현지인',
+      keyword: 'Local perspective',
+      explanation: 'In Korean content, 현지인 usually implies more than just someone who lives there. It suggests a person whose recommendation feels more trustworthy and less touristy, especially when people talk about restaurants, markets, or neighborhoods.',
+    },
+    {
+      id: 'culture-3-2',
+      subtitleId: 's3',
+      title: '꼭 먹어봐야 해요',
+      keyword: 'Strong recommendation',
+      explanation: 'This phrase means more than a literal “you should try it.” In travel and food videos, it carries the tone of a strong personal recommendation, as if the speaker is saying this is part of the essential Korean experience.',
+    },
+    {
+      id: 'culture-3-3',
+      subtitleId: 's6',
+      title: '포장마차',
+      keyword: 'Late-night street culture',
+      explanation: '포장마차 refers to a tented street stall, but culturally it also evokes a familiar late-night atmosphere. It often brings up ideas like casual drinking, quick food after work, and a very everyday, unpolished side of city life.',
+    },
+    {
+      id: 'culture-3-4',
+      subtitleId: 's9',
+      title: '3천 원밖에 안 해요',
+      keyword: '밖에 안 pattern',
+      explanation: '밖에 안 is a Korean pattern used to stress that something is less than expected. When used with price, it does not just mean “it costs only this much.” It also carries the speaker’s feeling that the price is surprisingly cheap.',
+    },
+  ],
+}
+
 const YOUTUBE_ID = 'dQw4w9WgXcQ'
 const TOTAL_DURATION = MOCK_SUBTITLES[MOCK_SUBTITLES.length - 1].endSec
 
@@ -378,7 +420,17 @@ function formatTime(sec: number) {
 
 type TextToken =
   | { type: 'plain'; text: string }
-  | { type: 'vocab'; word: string; entry: VocabEntry }
+  | { type: 'word'; word: string; entry?: VocabEntry }
+
+function splitPlainTextToTokens(text: string): TextToken[] {
+  return text
+    .split(/(\s+)/)
+    .filter((part) => part.length > 0)
+    .map((part) => {
+      if (/^\s+$/.test(part)) return { type: 'plain', text: part }
+      return { type: 'word', word: part }
+    })
+}
 
 /**
  * 자막 텍스트를 일반 토큰 + vocab 토큰으로 분리
@@ -393,9 +445,9 @@ function tokenizeSubtitle(
 ): TextToken[] {
   const candidates: Array<{ word: string; entry: VocabEntry }> = [
     ...Object.entries(vocabMap).map(([word, entry]) => ({ word, entry })),
-    // 다른 레슨에서 북마크된 단어 (현재 vocab에 없는 것만)
+    // 북마크된 단어 (현재 vocab에 없는 것만)
     ...bookmarks
-      .filter((bm) => bm.lessonId !== currentLessonId && !(bm.expression in vocabMap))
+      .filter((bm) => !bm.cardId.startsWith('sentence-') && !(bm.expression in vocabMap))
       .map((bm) => ({
         word: bm.expression,
         entry: {
@@ -425,11 +477,11 @@ function tokenizeSubtitle(
   const tokens: TextToken[] = []
   let pos = 0
   for (const m of matches) {
-    if (pos < m.start) tokens.push({ type: 'plain', text: text.slice(pos, m.start) })
-    tokens.push({ type: 'vocab', word: m.word, entry: m.entry })
+    if (pos < m.start) tokens.push(...splitPlainTextToTokens(text.slice(pos, m.start)))
+    tokens.push({ type: 'word', word: m.word, entry: m.entry })
     pos = m.end
   }
-  if (pos < text.length) tokens.push({ type: 'plain', text: text.slice(pos) })
+  if (pos < text.length) tokens.push(...splitPlainTextToTokens(text.slice(pos)))
   return tokens
 }
 
@@ -441,30 +493,81 @@ function tokenizeSubtitle(
  * - 툴팁에도 onMouseEnter/Leave 등록해 머무는 동안 유지
  */
 function VocabToken({
-  word, entry, isCurrentLesson, bookmarked, onAdd, isBlind, revealed, onRevealToggle,
+  word, entry, isCurrentLesson, bookmarked, onAdd, isBlind, revealed, onRevealToggle, forceTooltipBelow,
 }: {
   word: string
-  entry: VocabEntry
+  entry?: VocabEntry
   isCurrentLesson: boolean
   bookmarked: boolean
   onAdd: (e: React.MouseEvent) => void
   isBlind: boolean
   revealed: boolean
   onRevealToggle: () => void
+  forceTooltipBelow?: boolean
 }) {
   const [open, setOpen] = useState(false)
+  const [tooltipPosition, setTooltipPosition] = useState<'above' | 'below'>('above')
+  const hasEntry = Boolean(entry)
+  const hasHighlight = hasEntry || bookmarked
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wrapperRef = useRef<HTMLSpanElement | null>(null)
+  const tooltipRef = useRef<HTMLSpanElement | null>(null)
 
   const show = () => {
-    if (hideTimer.current) clearTimeout(hideTimer.current)
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current)
+      hideTimer.current = null
+    }
     setOpen(true)
   }
   const hide = () => {
-    hideTimer.current = setTimeout(() => setOpen(false), 150)
+    hideTimer.current = setTimeout(() => {
+      setOpen(false)
+      hideTimer.current = null
+    }, 80)
   }
 
+  useEffect(() => {
+    if (!open || isBlind) return
+
+    const updateTooltipPosition = () => {
+      if (forceTooltipBelow) {
+        setTooltipPosition('below')
+        return
+      }
+
+      const wrapperEl = wrapperRef.current
+      const tooltipEl = tooltipRef.current
+      if (!wrapperEl || !tooltipEl) return
+
+      const wrapperRect = wrapperEl.getBoundingClientRect()
+      const tooltipRect = tooltipEl.getBoundingClientRect()
+      const gap = 4
+      const aboveSpace = wrapperRect.top
+      const belowSpace = window.innerHeight - wrapperRect.bottom
+      const needsBelow = aboveSpace < tooltipRect.height + gap && belowSpace > aboveSpace
+
+      setTooltipPosition(needsBelow ? 'below' : 'above')
+    }
+
+    updateTooltipPosition()
+    window.addEventListener('resize', updateTooltipPosition)
+
+    return () => {
+      window.removeEventListener('resize', updateTooltipPosition)
+    }
+  }, [forceTooltipBelow, open, isBlind, word])
+
+  useEffect(() => {
+    return () => {
+      if (hideTimer.current) clearTimeout(hideTimer.current)
+    }
+  }, [])
+
   const hasBookmarkBadge = isCurrentLesson && bookmarked
-  const tokenClass = isCurrentLesson && bookmarked
+  const tokenClass = !hasHighlight
+    ? 'text-inherit'
+    : isCurrentLesson && bookmarked
     ? 'rounded-[0.32em] bg-violet-600 px-[0.26em] py-[0.08em] text-white font-semibold shadow-[0_8px_20px_rgba(124,58,237,0.2)]'
     : isCurrentLesson
     ? 'rounded-[0.28em] px-[0.22em] py-[0.05em] text-violet-300 font-medium'
@@ -487,15 +590,16 @@ function VocabToken({
 
   return (
     <span
+      ref={wrapperRef}
       className={`relative inline-block cursor-pointer ${wrapperClass}`}
-      onMouseEnter={isBlind ? undefined : show}
-      onMouseLeave={isBlind ? undefined : hide}
+      onMouseEnter={isBlind && hasEntry ? undefined : show}
+      onMouseLeave={isBlind && hasEntry ? undefined : hide}
       onClick={handleClick}
     >
       <span
         className={`inline-flex items-center gap-1 align-baseline leading-tight transition-colors ${
           isHidden ? hiddenTokenClass : tokenClass
-        } ${isHidden ? 'select-none' : ''}`}
+        } ${isHidden ? 'select-none' : ''} ${hasHighlight ? '' : 'font-inherit'}`}
       >
         {word}
         {hasBookmarkBadge && (
@@ -513,21 +617,25 @@ function VocabToken({
 
       {!isBlind && open && (
         <span
-          className="absolute bottom-full left-0 mb-1 z-50 flex items-center gap-1.5 bg-neutral-900 border border-neutral-600 rounded-lg px-2.5 py-1.5 shadow-2xl text-xs whitespace-nowrap"
+          ref={tooltipRef}
+          className={`absolute left-0 z-50 flex items-center gap-1.5 rounded-lg border border-neutral-600 bg-neutral-900 px-2.5 py-1.5 text-xs whitespace-nowrap shadow-2xl ${
+            tooltipPosition === 'below' ? 'top-full' : 'bottom-full'
+          }`}
+          style={{ transform: tooltipPosition === 'below' ? 'translateY(4px)' : 'translateY(-4px)' }}
           onMouseEnter={show}
           onMouseLeave={hide}
         >
-          <span className="text-neutral-200 font-medium">{entry.meaning}</span>
           {bookmarked ? (
             <BookmarkCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
           ) : (
             <button
               onClick={onAdd}
-              className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white hover:bg-violet-600 transition-colors font-bold text-[11px] shrink-0 leading-none"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/18 text-violet-100 hover:bg-white/26 transition-colors"
             >
-              +
+              <Bookmark className="h-3 w-3" />
             </button>
           )}
+          <span className="text-neutral-200 font-medium">{entry?.meaning || word}</span>
         </span>
       )}
     </span>
@@ -546,6 +654,7 @@ function SubtitleText({
   isBlind,
   revealedCards,
   onRevealToggle,
+  forceTooltipBelow,
 }: {
   text: string
   vocabMap: Record<string, VocabEntry>
@@ -556,6 +665,7 @@ function SubtitleText({
   isBlind: boolean
   revealedCards: Set<string>
   onRevealToggle: (cardId: string) => void
+  forceTooltipBelow?: boolean
 }) {
   const tokens = useMemo(
     () => tokenizeSubtitle(text, vocabMap, bookmarks, currentLessonId),
@@ -569,19 +679,31 @@ function SubtitleText({
         if (token.type === 'plain') return <span key={i}>{token.text}</span>
 
         const { word, entry } = token
-        const isCurrentLesson = entry.lessonId === currentLessonId
-        const bookmarked = bookmarks.some((b) => b.cardId === entry.cardId)
+        const bookmark = bookmarks.find((b) => b.expression === word)
+        const resolvedEntry = entry ?? (bookmark
+          ? {
+              meaning: bookmark.meaning,
+              cardId: bookmark.cardId,
+              lessonId: bookmark.lessonId,
+              expression: bookmark.expression,
+              exampleSentence: bookmark.exampleSentence,
+              exampleTranslation: bookmark.exampleTranslation,
+            }
+          : undefined)
+        const isCurrentLesson = resolvedEntry?.lessonId === currentLessonId
+        const bookmarked = Boolean(bookmark || resolvedEntry && bookmarks.some((b) => b.cardId === resolvedEntry.cardId))
 
         const handleAdd = (e: React.MouseEvent) => {
           e.stopPropagation()
+          const expression = resolvedEntry?.expression ?? word
           addBookmark({
-            cardId: entry.cardId,
+            cardId: resolvedEntry?.cardId ?? `custom-${currentLessonId}-${expression}`,
             lessonId: currentLessonId,
             lessonTitle,
-            expression: entry.expression,
-            meaning: entry.meaning,
-            exampleSentence: entry.exampleSentence,
-            exampleTranslation: entry.exampleTranslation,
+            expression,
+            meaning: resolvedEntry?.meaning ?? expression,
+            exampleSentence: resolvedEntry?.exampleSentence ?? text,
+            exampleTranslation: resolvedEntry?.exampleTranslation ?? '',
           })
         }
 
@@ -589,13 +711,16 @@ function SubtitleText({
           <VocabToken
             key={i}
             word={word}
-            entry={entry}
-            isCurrentLesson={isCurrentLesson}
+            entry={resolvedEntry}
+            isCurrentLesson={Boolean(isCurrentLesson)}
             bookmarked={bookmarked}
             onAdd={handleAdd}
-            isBlind={isBlind}
-            revealed={revealedCards.has(entry.cardId)}
-            onRevealToggle={() => onRevealToggle(entry.cardId)}
+            isBlind={Boolean(resolvedEntry) && isBlind}
+            revealed={resolvedEntry ? revealedCards.has(resolvedEntry.cardId) : false}
+            onRevealToggle={() => {
+              if (resolvedEntry) onRevealToggle(resolvedEntry.cardId)
+            }}
+            forceTooltipBelow={forceTooltipBelow}
           />
         )
       })}
@@ -606,18 +731,23 @@ function SubtitleText({
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export default function WatchTab({ lessonId, onComplete }: { lessonId: string; onComplete?: () => void }) {
-  const { bookmarks, addBookmark } = useBookmarks()
+  const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentSec, setCurrentSec]     = useState(0)
   const [isPlaying, setIsPlaying]       = useState(false)
   const [speed, setSpeed]               = useState(1)
   const [isBlind, setIsBlind]           = useState(false)
   const [subtitleMode, setSubtitleMode] = useState<SubtitleDisplayMode>('bilingual')
+  const [sidePanelTab, setSidePanelTab] = useState<SidePanelTab>('transcript')
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
   const lineRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const completionFired = useRef(false)
 
   const vocabMap    = WATCH_VOCAB[lessonId] ?? {}
   const lessonTitle = MOCK_FLASHCARDS[lessonId]?.lessonTitle ?? ''
+  const culturalNotes = useMemo(
+    () => MOCK_CULTURAL_NOTES_BY_LESSON[lessonId] ?? [],
+    [lessonId],
+  )
   const mergedBookmarks = useMemo(() => {
     const mockBookmarks = MOCK_BOOKMARKS_BY_LESSON[lessonId] ?? []
     const bookmarkMap = new Map<string, BookmarkedCard>()
@@ -634,7 +764,6 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
   // 현재 자막 (currentSec 기준 마지막으로 시작된 라인)
   const activeLine = MOCK_SUBTITLES.slice().reverse().find((s) => currentSec >= s.startSec) ?? MOCK_SUBTITLES[0]
-
   // 시뮬레이션 타이머 — 종료 시 reachedEnd 플래그 설정
   const reachedEnd = useRef(false)
   useEffect(() => {
@@ -687,12 +816,32 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     vocabMap, bookmarks: mergedBookmarks, currentLessonId: lessonId, lessonTitle, addBookmark,
     isBlind, revealedCards, onRevealToggle: toggleReveal,
   }
+  const firstSubtitleId = MOCK_SUBTITLES[0]?.id
 
   const subtitleModeOptions: Array<{ value: SubtitleDisplayMode; label: string }> = [
     { value: 'bilingual', label: 'Dual' },
     { value: 'korean', label: 'Korean' },
     { value: 'english', label: 'English' },
   ]
+
+  const toggleSentenceBookmark = (line: SubtitleLine) => {
+    const sentenceBookmarkId = `sentence-${lessonId}-${line.id}`
+
+    if (isBookmarked(sentenceBookmarkId)) {
+      removeBookmark(sentenceBookmarkId)
+      return
+    }
+
+    addBookmark({
+      cardId: sentenceBookmarkId,
+      lessonId,
+      lessonTitle,
+      expression: line.korean,
+      meaning: line.english,
+      exampleSentence: line.korean,
+      exampleTranslation: line.english,
+    })
+  }
 
   return (
     <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -712,10 +861,14 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
         </div>
 
         {/* 현재 자막 (크게) */}
-        <div className="shrink-0 px-8 py-6 min-h-[120px] flex flex-col justify-center border-b border-neutral-800">
+        <div className="shrink-0 flex h-[220px] flex-col justify-start border-b border-neutral-800 px-8 py-6">
           {subtitleMode !== 'english' && (
-            <p className="text-white text-2xl font-semibold leading-snug">
-              <SubtitleText text={activeLine.korean} {...subtitleProps} />
+            <p className="text-white text-2xl font-semibold leading-[1.7]">
+              <SubtitleText
+                text={activeLine.korean}
+                forceTooltipBelow={activeLine.id === firstSubtitleId}
+                {...subtitleProps}
+              />
             </p>
           )}
           {subtitleMode !== 'korean' && (
@@ -795,79 +948,200 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
         </div>
       </div>
 
-      {/* ── 우: 자막 목록 ── */}
+      {/* ── 우: 자막 목록 / 문화 해설 ── */}
       <div className="w-80 shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900">
 
-        <div className="shrink-0 px-5 py-4 border-b border-neutral-800 flex items-center justify-between">
-          <p className="text-sm font-semibold text-white">Transcript</p>
-          <div className="flex items-center gap-2">
-            {/* 단어 색상 범례 안내 */}
-            <div className="relative group">
-              <button className="text-neutral-500 hover:text-neutral-300 transition-colors p-0.5">
-                <Info className="w-3.5 h-3.5" />
-              </button>
-              <div className="absolute right-0 top-full mt-1.5 z-50 invisible group-hover:visible bg-neutral-800 border border-neutral-700 rounded-xl px-3 py-2.5 shadow-xl w-44">
-                <p className="text-[10px] text-neutral-400 font-medium mb-2">Word labels</p>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded px-1 py-px text-[10px] font-medium text-neutral-100 bg-neutral-600/80 shrink-0">단어</span>
-                    <span className="text-[10px] text-neutral-400">Previously bookmarked</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded px-1 py-px text-[10px] font-semibold text-white bg-violet-600 shrink-0">
-                      단어
-                      <span className="flex h-3 w-3 items-center justify-center rounded-full bg-violet-400/60">
-                        <Check className="w-2 h-2 text-white" />
-                      </span>
-                    </span>
-                    <span className="text-[10px] text-neutral-400">Bookmarked in this flashcard lesson</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-medium text-violet-300 shrink-0">단어</span>
-                    <span className="text-[10px] text-neutral-400">Appeared in this flashcard lesson</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <span className="text-xs text-neutral-500">{MOCK_SUBTITLES.length} lines</span>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {MOCK_SUBTITLES.map((line) => {
-            const isActive = line.id === activeLine.id
-            return (
-              <div
-                key={line.id}
-                ref={(el) => { lineRefs.current[line.id] = el }}
-                onClick={() => setCurrentSec(line.startSec)}
-                className={`px-5 py-3.5 border-b border-neutral-800/60 cursor-pointer transition-all ${
-                  isActive ? 'bg-neutral-800 border-l-2 border-l-primary' : 'hover:bg-neutral-800/50'
+        <div className="shrink-0 border-b border-neutral-800">
+          <div className="px-5 pt-4">
+            <div className="inline-flex items-center rounded-pill border border-white/10 bg-white/5 p-1">
+              <button
+                onClick={() => setSidePanelTab('transcript')}
+                className={`rounded-pill px-3 py-1.5 text-xs font-medium transition-all ${
+                  sidePanelTab === 'transcript'
+                    ? 'bg-white text-neutral-950'
+                    : 'text-neutral-400 hover:text-white'
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  <span className={`text-[10px] font-mono shrink-0 mt-0.5 ${
-                    isActive ? 'text-primary font-bold' : 'text-neutral-500'
-                  }`}>
-                    {formatTime(line.startSec)}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    {subtitleMode !== 'english' && (
-                      <p className={`text-sm leading-relaxed ${isActive ? 'text-white font-medium' : 'text-neutral-300'}`}>
-                        <SubtitleText text={line.korean} {...subtitleProps} />
-                      </p>
-                    )}
-                    {subtitleMode !== 'korean' && (
-                      <p className={`text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'mt-0.5 text-neutral-500'}`}>
-                        {line.english}
-                      </p>
-                    )}
+                Transcript
+              </button>
+              <button
+                onClick={() => setSidePanelTab('culture')}
+                className={`rounded-pill px-3 py-1.5 text-xs font-medium transition-all ${
+                  sidePanelTab === 'culture'
+                    ? 'bg-white text-neutral-950'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                Cultural Notes
+              </button>
+            </div>
+          </div>
+          {sidePanelTab === 'transcript' ? (
+            <div className="px-5 py-4 flex items-center justify-between">
+              <p className="text-sm font-semibold text-white">Transcript</p>
+              <div className="flex items-center gap-2">
+                <div className="relative group">
+                  <button className="text-neutral-500 hover:text-neutral-300 transition-colors p-0.5">
+                    <Info className="w-3.5 h-3.5" />
+                  </button>
+                  <div className="absolute right-0 top-full mt-1.5 z-50 invisible group-hover:visible bg-neutral-800 border border-neutral-700 rounded-xl px-3 py-2.5 shadow-xl w-44">
+                    <p className="text-[10px] text-neutral-400 font-medium mb-2">Word labels</p>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded px-1 py-px text-[10px] font-medium text-neutral-100 bg-neutral-600/80 shrink-0">단어</span>
+                        <span className="text-[10px] text-neutral-400">Previously bookmarked</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 rounded px-1 py-px text-[10px] font-semibold text-white bg-violet-600 shrink-0">
+                          단어
+                          <span className="flex h-3 w-3 items-center justify-center rounded-full bg-violet-400/60">
+                            <Check className="w-2 h-2 text-white" />
+                          </span>
+                        </span>
+                        <span className="text-[10px] text-neutral-400">Bookmarked in this flashcard lesson</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-medium text-violet-300 shrink-0">단어</span>
+                        <span className="text-[10px] text-neutral-400">Appeared in this flashcard lesson</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
+                <span className="text-xs text-neutral-500">{MOCK_SUBTITLES.length} lines</span>
               </div>
-            )
-          })}
+            </div>
+          ) : (
+            <div className="px-5 py-4">
+              <p className="text-sm font-semibold text-white">Cultural Notes</p>
+            </div>
+          )}
         </div>
+
+        {sidePanelTab === 'transcript' ? (
+          <div className="flex-1 overflow-y-auto">
+            {MOCK_SUBTITLES.map((line) => {
+              const isActive = line.id === activeLine.id
+              const isSentenceBookmarked = isBookmarked(`sentence-${lessonId}-${line.id}`)
+              return (
+                <div
+                  key={line.id}
+                  ref={(el) => { lineRefs.current[line.id] = el }}
+                  onClick={() => setCurrentSec(line.startSec)}
+                  className={`px-5 py-3.5 border-b border-neutral-800/60 cursor-pointer transition-all ${
+                    isActive ? 'bg-neutral-800 border-l-2 border-l-primary' : 'hover:bg-neutral-800/50'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={`text-[10px] font-mono shrink-0 mt-0.5 ${
+                      isActive ? 'text-primary font-bold' : 'text-neutral-500'
+                    }`}>
+                      {formatTime(line.startSec)}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      {subtitleMode !== 'english' && (
+                        <p className={`text-sm leading-[1.9] ${
+                          isActive ? 'text-white font-medium' : 'text-neutral-300'
+                        }`}>
+                          <SubtitleText
+                            text={line.korean}
+                            forceTooltipBelow={line.id === firstSubtitleId}
+                            {...subtitleProps}
+                          />
+                        </p>
+                      )}
+                      {subtitleMode !== 'korean' && (
+                        <p className={`text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'mt-0.5 text-neutral-500'}`}>
+                          {line.english}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleSentenceBookmark(line)
+                      }}
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all ${
+                        isSentenceBookmarked
+                          ? 'border-primary/30 bg-primary/15 text-primary'
+                          : 'border-white/10 bg-white/5 text-neutral-500 hover:border-white/20 hover:bg-white/10 hover:text-white'
+                      }`}
+                      title={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
+                      aria-label={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
+                    >
+                      {isSentenceBookmarked ? (
+                        <BookmarkCheck className="h-3.5 w-3.5" />
+                      ) : (
+                        <Bookmark className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto px-5 py-4">
+            {culturalNotes.length === 0 ? (
+              <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-5">
+                <p className="text-sm font-medium text-white">No cultural notes yet</p>
+                <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+                  Add notes for slang, idioms, and local context when this lesson needs them.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {culturalNotes.map((note) => {
+                  const isFocused = note.subtitleId === activeLine.id
+                  const linkedSubtitle = MOCK_SUBTITLES.find((line) => line.id === note.subtitleId)
+                  return (
+                    <div
+                      key={note.id}
+                      onClick={() => {
+                        if (linkedSubtitle) setCurrentSec(linkedSubtitle.startSec)
+                      }}
+                      className={`cursor-pointer rounded-2xl border px-4 py-4 transition-all ${
+                        isFocused
+                          ? 'border-primary/30 bg-primary/[0.1] ring-1 ring-primary/20 shadow-[0_12px_28px_rgba(139,92,246,0.14)]'
+                          : 'border-white/8 bg-white/[0.03] hover:border-white/14 hover:bg-white/[0.05]'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className={`mt-0.5 h-12 w-1 shrink-0 rounded-full transition-colors ${
+                          isFocused ? 'bg-primary' : 'bg-transparent'
+                        }`} />
+                        <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                          <div>
+                            <h3 className={`text-base font-semibold ${isFocused ? 'text-white' : 'text-neutral-100'}`}>{note.title}</h3>
+                            <p className={`mt-1 text-[11px] font-medium uppercase tracking-[0.16em] ${
+                              isFocused ? 'text-primary/90' : 'text-primary/70'
+                            }`}>
+                              {note.keyword}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ${
+                            isFocused
+                              ? 'bg-primary/18 text-primary'
+                              : 'bg-white/6 text-neutral-500'
+                          }`}>
+                            {formatTime(linkedSubtitle?.startSec ?? 0)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="pl-4">
+                        <div>
+                          <p className={`mt-3 text-xs leading-6 ${isFocused ? 'text-violet-100' : 'text-violet-200'}`}>
+                            {note.explanation}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
