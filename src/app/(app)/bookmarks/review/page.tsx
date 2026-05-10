@@ -7,7 +7,7 @@ import { useBookmarks } from '@/hooks/useBookmarks'
 import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
 import { MOCK_SUBTITLES } from '@/components/features/watch/WatchTab'
-import { MOCK_DEMO_BOOKMARKS } from '../page'
+import { MOCK_DEMO_BOOKMARKS } from '@/data/mockBookmarks'
 import type { AnyFlashCard } from '@/components/features/flashcard/flashcard.types'
 
 function ReviewContent() {

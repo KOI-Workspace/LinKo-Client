@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search, ArrowUpDown, Youtube, X, Plus, Check, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import UrlInput from '@/components/features/home/UrlInput'
 import VideoCard from '@/components/features/home/VideoCard'
+import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
@@ -140,16 +141,6 @@ const MOCK_CHANNELS: ChannelData[] = [
 
 // ─── 서브 컴포넌트 ────────────────────────────────────────────────────────────
 
-/** 채널 이니셜 아바타 */
-function ChannelAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
-  const sizeClass = { sm: 'w-8 h-8 text-xs', md: 'w-14 h-14 text-sm', lg: 'w-16 h-16 text-base' }[size]
-  return (
-    <div className={`${sizeClass} rounded-full bg-primary-100 flex items-center justify-center font-bold text-primary shrink-0`}>
-      {name[0].toUpperCase()}
-    </div>
-  )
-}
-
 const CHANNEL_PAGE_SIZE = 12
 const COLLAPSED_COUNT = 5
 
@@ -188,7 +179,13 @@ function ChannelDetail({ channel, onUnsubscribe }: { channel: ChannelData; onUns
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {paginated.map((video) => (
-            <VideoCard key={video.id} {...video} showLearning={video.isLesson === true} fluid />
+            <VideoCard
+              key={video.id}
+              {...video}
+              showLearning={video.isLesson === true}
+              reserveLearningSpace
+              fluid
+            />
           ))}
         </div>
 
@@ -383,7 +380,7 @@ export default function ChannelsPage() {
             <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400" />
             {sortOrder === 'newest' ? 'Recently Added' : 'Oldest First'}
           </button>
-          <button className="ml-auto flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-white border border-neutral-200 rounded-lg text-neutral-600 hover:border-red-300 hover:text-red-600 transition-colors">
+          <button className="ml-auto flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-red-600 border border-red-600 rounded-lg text-white hover:bg-red-700 hover:border-red-700 transition-colors">
             <Youtube className="w-4 h-4" />
             Connect YouTube
           </button>
@@ -419,13 +416,11 @@ export default function ChannelsPage() {
                     onClick={() => handleBubbleClick(channel.id)}
                     className="flex flex-col items-center gap-2 group"
                   >
-                    <div className={`w-14 h-14 rounded-full bg-primary-100 ring-2 transition-all flex items-center justify-center ${
-                      isSelected ? 'ring-primary ring-offset-2' : 'ring-transparent group-hover:ring-primary-200'
-                    }`}>
-                      <span className={`text-sm font-bold ${isSelected ? 'text-primary' : 'text-primary group-hover:text-primary-700'}`}>
-                        {channel.name[0].toUpperCase()}
-                      </span>
-                    </div>
+                    <ChannelAvatar
+                      name={channel.name}
+                      selected={isSelected}
+                      className={!isSelected ? 'ring-2 ring-transparent group-hover:ring-primary-200 transition-all' : ''}
+                    />
                     <span className={`text-xs max-w-[64px] text-center truncate transition-colors ${
                       isSelected ? 'text-primary font-semibold' : 'text-neutral-500 group-hover:text-neutral-700'
                     }`}>
@@ -542,7 +537,7 @@ export default function ChannelsPage() {
                         className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                           isAdded
                             ? 'bg-neutral-100 text-neutral-400 cursor-default'
-                            : 'bg-primary text-white hover:bg-primary-700'
+                            : 'bg-neutral-950 text-white hover:bg-neutral-800'
                         }`}
                       >
                         {isAdded ? <><Check className="w-3 h-3" /> Added</> : <><Plus className="w-3 h-3" /> Add</>}

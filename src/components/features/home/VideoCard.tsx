@@ -18,6 +18,8 @@ export interface VideoCardProps {
   thumbnailUrl?: string
   /** false이면 학습 상태 배지·진행률 미표시 (Recommendations 등에 사용) */
   showLearning?: boolean
+  /** showLearning이 false여도 학습 상태 영역 높이를 예약할지 여부 */
+  reserveLearningSpace?: boolean
   /** true이면 w-full로 그리드 레이아웃에 맞춤 (기본값: false → w-[240px] 고정) */
   fluid?: boolean
 }
@@ -37,23 +39,36 @@ export function deriveDisplayStatus(
 
 
 /** 학습 활동 독립 pill — 완료 여부에 따라 색상만 변경 */
-function ActivityPill({
+export function ActivityPill({
   done,
   label,
   icon: Icon,
+  onClick,
+  className = '',
 }: {
   done: boolean
   label: string
   icon: React.ElementType
+  onClick?: (e: React.MouseEvent) => void
+  className?: string
 }) {
+  const baseClass = `flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${
+    done
+      ? 'bg-primary-50 text-primary border-primary-200'
+      : 'bg-neutral-50 text-neutral-400 border-neutral-200'
+  } ${className}`
+
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={`${baseClass} hover:shadow-sm hover:border-primary hover:text-primary`}>
+        <Icon className="w-3 h-3 shrink-0" />
+        {label}
+      </button>
+    )
+  }
+
   return (
-    <div
-      className={`flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-medium border transition-colors ${
-        done
-          ? 'bg-primary-50 text-primary border-primary-200'
-          : 'bg-neutral-50 text-neutral-400 border-neutral-200'
-      }`}
-    >
+    <div className={baseClass}>
       <Icon className="w-3 h-3 shrink-0" />
       {label}
     </div>
@@ -64,7 +79,7 @@ function ActivityPill({
  * 학습 상태 라벨 + 두 활동을 독립 pill로 표시
  * — 순서 무관, 각 활동의 완료 여부만 반영
  */
-function LearningSteps({
+export function LearningStatusPills({
   flashcardDone,
   subtitleDone,
 }: {
@@ -83,8 +98,8 @@ function LearningSteps({
         {statusLabel}
       </p>
       <div className="flex gap-2">
-        <ActivityPill done={flashcardDone} label="Flashcard" icon={CreditCard} />
-        <ActivityPill done={subtitleDone}  label="Watch"     icon={Captions} />
+        <ActivityPill done={flashcardDone} label="Flashcard" icon={CreditCard} className="flex-1" />
+        <ActivityPill done={subtitleDone}  label="Watch"     icon={Captions} className="flex-1" />
       </div>
     </div>
   )
@@ -103,6 +118,7 @@ export default function VideoCard({
   subtitleDone = false,
   thumbnailUrl,
   showLearning = true,
+  reserveLearningSpace = false,
   fluid = false,
 }: VideoCardProps) {
   const displayStatus = deriveDisplayStatus(generationStatus, flashcardDone, subtitleDone)
@@ -130,7 +146,7 @@ export default function VideoCard({
           {/* 높이를 맞추기 위한 보이지 않는 공간 (ready 카드의 LearningSteps 영역만큼 차지) */}
           {showLearning && (
             <div className="invisible">
-              <LearningSteps flashcardDone={false} subtitleDone={false} />
+              <LearningStatusPills flashcardDone={false} subtitleDone={false} />
             </div>
           )}
         </div>
@@ -170,7 +186,12 @@ export default function VideoCard({
           <p className="text-xs text-neutral-400">{date}</p>
         </div>
         {showLearning && (
-          <LearningSteps flashcardDone={flashcardDone} subtitleDone={subtitleDone} />
+          <LearningStatusPills flashcardDone={flashcardDone} subtitleDone={subtitleDone} />
+        )}
+        {!showLearning && reserveLearningSpace && (
+          <div className="invisible">
+            <LearningStatusPills flashcardDone={false} subtitleDone={false} />
+          </div>
         )}
       </div>
     </div>

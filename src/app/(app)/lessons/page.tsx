@@ -7,7 +7,7 @@ import {
   Loader2, ChevronDown, ArrowUpDown, Play, X,
 } from 'lucide-react'
 import UrlInput from '@/components/features/home/UrlInput'
-import { deriveDisplayStatus } from '@/components/features/home/VideoCard'
+import { ActivityPill, deriveDisplayStatus } from '@/components/features/home/VideoCard'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
 import { MOCK_LESSONS } from '@/data/mockLessons'
 
@@ -87,30 +87,6 @@ function LessonSelectModal({
 }
 
 // ─── 서브 컴포넌트 ────────────────────────────────────────────────────────────
-
-function ActivityPill({
-  done, label, icon: Icon, onClick,
-}: {
-  done: boolean; label: string; icon: React.ElementType; onClick?: (e: React.MouseEvent) => void
-}) {
-  const base = `flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium border transition-all ${
-    done
-      ? 'bg-primary-50 text-primary border-primary-200'
-      : 'bg-neutral-50 text-neutral-400 border-neutral-200'
-  }`
-  if (onClick) {
-    return (
-      <button onClick={onClick} className={`${base} hover:shadow-sm hover:border-primary hover:text-primary`}>
-        <Icon className="w-3 h-3 shrink-0" />{label}
-      </button>
-    )
-  }
-  return (
-    <div className={base}>
-      <Icon className="w-3 h-3 shrink-0" />{label}
-    </div>
-  )
-}
 
 function LessonRow({
   lesson,

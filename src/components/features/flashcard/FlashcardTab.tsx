@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import {
   Volume2, ChevronLeft, ChevronRight, Play,
   ExternalLink, Bookmark, BookmarkCheck,
@@ -9,6 +9,7 @@ import {
 import { MOCK_FLASHCARDS } from './mockFlashcards'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type {
+  AnyFlashCard,
   RelatedVideo, ConversationTurn, ConjugationBadge,
   EndingCard, EndingCategory, BadgePartDetail,
 } from './flashcard.types'
@@ -243,7 +244,10 @@ export default function FlashcardTab({
 
   // 데이터 결정: lessonId 기반 혹은 전달받은 overrideCards 기반
   const data = lessonId ? MOCK_FLASHCARDS[lessonId] : null
-  const cards = overrideCards || data?.cards || []
+  const cards = useMemo(
+    () => overrideCards || data?.cards || [],
+    [overrideCards, data]
+  )
 
   // 초기 카드 설정 (initialCardId가 있을 경우)
   useEffect(() => {

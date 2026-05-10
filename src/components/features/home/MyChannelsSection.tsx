@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ChevronRight, Search, X, Plus, Check } from 'lucide-react'
+import ChannelAvatar from './ChannelAvatar'
 
 interface ChannelBubble {
   id: string
@@ -73,15 +74,11 @@ export default function MyChannelsSection({ initialChannels }: MyChannelsSection
       <div className="flex items-start gap-5 flex-wrap">
         {channels.map((channel) => (
           <div key={channel.id} className="flex flex-col items-center gap-2 cursor-pointer group">
-            <div className="w-14 h-14 rounded-full bg-neutral-200 overflow-hidden ring-2 ring-transparent group-hover:ring-primary-200 transition-all">
-              {channel.profileImageUrl ? (
-                <img src={channel.profileImageUrl} alt={channel.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-sm font-bold text-neutral-500">
-                  {channel.name[0].toUpperCase()}
-                </div>
-              )}
-            </div>
+            <ChannelAvatar
+              name={channel.name}
+              profileImageUrl={channel.profileImageUrl}
+              className="ring-2 ring-transparent group-hover:ring-primary-200 transition-all"
+            />
             <span className="text-xs text-neutral-500 group-hover:text-neutral-700 transition-colors max-w-[64px] text-center truncate">
               {channel.name}
             </span>
@@ -163,7 +160,7 @@ export default function MyChannelsSection({ initialChannels }: MyChannelsSection
                         className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                           isAdded
                             ? 'bg-neutral-100 text-neutral-400 cursor-default'
-                            : 'bg-primary text-white hover:bg-primary-700'
+                            : 'bg-neutral-950 text-white hover:bg-neutral-800'
                         }`}
                       >
                         {isAdded ? (

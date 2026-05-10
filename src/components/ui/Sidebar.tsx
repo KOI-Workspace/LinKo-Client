@@ -3,11 +3,24 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, BookOpen, Bookmark, Settings, PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react'
+import {
+  Home,
+  BookOpen,
+  Bookmark,
+  Settings,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Sparkles,
+  Youtube,
+} from 'lucide-react'
 
 const NAV_ITEMS = [
-  { href: '/home',      label: 'Home',      icon: Home },
-  { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
+  { href: '/home',            label: 'Home',            icon: Home,      activePaths: ['/home'] },
+  { href: '/lessons',         label: 'My Lessons',      icon: BookOpen,  activePaths: ['/lessons'] },
+  { href: '/channels',        label: 'My Channels',     icon: Youtube,   activePaths: ['/channels'] },
+  { href: '/recommendations', label: 'Recommendations', icon: Sparkles,  activePaths: ['/recommendations'] },
+  { href: '/bookmarks',       label: 'Bookmarks',       icon: Bookmark,  activePaths: ['/bookmarks'] },
 ]
 
 /** 앱 전역 사이드바 — 접기/펼치기 토글 지원 */
@@ -63,8 +76,8 @@ export default function Sidebar() {
 
       {/* 내비게이션 */}
       <nav className="flex-1 px-2 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href
+        {NAV_ITEMS.map(({ href, label, icon: Icon, activePaths }) => {
+          const isActive = activePaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
           return (
             <Link
               key={href}
@@ -129,7 +142,7 @@ export default function Sidebar() {
                 <Settings className="w-3.5 h-3.5" />
               </button>
             </div>
-            <button className="w-full rounded-pill bg-primary text-white text-sm font-medium py-2.5 hover:bg-primary-700 transition-colors">
+            <button className="w-full rounded-pill bg-primary-100 text-primary-700 border border-primary-200 text-sm font-medium py-2.5 hover:bg-primary-200 transition-colors">
               Upgrade to Pro
             </button>
           </>

@@ -25,7 +25,7 @@ export default function UrlInput() {
       />
       <button
         onClick={handleSubmit}
-        className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-700 transition-colors shrink-0"
+        className="w-10 h-10 rounded-lg bg-neutral-950 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors shrink-0"
         aria-label="학습자료 생성"
       >
         <ArrowUp className="w-4 h-4" />

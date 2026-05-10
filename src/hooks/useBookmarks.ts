@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import type { ConjugationBadge } from '@/components/features/flashcard/flashcard.types'
 
 export interface BookmarkedCard {
   cardId: string
@@ -13,7 +14,7 @@ export interface BookmarkedCard {
   savedAt: string
   type?: 'sentence' | 'expression'
   subType?: 'word' | 'ending'
-  conjugationBadges?: any[]
+  conjugationBadges?: ConjugationBadge[]
   baseWord?: string
 }
 
