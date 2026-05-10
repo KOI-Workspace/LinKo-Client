@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, ChevronLeft, ChevronRight, CreditCard, Captions,
-  Loader2, ChevronDown, ArrowUpDown, Play, X,
+  Loader2, ChevronDown, ArrowUpDown, Play,
 } from 'lucide-react'
 import UrlInput from '@/components/features/home/UrlInput'
 import { ActivityPill, deriveDisplayStatus } from '@/components/features/home/VideoCard'
@@ -18,86 +18,16 @@ type SortOrder   = 'newest' | 'oldest'
 
 const PAGE_SIZE = 10
 
-// ─── 선택 모달 ────────────────────────────────────────────────────────────────
-
-function LessonSelectModal({
-  lesson,
-  onClose,
-}: {
-  lesson: LessonData
-  onClose: () => void
-}) {
-  const router = useRouter()
-
-  const go = (tab: 'flashcard' | 'watch') => {
-    router.push(`/lessons/${lesson.id}?tab=${tab}`)
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
-        {/* 헤더 */}
-        <div className="flex items-start justify-between p-5 pb-4">
-          <div className="flex-1 min-w-0 pr-3">
-            <p className="text-xs text-neutral-400 mb-0.5">Start learning</p>
-            <p className="text-sm font-semibold text-neutral-950 truncate">{lesson.title}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* 선택지 */}
-        <div className="px-4 pb-5 grid grid-cols-2 gap-3">
-          <button
-            onClick={() => go('flashcard')}
-            className="flex flex-col items-center gap-2.5 py-5 px-3 rounded-xl border-2 border-neutral-200 hover:border-primary hover:bg-primary-50 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-neutral-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
-              <CreditCard className="w-5 h-5 text-neutral-500 group-hover:text-primary transition-colors" strokeWidth={1.5} />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-neutral-800 group-hover:text-primary transition-colors">Flashcard</p>
-              <p className="text-[10px] text-neutral-400 mt-0.5">Study key expressions</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => go('watch')}
-            className="flex flex-col items-center gap-2.5 py-5 px-3 rounded-xl border-2 border-neutral-200 hover:border-primary hover:bg-primary-50 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-neutral-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
-              <Captions className="w-5 h-5 text-neutral-500 group-hover:text-primary transition-colors" strokeWidth={1.5} />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-neutral-800 group-hover:text-primary transition-colors">Watch</p>
-              <p className="text-[10px] text-neutral-400 mt-0.5">Watch with subtitles</p>
-            </div>
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ─── 서브 컴포넌트 ────────────────────────────────────────────────────────────
 
 function LessonRow({
   lesson,
-  onPillClick,
-  onRowClick,
 }: {
   lesson: LessonData
-  onPillClick: (id: string, tab: 'flashcard' | 'watch') => void
-  onRowClick: (lesson: LessonData) => void
 }) {
   const isGenerating = lesson.generationStatus === 'generating'
+  const flashcardHref = `/lessons/${lesson.id}?tab=flashcard`
+  const watchHref = `/lessons/${lesson.id}?tab=watch`
   const displayStatus = isGenerating
     ? null
     : deriveDisplayStatus(lesson.generationStatus, lesson.flashcardDone, lesson.subtitleDone)
@@ -110,76 +40,79 @@ function LessonRow({
 
   return (
     <div
-      onClick={() => !isGenerating && onRowClick(lesson)}
       className={`flex items-center gap-4 px-4 py-3 rounded-xl bg-white border border-neutral-200 hover:border-neutral-300 hover:shadow-sm transition-all duration-150 group ${
         isGenerating ? 'cursor-default' : 'cursor-pointer'
       }`}
     >
-      {/* 썸네일 */}
-      <div className="relative w-32 aspect-video rounded-lg bg-neutral-100 shrink-0 overflow-hidden">
-        {lesson.thumbnailUrl ? (
-          <img src={lesson.thumbnailUrl} alt={lesson.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            {isGenerating
-              ? <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" strokeWidth={1.5} />
-              : <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
-                  <Play className="w-5 h-5 text-neutral-300" strokeWidth={1.5} />
-                </div>
-            }
-          </div>
-        )}
-        {lesson.duration && !isGenerating && (
-          <span className="absolute bottom-1 right-1 text-[10px] font-medium px-1 py-0.5 rounded bg-black/70 text-white">
-            {lesson.duration}
-          </span>
-        )}
-      </div>
-
-      {/* 정보 */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            {lesson.channelName && (
-              <p className="text-xs text-neutral-400 mb-0.5 truncate">{lesson.channelName}</p>
-            )}
-            <p className="text-sm font-semibold text-neutral-950 truncate group-hover:text-primary transition-colors">
-              {lesson.title}
-            </p>
-            <p className="text-xs text-neutral-400 mt-0.5">{lesson.date}</p>
-          </div>
-
-          <div className="shrink-0 flex flex-col items-end gap-1.5">
-            {isGenerating ? (
-              <span className="flex items-center gap-1 text-xs text-neutral-400">
-                <Loader2 className="w-3 h-3 animate-spin" strokeWidth={1.5} />
-                {lesson.minutesLeft != null ? `~${lesson.minutesLeft} min left` : 'Processing...'}
-              </span>
-            ) : (
-              <>
-                {statusLabel && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                    {statusLabel}
-                  </span>
-                )}
-                <div className="flex gap-1.5">
-                  <ActivityPill
-                    done={lesson.flashcardDone ?? false}
-                    label="Flashcard"
-                    icon={CreditCard}
-                    onClick={(e) => { e.stopPropagation(); onPillClick(lesson.id, 'flashcard') }}
-                  />
-                  <ActivityPill
-                    done={lesson.subtitleDone ?? false}
-                    label="Watch"
-                    icon={Captions}
-                    onClick={(e) => { e.stopPropagation(); onPillClick(lesson.id, 'watch') }}
-                  />
-                </div>
-              </>
-            )}
-          </div>
+      <a
+        href={isGenerating ? undefined : flashcardHref}
+        aria-disabled={isGenerating}
+        className="flex flex-1 min-w-0 items-center gap-4"
+      >
+        {/* 썸네일 */}
+        <div className="relative w-32 aspect-video rounded-lg bg-neutral-100 shrink-0 overflow-hidden">
+          {lesson.thumbnailUrl ? (
+            <img src={lesson.thumbnailUrl} alt={lesson.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              {isGenerating
+                ? <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" strokeWidth={1.5} />
+                : <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
+                    <Play className="w-5 h-5 text-neutral-300" strokeWidth={1.5} />
+                  </div>
+              }
+            </div>
+          )}
+          {lesson.duration && !isGenerating && (
+            <span className="absolute bottom-1 right-1 text-[10px] font-medium px-1 py-0.5 rounded bg-black/70 text-white">
+              {lesson.duration}
+            </span>
+          )}
         </div>
+
+        {/* 정보 */}
+        <div className="flex-1 min-w-0">
+          {lesson.channelName && (
+            <p className="text-xs text-neutral-400 mb-0.5 truncate">{lesson.channelName}</p>
+          )}
+          <p className="text-sm font-semibold text-neutral-950 truncate group-hover:text-primary transition-colors">
+            {lesson.title}
+          </p>
+          <p className="text-xs text-neutral-400 mt-0.5">{lesson.date}</p>
+        </div>
+      </a>
+
+      <div className="shrink-0 flex flex-col items-end gap-1.5">
+        {isGenerating ? (
+          <span className="flex items-center gap-1 text-xs text-neutral-400">
+            <Loader2 className="w-3 h-3 animate-spin" strokeWidth={1.5} />
+            {lesson.minutesLeft != null ? `~${lesson.minutesLeft} min left` : 'Processing...'}
+          </span>
+        ) : (
+          <>
+            {statusLabel && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                {statusLabel}
+              </span>
+            )}
+            <div className="flex gap-1.5">
+              <a href={flashcardHref}>
+                <ActivityPill
+                  done={lesson.flashcardDone ?? false}
+                  label="Flashcard"
+                  icon={CreditCard}
+                />
+              </a>
+              <a href={watchHref}>
+                <ActivityPill
+                  done={lesson.subtitleDone ?? false}
+                  label="Watch"
+                  icon={Captions}
+                />
+              </a>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -219,7 +152,6 @@ export default function LessonsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortOrder, setSortOrder]     = useState<SortOrder>('newest')
   const [page, setPage]               = useState(1)
-  const [selectModal, setSelectModal] = useState<LessonData | null>(null)
 
   const filtered = useMemo(() => {
     let result = MOCK_LESSONS
@@ -248,22 +180,8 @@ export default function LessonsPage() {
   const currentPage  = Math.min(page, totalPages)
   const paginated    = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
-  const handlePillClick = (id: string, tab: 'flashcard' | 'watch') => {
-    router.push(`/lessons/${id}?tab=${tab}`)
-  }
-
-  const handleRowClick = (lesson: LessonData) => {
-    if (lesson.generationStatus !== 'ready') return
-    router.push(`/lessons/${lesson.id}?tab=flashcard`)
-  }
-
   return (
-    <>
-      {selectModal && (
-        <LessonSelectModal lesson={selectModal} onClose={() => setSelectModal(null)} />
-      )}
-
-      <div className="min-h-full">
+    <div className="min-h-full">
         {/* 히어로 */}
         <div className="bg-gradient-to-b from-primary-50 to-white px-10 pt-10 pb-10 border-b border-neutral-100">
           <p className="text-xs font-medium text-primary-600 uppercase tracking-widest mb-3">Start Learning</p>
@@ -332,8 +250,6 @@ export default function LessonsPage() {
                 <LessonRow
                   key={lesson.id}
                   lesson={lesson}
-                  onPillClick={handlePillClick}
-                  onRowClick={handleRowClick}
                 />
               ))}
             </div>
@@ -347,6 +263,5 @@ export default function LessonsPage() {
           <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
         </div>
       </div>
-    </>
   )
 }

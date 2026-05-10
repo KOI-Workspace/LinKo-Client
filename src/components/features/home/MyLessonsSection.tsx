@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { ChevronRight, Clock, BookOpen, Check, Youtube, Sparkles } from 'lucide-react'
 import VideoCard, { deriveDisplayStatus } from './VideoCard'
 import type { VideoCardProps, LessonDisplayStatus, LessonFilterStatus } from './VideoCard'
@@ -44,7 +43,6 @@ function EmptyLessons() {
 
 export default function MyLessonsSection({ lessons }: MyLessonsSectionProps) {
   const [filter, setFilter] = useState<LessonFilterStatus>('all')
-  const router = useRouter()
 
   /** 각 표시 상태별 카운트 */
   const counts = lessons.reduce(
@@ -134,23 +132,14 @@ export default function MyLessonsSection({ lessons }: MyLessonsSectionProps) {
           <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
             {filtered.length > 0 ? (
               filtered.map((lesson) => (
-                <div
+                <a
                   key={lesson.id}
-                  role="button"
-                  tabIndex={lesson.generationStatus === 'ready' ? 0 : -1}
+                  href={lesson.generationStatus === 'ready' ? `/lessons/${lesson.id}?tab=flashcard` : undefined}
                   aria-disabled={lesson.generationStatus !== 'ready'}
-                  onClick={() => lesson.generationStatus === 'ready' && router.push(`/lessons/${lesson.id}?tab=flashcard`)}
-                  onKeyDown={(e) => {
-                    if (lesson.generationStatus !== 'ready') return
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      router.push(`/lessons/${lesson.id}?tab=flashcard`)
-                    }
-                  }}
                   className={lesson.generationStatus === 'ready' ? 'cursor-pointer text-left' : 'text-left cursor-default'}
                 >
                   <VideoCard {...lesson} />
-                </div>
+                </a>
               ))
             ) : (
               <p className="text-sm text-neutral-400 py-4">No lessons in this status.</p>

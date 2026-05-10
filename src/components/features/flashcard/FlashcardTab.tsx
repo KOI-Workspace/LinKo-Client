@@ -242,8 +242,15 @@ export default function FlashcardTab({
 
   const isReviewMode = mode === 'review'
 
-  // 데이터 결정: lessonId 기반 혹은 전달받은 overrideCards 기반
-  const data = lessonId ? MOCK_FLASHCARDS[lessonId] : null
+  // 목업 데이터가 없는 레슨도 학습 화면을 확인할 수 있도록 기본 카드 세트를 재사용합니다.
+  const data = useMemo(() => {
+    if (!lessonId) return null
+    return MOCK_FLASHCARDS[lessonId] ?? {
+      ...MOCK_FLASHCARDS['3'],
+      lessonId,
+      lessonTitle: 'Generated lesson preview',
+    }
+  }, [lessonId])
   const cards = useMemo(
     () => overrideCards || data?.cards || [],
     [overrideCards, data]
