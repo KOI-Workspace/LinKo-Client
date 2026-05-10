@@ -1113,7 +1113,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
                           <div>
                             <h3 className={`text-base font-semibold ${isFocused ? 'text-white' : 'text-neutral-100'}`}>{note.title}</h3>
                             <p className={`mt-1 text-[11px] font-medium uppercase tracking-[0.16em] ${
-                              isFocused ? 'text-primary/90' : 'text-primary/70'
+                              isFocused ? 'text-primary-300' : 'text-primary-300/70'
                             }`}>
                               {note.keyword}
                             </p>
@@ -1130,7 +1130,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
                       <div className="pl-4">
                         <div>
-                          <p className={`mt-3 text-xs leading-6 ${isFocused ? 'text-violet-100' : 'text-violet-200'}`}>
+                          <p className={`mt-3 text-xs leading-6 ${isFocused ? 'text-white' : 'text-neutral-200'}`}>
                             {note.explanation}
                           </p>
                         </div>
