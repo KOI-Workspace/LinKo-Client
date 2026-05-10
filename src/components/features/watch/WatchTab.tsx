@@ -503,7 +503,7 @@ function VocabToken({
             className={`ml-[0.02em] flex h-[0.94em] w-[0.94em] shrink-0 items-center justify-center rounded-full ${
               isHidden
                 ? 'bg-white/14 ring-1 ring-white/10'
-                : 'bg-white/16 ring-1 ring-white/12'
+                : 'bg-white/14 ring-1 ring-white/10'
             }`}
           >
             <Check className={`h-[0.52em] w-[0.52em] ${isHidden ? 'text-white/75' : 'text-white'}`} />
@@ -689,8 +689,8 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   }
 
   const subtitleModeOptions: Array<{ value: SubtitleDisplayMode; label: string }> = [
-    { value: 'bilingual', label: '이중자막' },
-    { value: 'korean', label: '한국어' },
+    { value: 'bilingual', label: 'Dual' },
+    { value: 'korean', label: 'Korean' },
     { value: 'english', label: 'English' },
   ]
 
@@ -719,7 +719,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
             </p>
           )}
           {subtitleMode !== 'korean' && (
-            <p className={`text-base leading-relaxed ${subtitleMode === 'english' ? 'text-white text-2xl font-semibold' : 'mt-2 text-neutral-400'}`}>
+            <p className={`text-2xl leading-relaxed ${subtitleMode === 'english' ? 'text-white font-semibold' : 'mt-2 text-neutral-400'}`}>
               {activeLine.english}
             </p>
           )}
@@ -858,7 +858,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
                       </p>
                     )}
                     {subtitleMode !== 'korean' && (
-                      <p className={`leading-relaxed ${subtitleMode === 'english' ? 'text-sm text-neutral-200' : 'mt-0.5 text-xs text-neutral-500'}`}>
+                      <p className={`text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'mt-0.5 text-neutral-500'}`}>
                         {line.english}
                       </p>
                     )}
