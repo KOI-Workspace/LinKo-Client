@@ -41,7 +41,6 @@ type SubtitleDisplayMode = 'bilingual' | 'korean' | 'english'
 type SidePanelTab = 'transcript' | 'culture'
 
 const SIDE_PANEL_MIN_WIDTH = 280
-const SIDE_PANEL_MAX_WIDTH = 520
 const SIDE_PANEL_DEFAULT_WIDTH = 336
 
 interface CulturalNote {
@@ -850,7 +849,8 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
     const handleMouseMove = (event: MouseEvent) => {
       const nextWidth = window.innerWidth - event.clientX
-      setSidePanelWidth(Math.min(SIDE_PANEL_MAX_WIDTH, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
+      const maxWidth = Math.floor(window.innerWidth / 2)
+      setSidePanelWidth(Math.min(maxWidth, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
     }
 
     const handleMouseUp = () => {
