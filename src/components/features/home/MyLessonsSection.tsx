@@ -136,8 +136,18 @@ export default function MyLessonsSection({ lessons }: MyLessonsSectionProps) {
               filtered.map((lesson) => (
                 <div
                   key={lesson.id}
-                  onClick={() => lesson.generationStatus === 'ready' && router.push(`/lessons/${lesson.id}`)}
-                  className={lesson.generationStatus === 'ready' ? 'cursor-pointer' : ''}
+                  role="button"
+                  tabIndex={lesson.generationStatus === 'ready' ? 0 : -1}
+                  aria-disabled={lesson.generationStatus !== 'ready'}
+                  onClick={() => lesson.generationStatus === 'ready' && router.push(`/lessons/${lesson.id}?tab=flashcard`)}
+                  onKeyDown={(e) => {
+                    if (lesson.generationStatus !== 'ready') return
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      router.push(`/lessons/${lesson.id}?tab=flashcard`)
+                    }
+                  }}
+                  className={lesson.generationStatus === 'ready' ? 'cursor-pointer text-left' : 'text-left cursor-default'}
                 >
                   <VideoCard {...lesson} />
                 </div>

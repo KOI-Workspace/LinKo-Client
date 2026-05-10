@@ -995,15 +995,18 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
       </div>
 
       {/* ── 우: 자막 목록 / 문화 해설 ── */}
-      {isSidePanelOpen ? (
       <div
-        className="relative shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900"
-        style={{ width: sidePanelWidth }}
+        className={`relative shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden transition-[width] duration-300 ease-in-out ${
+          isSidePanelOpen ? '' : 'w-12'
+        }`}
+        style={{ width: isSidePanelOpen ? sidePanelWidth : 48 }}
       >
         <button
           type="button"
           onMouseDown={() => setIsResizingSidePanel(true)}
-          className="absolute -left-1.5 top-0 z-20 flex h-full w-3 cursor-col-resize items-center justify-center text-neutral-600 hover:text-neutral-300"
+          className={`absolute -left-1.5 top-0 z-20 flex h-full w-3 cursor-col-resize items-center justify-center text-neutral-600 hover:text-neutral-300 transition-opacity duration-300 ${
+            isSidePanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
           aria-label="자막 패널 너비 조정"
         >
           <span className="flex h-12 w-3 items-center justify-center rounded-full bg-neutral-800/80 opacity-0 transition-opacity hover:opacity-100">
@@ -1011,7 +1014,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
           </span>
         </button>
 
-        <div className="shrink-0 border-b border-neutral-800">
+        <div className={`shrink-0 border-b border-neutral-800 transition-opacity duration-300 ${isSidePanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <div className="px-5 pt-4 flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-5">
               <button
@@ -1085,7 +1088,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
           )}
         </div>
 
-        {sidePanelTab === 'transcript' ? (
+        {isSidePanelOpen && sidePanelTab === 'transcript' ? (
           <div className="flex-1 overflow-y-auto">
             {MOCK_SUBTITLES.map((line) => {
               const isActive = line.id === activeLine.id
@@ -1147,7 +1150,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
               )
             })}
           </div>
-        ) : (
+        ) : isSidePanelOpen ? (
           <div className="flex-1 overflow-y-auto px-5 py-4">
             {culturalNotes.length === 0 ? (
               <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-5">
@@ -1209,20 +1212,19 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
               </div>
             )}
           </div>
-        )}
-      </div>
-      ) : (
-        <div className="w-12 shrink-0 border-l border-neutral-800 bg-neutral-900 px-2 py-4">
+        ) : (
+          <div className="absolute inset-0 flex items-start justify-center bg-neutral-900">
           <button
             onClick={() => setIsSidePanelOpen(true)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+            className="mt-4 flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="자막 패널 펼치기"
             title="자막 패널 펼치기"
           >
             <PanelRightOpen className="h-4 w-4" />
           </button>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

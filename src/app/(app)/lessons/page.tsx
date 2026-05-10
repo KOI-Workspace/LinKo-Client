@@ -253,7 +253,8 @@ export default function LessonsPage() {
   }
 
   const handleRowClick = (lesson: LessonData) => {
-    setSelectModal(lesson)
+    if (lesson.generationStatus !== 'ready') return
+    router.push(`/lessons/${lesson.id}?tab=flashcard`)
   }
 
   return (
