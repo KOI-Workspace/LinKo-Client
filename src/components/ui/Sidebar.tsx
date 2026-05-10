@@ -7,7 +7,6 @@ import { Home, BookOpen, Bookmark, Settings, PanelLeftClose, PanelLeftOpen, Plus
 
 const NAV_ITEMS = [
   { href: '/home',      label: 'Home',      icon: Home },
-  { href: '/study',     label: 'My Study',  icon: BookOpen },
   { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
 ]
 
