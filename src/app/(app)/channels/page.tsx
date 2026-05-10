@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ArrowUpDown, Youtube, X, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ArrowUpDown, Youtube, X, Plus, Check, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import UrlInput from '@/components/features/home/UrlInput'
 import VideoCard from '@/components/features/home/VideoCard'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
@@ -151,6 +151,7 @@ function ChannelAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md'
 }
 
 const CHANNEL_PAGE_SIZE = 12
+const COLLAPSED_COUNT = 5
 
 /** 선택된 채널 상세 패널 */
 function ChannelDetail({ channel, onUnsubscribe }: { channel: ChannelData; onUnsubscribe: () => void }) {
@@ -259,6 +260,7 @@ export default function ChannelsPage() {
   const [popoverId, setPopoverId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [addSearch, setAddSearch] = useState('')
+  const [isExpanded, setIsExpanded] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
 
   // 팝오버 외부 클릭 시 닫기
@@ -282,6 +284,10 @@ export default function ChannelsPage() {
       sortOrder === 'newest' ? a.addedOrder - b.addedOrder : b.addedOrder - a.addedOrder
     )
   }, [channels, search, sortOrder])
+
+  const isSearching = search.trim() !== ''
+  const displayedChannels = isSearching || isExpanded ? filtered : filtered.slice(0, COLLAPSED_COUNT)
+  const hasMore = !isSearching && filtered.length > COLLAPSED_COUNT
 
   const selectedChannel = filtered.find((c) => c.id === selectedId) ?? filtered[0] ?? null
 
@@ -383,61 +389,79 @@ export default function ChannelsPage() {
           </button>
         </div>
 
-        {/* 채널 버블 목록 — 가로 스크롤 한 줄 고정 */}
-        <div className="flex gap-5 overflow-x-auto py-2" ref={popoverRef}>
-          {/* 채널 추가 버튼 */}
-          <div className="flex flex-col items-center gap-2">
-            <button
-              onClick={() => { setShowAddModal(true); setAddSearch('') }}
-              className="w-14 h-14 rounded-full bg-white border-2 border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xl hover:border-primary-400 hover:text-primary hover:bg-primary-50 transition-all"
-            >
-              +
-            </button>
-            <span className="text-xs text-neutral-400">Add</span>
+        {/* 채널 버블 목록 — 펼치기/접기 그리드 */}
+        <div ref={popoverRef}>
+          <div className="flex flex-wrap gap-x-6 gap-y-5 py-2">
+            {/* 채널 추가 버튼 — 검색 중일 때 숨김 */}
+            {!isSearching && (
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => { setShowAddModal(true); setAddSearch('') }}
+                  className="w-14 h-14 rounded-full bg-white border-2 border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 text-xl hover:border-primary-400 hover:text-primary hover:bg-primary-50 transition-all"
+                >
+                  +
+                </button>
+                <span className="text-xs text-neutral-400">Add</span>
+              </div>
+            )}
+
+            {filtered.length === 0 && (
+              <p className="text-sm text-neutral-400 self-center">No channels found.</p>
+            )}
+
+            {/* 채널 버블들 */}
+            {displayedChannels.map((channel) => {
+              const isSelected = (selectedChannel?.id === channel.id)
+              const isPopoverOpen = popoverId === channel.id
+              return (
+                <div key={channel.id} className="relative flex flex-col items-center gap-2">
+                  <button
+                    onClick={() => handleBubbleClick(channel.id)}
+                    className="flex flex-col items-center gap-2 group"
+                  >
+                    <div className={`w-14 h-14 rounded-full bg-primary-100 ring-2 transition-all flex items-center justify-center ${
+                      isSelected ? 'ring-primary ring-offset-2' : 'ring-transparent group-hover:ring-primary-200'
+                    }`}>
+                      <span className={`text-sm font-bold ${isSelected ? 'text-primary' : 'text-primary group-hover:text-primary-700'}`}>
+                        {channel.name[0].toUpperCase()}
+                      </span>
+                    </div>
+                    <span className={`text-xs max-w-[64px] text-center truncate transition-colors ${
+                      isSelected ? 'text-primary font-semibold' : 'text-neutral-500 group-hover:text-neutral-700'
+                    }`}>
+                      {channel.name}
+                    </span>
+                  </button>
+
+                  {/* Unsubscribe 팝오버 */}
+                  {isPopoverOpen && (
+                    <div className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 z-20 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 min-w-[120px]">
+                      <button
+                        onClick={() => handleUnsubscribe(channel.id)}
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
+                      >
+                        Unsubscribe
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
-          {filtered.length === 0 && (
-            <p className="text-sm text-neutral-400 self-center">No channels found.</p>
+          {/* 펼치기/접기 토글 */}
+          {hasMore && (
+            <button
+              onClick={() => setIsExpanded((v) => !v)}
+              className="mt-3 flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-neutral-700 transition-colors"
+            >
+              {isExpanded ? (
+                <><ChevronUp className="w-3.5 h-3.5" />Show less</>
+              ) : (
+                <><ChevronDown className="w-3.5 h-3.5" />Show all {filtered.length} channels</>
+              )}
+            </button>
           )}
-
-          {/* 채널 버블들 */}
-          {filtered.map((channel) => {
-            const isSelected = (selectedChannel?.id === channel.id)
-            const isPopoverOpen = popoverId === channel.id
-            return (
-              <div key={channel.id} className="relative flex flex-col items-center gap-2">
-                <button
-                  onClick={() => handleBubbleClick(channel.id)}
-                  className="flex flex-col items-center gap-2 group"
-                >
-                  <div className={`w-14 h-14 rounded-full bg-primary-100 ring-2 transition-all flex items-center justify-center ${
-                    isSelected ? 'ring-primary ring-offset-2' : 'ring-transparent group-hover:ring-primary-200'
-                  }`}>
-                    <span className={`text-sm font-bold ${isSelected ? 'text-primary' : 'text-primary group-hover:text-primary-700'}`}>
-                      {channel.name[0].toUpperCase()}
-                    </span>
-                  </div>
-                  <span className={`text-xs max-w-[64px] text-center truncate transition-colors ${
-                    isSelected ? 'text-primary font-semibold' : 'text-neutral-500 group-hover:text-neutral-700'
-                  }`}>
-                    {channel.name}
-                  </span>
-                </button>
-
-                {/* Unsubscribe 팝오버 */}
-                {isPopoverOpen && (
-                  <div className="absolute top-[calc(100%+6px)] left-1/2 -translate-x-1/2 z-20 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 min-w-[120px]">
-                    <button
-                      onClick={() => handleUnsubscribe(channel.id)}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
-                    >
-                      Unsubscribe
-                    </button>
-                  </div>
-                )}
-              </div>
-            )
-          })}
         </div>
 
         {/* 선택된 채널 상세 — key로 채널 전환 시 페이지 초기화 */}

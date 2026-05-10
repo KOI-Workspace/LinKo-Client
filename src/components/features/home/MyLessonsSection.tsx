@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ChevronRight, Clock, BookOpen, Check, Youtube, Sparkles } from 'lucide-react'
 import VideoCard, { deriveDisplayStatus } from './VideoCard'
 import type { VideoCardProps, LessonDisplayStatus, LessonFilterStatus } from './VideoCard'
@@ -43,6 +44,7 @@ function EmptyLessons() {
 
 export default function MyLessonsSection({ lessons }: MyLessonsSectionProps) {
   const [filter, setFilter] = useState<LessonFilterStatus>('all')
+  const router = useRouter()
 
   /** 각 표시 상태별 카운트 */
   const counts = lessons.reduce(
@@ -131,7 +133,15 @@ export default function MyLessonsSection({ lessons }: MyLessonsSectionProps) {
           {/* 카드 목록 */}
           <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-1">
             {filtered.length > 0 ? (
-              filtered.map((lesson) => <VideoCard key={lesson.id} {...lesson} />)
+              filtered.map((lesson) => (
+                <div
+                  key={lesson.id}
+                  onClick={() => lesson.generationStatus === 'ready' && router.push(`/lessons/${lesson.id}`)}
+                  className={lesson.generationStatus === 'ready' ? 'cursor-pointer' : ''}
+                >
+                  <VideoCard {...lesson} />
+                </div>
+              ))
             ) : (
               <p className="text-sm text-neutral-400 py-4">No lessons in this status.</p>
             )}
