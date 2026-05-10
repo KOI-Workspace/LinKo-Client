@@ -14,6 +14,7 @@ export interface BookmarkedCard {
   type?: 'sentence' | 'expression'
   subType?: 'word' | 'ending'
   conjugationBadges?: any[]
+  baseWord?: string
 }
 
 const STORAGE_KEY = 'linko_bookmarks'

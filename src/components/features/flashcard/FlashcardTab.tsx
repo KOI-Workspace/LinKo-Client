@@ -285,12 +285,13 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
           lessonId: data.lessonId,
           lessonTitle: data.lessonTitle,
           expression: card.conjugatedForm,
-          meaning: `(${card.ending}) ${card.endingMeaning}`,
+          meaning: card.baseWordMeaning || card.endingMeaning,
           exampleSentence: card.scriptSentence,
           exampleTranslation: card.scriptTranslation,
           type: 'expression',
           subType: 'ending',
           conjugationBadges: card.conjugationBadges,
+          baseWord: card.baseWord,
         })
       } else {
         addBookmark({
