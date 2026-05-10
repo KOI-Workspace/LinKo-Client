@@ -25,6 +25,8 @@ interface SubtitleLine {
   english: string
 }
 
+type SubtitleDisplayMode = 'bilingual' | 'korean' | 'english'
+
 // ─── 레슨별 단어 매핑 (자막에 나오는 텍스트 형태 → 플래시카드 정보) ─────────────────
 
 const WATCH_VOCAB: Record<string, Record<string, VocabEntry>> = {
@@ -609,6 +611,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   const [isPlaying, setIsPlaying]       = useState(false)
   const [speed, setSpeed]               = useState(1)
   const [isBlind, setIsBlind]           = useState(false)
+  const [subtitleMode, setSubtitleMode] = useState<SubtitleDisplayMode>('bilingual')
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
   const lineRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const completionFired = useRef(false)
@@ -685,6 +688,12 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     isBlind, revealedCards, onRevealToggle: toggleReveal,
   }
 
+  const subtitleModeOptions: Array<{ value: SubtitleDisplayMode; label: string }> = [
+    { value: 'bilingual', label: '이중자막' },
+    { value: 'korean', label: '한국어' },
+    { value: 'english', label: 'English' },
+  ]
+
   return (
     <div className="flex flex-1 min-h-0 overflow-hidden">
 
@@ -704,12 +713,16 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
         {/* 현재 자막 (크게) */}
         <div className="shrink-0 px-8 py-6 min-h-[120px] flex flex-col justify-center border-b border-neutral-800">
-          <p className="text-white text-2xl font-semibold leading-snug">
-            <SubtitleText text={activeLine.korean} {...subtitleProps} />
-          </p>
-          <p className="text-neutral-400 text-base mt-2 leading-relaxed">
-            {activeLine.english}
-          </p>
+          {subtitleMode !== 'english' && (
+            <p className="text-white text-2xl font-semibold leading-snug">
+              <SubtitleText text={activeLine.korean} {...subtitleProps} />
+            </p>
+          )}
+          {subtitleMode !== 'korean' && (
+            <p className={`text-base leading-relaxed ${subtitleMode === 'english' ? 'text-white text-2xl font-semibold' : 'mt-2 text-neutral-400'}`}>
+              {activeLine.english}
+            </p>
+          )}
         </div>
 
         {/* 컨트롤 바 */}
@@ -758,6 +771,25 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
               {isBlind ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               Blind
             </button>
+
+            <div className="inline-flex items-center rounded-pill border border-white/15 bg-white/5 p-1">
+              {subtitleModeOptions.map((option) => {
+                const isSelected = subtitleMode === option.value
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => setSubtitleMode(option.value)}
+                    className={`rounded-pill px-3 py-1.5 text-xs font-medium transition-all ${
+                      isSelected
+                        ? 'bg-primary text-white shadow-[0_6px_18px_rgba(139,92,246,0.28)]'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })}
+            </div>
 
           </div>
         </div>
@@ -820,12 +852,16 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
                     {formatTime(line.startSec)}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm leading-relaxed ${isActive ? 'text-white font-medium' : 'text-neutral-300'}`}>
-                      <SubtitleText text={line.korean} {...subtitleProps} />
-                    </p>
-                    <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
-                      {line.english}
-                    </p>
+                    {subtitleMode !== 'english' && (
+                      <p className={`text-sm leading-relaxed ${isActive ? 'text-white font-medium' : 'text-neutral-300'}`}>
+                        <SubtitleText text={line.korean} {...subtitleProps} />
+                      </p>
+                    )}
+                    {subtitleMode !== 'korean' && (
+                      <p className={`leading-relaxed ${subtitleMode === 'english' ? 'text-sm text-neutral-200' : 'mt-0.5 text-xs text-neutral-500'}`}>
+                        {line.english}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
