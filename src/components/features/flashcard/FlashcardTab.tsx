@@ -284,12 +284,13 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
           cardId: card.id,
           lessonId: data.lessonId,
           lessonTitle: data.lessonTitle,
-          expression: `${card.baseWord} → ${card.conjugatedForm}`,
+          expression: card.conjugatedForm,
           meaning: `(${card.ending}) ${card.endingMeaning}`,
           exampleSentence: card.scriptSentence,
           exampleTranslation: card.scriptTranslation,
           type: 'expression',
           subType: 'ending',
+          conjugationBadges: card.conjugationBadges,
         })
       } else {
         addBookmark({

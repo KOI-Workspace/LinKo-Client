@@ -13,6 +13,7 @@ export interface BookmarkedCard {
   savedAt: string
   type?: 'sentence' | 'expression'
   subType?: 'word' | 'ending'
+  conjugationBadges?: any[]
 }
 
 const STORAGE_KEY = 'linko_bookmarks'

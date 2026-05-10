@@ -2,11 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bookmark, Trash2, Volume2, ChevronRight, BookOpen, Quote, Sparkles, Languages } from 'lucide-react'
+import { Bookmark, Trash2, Volume2, ChevronRight, BookOpen, Quote } from 'lucide-react'
 import { useBookmarks, BookmarkedCard } from '@/hooks/useBookmarks'
 
 type Tab = 'expression' | 'sentence'
-type SubTab = 'all' | 'word' | 'ending'
 
 function speakKorean(text: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
@@ -26,23 +25,14 @@ export default function BookmarksPage() {
   const router = useRouter()
   const { bookmarks, removeBookmark } = useBookmarks()
   const [activeTab, setActiveTab] = useState<Tab>('expression')
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>('all')
 
   const filteredBookmarks = useMemo(() => {
     return bookmarks.filter((b) => {
-      // 구버전 북마크(type 없음) 호환성 처리
       const type = b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')
-      const subType = b.subType || (b.cardId.includes('-e') ? 'ending' : 'word') 
-
-      if (activeTab === 'sentence') {
-        return type === 'sentence'
-      }
-
-      if (type !== 'expression') return false
-      if (activeSubTab === 'all') return true
-      return subType === activeSubTab
+      if (activeTab === 'sentence') return type === 'sentence'
+      return type === 'expression'
     })
-  }, [bookmarks, activeTab, activeSubTab])
+  }, [bookmarks, activeTab])
 
   const counts = useMemo(() => {
     const exprs = bookmarks.filter(b => (b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')) === 'expression')
@@ -50,8 +40,6 @@ export default function BookmarksPage() {
     return {
       expression: exprs.length,
       sentence: sents.length,
-      word: exprs.filter(b => (b.subType || (b.cardId.includes('-e') ? 'ending' : 'word')) === 'word').length,
-      ending: exprs.filter(b => (b.subType || (b.cardId.includes('-e') ? 'ending' : 'word')) === 'ending').length,
     }
   }, [bookmarks])
 
@@ -72,7 +60,7 @@ export default function BookmarksPage() {
         {/* 메인 탭 */}
         <div className="flex gap-8 border-b border-neutral-100">
           <button
-            onClick={() => { setActiveTab('expression'); setActiveSubTab('all') }}
+            onClick={() => setActiveTab('expression')}
             className={`pb-4 text-sm font-semibold transition-all relative ${
               activeTab === 'expression' ? 'text-primary' : 'text-neutral-500 hover:text-neutral-700'
             }`}
@@ -102,46 +90,8 @@ export default function BookmarksPage() {
         </div>
       </div>
 
-      {/* 서브 필터 (표현 탭일 때만) */}
-      {activeTab === 'expression' && (
-        <div className="px-10 py-5 flex items-center gap-2">
-          <button
-            onClick={() => setActiveSubTab('all')}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-              activeSubTab === 'all'
-                ? 'bg-neutral-950 text-white shadow-sm'
-                : 'bg-white border border-neutral-200 text-neutral-500 hover:border-neutral-300'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setActiveSubTab('word')}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all ${
-              activeSubTab === 'word'
-                ? 'bg-neutral-950 text-white shadow-sm'
-                : 'bg-white border border-neutral-200 text-neutral-500 hover:border-neutral-300'
-            }`}
-          >
-            <Sparkles className="w-3 h-3" />
-            Vocabulary
-          </button>
-          <button
-            onClick={() => setActiveSubTab('ending')}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all ${
-              activeSubTab === 'ending'
-                ? 'bg-neutral-950 text-white shadow-sm'
-                : 'bg-white border border-neutral-200 text-neutral-500 hover:border-neutral-300'
-            }`}
-          >
-            <Languages className="w-3 h-3" />
-            Endings
-          </button>
-        </div>
-      )}
-
       {/* 콘텐츠 */}
-      <div className={`px-10 ${activeTab === 'sentence' ? 'py-8' : 'pb-10'}`}>
+      <div className="px-10 py-8 pb-12">
 
         {/* 빈 상태 */}
         {filteredBookmarks.length === 0 ? (
@@ -193,21 +143,22 @@ function BookmarkCard({
 }) {
   const isSentence = (b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')) === 'sentence'
   const isEnding = (b.subType || (b.cardId.includes('-e') ? 'ending' : 'word')) === 'ending'
+  const badges = b.conjugationBadges
 
   return (
     <div className="group flex flex-col bg-white border border-neutral-200 rounded-xl overflow-hidden hover:border-primary-200 hover:shadow-sm transition-all">
       <div className="flex-1 p-5">
         <div className="flex items-start justify-between mb-4">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 min-w-0 flex-1">
              {/* 배지/카테고리 */}
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${
+              <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 isSentence ? 'bg-blue-50 text-blue-600' : isEnding ? 'bg-amber-50 text-amber-600' : 'bg-primary-50 text-primary-600'
               }`}>
                 {isSentence ? 'Sentence' : isEnding ? 'Ending' : 'Vocabulary'}
               </span>
-              <span className="text-[10px] text-neutral-300 font-medium">•</span>
-              <span className="text-[10px] text-neutral-400 font-medium truncate max-w-[150px]">
+              <span className="text-[10px] text-neutral-300 font-medium shrink-0">•</span>
+              <span className="text-[10px] text-neutral-400 font-medium truncate">
                 {b.lessonTitle}
               </span>
             </div>
@@ -215,7 +166,7 @@ function BookmarkCard({
 
           <button
             onClick={(e) => { e.stopPropagation(); onRemove(); }}
-            className="p-1.5 rounded-lg text-neutral-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+            className="p-1.5 rounded-lg text-neutral-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 shrink-0 ml-2"
             title="Remove"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -228,7 +179,20 @@ function BookmarkCard({
             <h3 className={`font-bold text-neutral-950 leading-tight truncate ${isSentence ? 'text-sm' : 'text-lg'}`}>
               {b.expression}
             </h3>
-            <p className="text-sm font-medium text-primary mt-1 truncate">
+            
+            {/* 어미 변형 표시 (badges가 있을 때) */}
+            {badges && badges.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                {badges.map((badge, i) => (
+                  <span key={i} className="inline-flex items-center px-1.5 py-0.5 rounded bg-neutral-800 text-[10px] font-bold tracking-tight">
+                    {badge.removed && <span className="text-orange-400">-{badge.removed}</span>}
+                    <span className="text-teal-300">+{badge.added}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <p className={`font-medium text-primary truncate ${isSentence ? 'text-xs mt-1.5 opacity-70' : 'text-sm mt-1'}`}>
               {b.meaning}
             </p>
           </div>
