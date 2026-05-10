@@ -1,7 +1,19 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Play, Pause, Bookmark, BookmarkCheck, Eye, EyeOff, Info, Check } from 'lucide-react'
+import {
+  Play,
+  Pause,
+  Bookmark,
+  BookmarkCheck,
+  Eye,
+  EyeOff,
+  Info,
+  Check,
+  GripVertical,
+  PanelRightClose,
+  PanelRightOpen,
+} from 'lucide-react'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
@@ -27,6 +39,10 @@ interface SubtitleLine {
 
 type SubtitleDisplayMode = 'bilingual' | 'korean' | 'english'
 type SidePanelTab = 'transcript' | 'culture'
+
+const SIDE_PANEL_MIN_WIDTH = 280
+const SIDE_PANEL_MAX_WIDTH = 520
+const SIDE_PANEL_DEFAULT_WIDTH = 336
 
 interface CulturalNote {
   id: string
@@ -740,6 +756,9 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   const [isBlind, setIsBlind]           = useState(false)
   const [subtitleMode, setSubtitleMode] = useState<SubtitleDisplayMode>('bilingual')
   const [sidePanelTab, setSidePanelTab] = useState<SidePanelTab>('transcript')
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(true)
+  const [sidePanelWidth, setSidePanelWidth] = useState(SIDE_PANEL_DEFAULT_WIDTH)
+  const [isResizingSidePanel, setIsResizingSidePanel] = useState(false)
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
   const lineRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const completionFired = useRef(false)
@@ -825,6 +844,31 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     { value: 'korean', label: 'Korean' },
     { value: 'english', label: 'English' },
   ]
+
+  useEffect(() => {
+    if (!isResizingSidePanel) return
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const nextWidth = window.innerWidth - event.clientX
+      setSidePanelWidth(Math.min(SIDE_PANEL_MAX_WIDTH, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
+    }
+
+    const handleMouseUp = () => {
+      setIsResizingSidePanel(false)
+    }
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizingSidePanel])
 
   const toggleSentenceBookmark = (line: SubtitleLine) => {
     const sentenceBookmarkId = `sentence-${lessonId}-${line.id}`
@@ -951,32 +995,54 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
       </div>
 
       {/* ── 우: 자막 목록 / 문화 해설 ── */}
-      <div className="w-80 shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900">
+      {isSidePanelOpen ? (
+      <div
+        className="relative shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900"
+        style={{ width: sidePanelWidth }}
+      >
+        <button
+          type="button"
+          onMouseDown={() => setIsResizingSidePanel(true)}
+          className="absolute -left-1.5 top-0 z-20 flex h-full w-3 cursor-col-resize items-center justify-center text-neutral-600 hover:text-neutral-300"
+          aria-label="자막 패널 너비 조정"
+        >
+          <span className="flex h-12 w-3 items-center justify-center rounded-full bg-neutral-800/80 opacity-0 transition-opacity hover:opacity-100">
+            <GripVertical className="w-3.5 h-3.5" />
+          </span>
+        </button>
 
         <div className="shrink-0 border-b border-neutral-800">
-          <div className="px-5 pt-4">
-            <div className="inline-flex items-center rounded-pill border border-white/10 bg-white/5 p-1">
+          <div className="px-5 pt-4 flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-5">
               <button
                 onClick={() => setSidePanelTab('transcript')}
-                className={`rounded-pill px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
                   sidePanelTab === 'transcript'
-                    ? 'bg-white text-neutral-950'
-                    : 'text-neutral-400 hover:text-white'
+                    ? 'border-primary text-white'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
                 }`}
               >
                 Transcript
               </button>
               <button
                 onClick={() => setSidePanelTab('culture')}
-                className={`rounded-pill px-3 py-1.5 text-xs font-medium transition-all ${
+                className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
                   sidePanelTab === 'culture'
-                    ? 'bg-white text-neutral-950'
-                    : 'text-neutral-400 hover:text-white'
+                    ? 'border-primary text-white'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
                 }`}
               >
                 Cultural Notes
               </button>
             </div>
+            <button
+              onClick={() => setIsSidePanelOpen(false)}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="자막 패널 접기"
+              title="자막 패널 접기"
+            >
+              <PanelRightClose className="h-4 w-4" />
+            </button>
           </div>
           {sidePanelTab === 'transcript' ? (
             <div className="px-5 py-4 flex items-center justify-between">
@@ -1145,6 +1211,18 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
           </div>
         )}
       </div>
+      ) : (
+        <div className="w-12 shrink-0 border-l border-neutral-800 bg-neutral-900 px-2 py-4">
+          <button
+            onClick={() => setIsSidePanelOpen(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label="자막 패널 펼치기"
+            title="자막 패널 펼치기"
+          >
+            <PanelRightOpen className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
