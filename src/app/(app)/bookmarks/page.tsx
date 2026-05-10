@@ -53,7 +53,7 @@ function DeleteConfirmModal({
 
 // ─── Mock 데이터 (데모용) ───────────────────────────────────────────────────
 
-const MOCK_DEMO_BOOKMARKS: BookmarkedCard[] = [
+export const MOCK_DEMO_BOOKMARKS: BookmarkedCard[] = [
   {
     cardId: 'demo-1',
     lessonId: '3',
@@ -119,6 +119,17 @@ const MOCK_DEMO_BOOKMARKS: BookmarkedCard[] = [
     savedAt: new Date(Date.now() - 86400000).toISOString(),
     type: 'expression',
     subType: 'word'
+  },
+  {
+    cardId: 'demo-5',
+    lessonId: '3',
+    lessonTitle: 'Korean Street Food Tour Seoul',
+    expression: '서울의 길거리 음식은 정말 다양하고 맛있어요.',
+    meaning: 'Street food in Seoul is incredibly diverse and delicious.',
+    exampleSentence: '',
+    exampleTranslation: '',
+    savedAt: new Date(Date.now() - 172800000).toISOString(),
+    type: 'sentence',
   }
 ]
 
@@ -284,7 +295,7 @@ export default function BookmarksPage() {
                 key={b.cardId}
                 bookmark={b}
                 onRemove={() => setDeleteConfirmId(b.cardId)}
-                onReview={() => router.push(`/lessons/${b.lessonId}?tab=${(b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')) === 'sentence' ? 'watch' : 'flashcard'}`)}
+                onReview={() => router.push(`/bookmarks/review?tab=${activeTab}&cardId=${b.cardId}`)}
               />
             ))}
           </div>

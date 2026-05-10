@@ -216,11 +216,22 @@ function BadgeDetailPanel({ badges }: { badges: ConjugationBadge[] }) {
 // ─── 메인 탭 컴포넌트 ─────────────────────────────────────────────────────────
 
 interface FlashcardTabProps {
-  lessonId: string
-  onComplete: () => void
+  lessonId?: string
+  overrideCards?: AnyFlashCard[]
+  mode?: 'study' | 'review'
+  initialCardId?: string
+  onComplete?: () => void
+  onClose?: () => void
 }
 
-export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps) {
+export default function FlashcardTab({
+  lessonId,
+  overrideCards,
+  mode = 'study',
+  initialCardId,
+  onComplete,
+  onClose,
+}: FlashcardTabProps) {
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -228,12 +239,23 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
   const [loop, setLoop] = useState(true)
   const [expandedBadge, setExpandedBadge] = useState(false)
 
-  const data = MOCK_FLASHCARDS[lessonId]
+  const isReviewMode = mode === 'review'
+
+  // 데이터 결정: lessonId 기반 혹은 전달받은 overrideCards 기반
+  const data = lessonId ? MOCK_FLASHCARDS[lessonId] : null
+  const cards = overrideCards || data?.cards || []
+
+  // 초기 카드 설정 (initialCardId가 있을 경우)
+  useEffect(() => {
+    if (initialCardId && cards.length > 0) {
+      const idx = cards.findIndex(c => c.id === initialCardId)
+      if (idx !== -1) setCurrentIndex(idx)
+    }
+  }, [initialCardId, cards])
 
   const goNext = useCallback(() => {
-    if (!data) return
-    if (currentIndex < data.cards.length - 1) setCurrentIndex((i) => i + 1)
-  }, [currentIndex, data])
+    if (currentIndex < cards.length - 1) setCurrentIndex((i) => i + 1)
+  }, [currentIndex, cards.length])
 
   const goPrev = useCallback(() => {
     if (currentIndex > 0) setCurrentIndex((i) => i - 1)
@@ -248,21 +270,25 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') goNext()
       if (e.key === 'ArrowLeft') goPrev()
+      if (e.key === 'Escape' && onClose) onClose()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [goNext, goPrev])
+  }, [goNext, goPrev, onClose])
 
-  if (!data) {
+  if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 gap-2 text-neutral-400 py-20">
-        <p className="text-sm font-medium">No flashcards available for this lesson yet.</p>
+        <p className="text-sm font-medium">No cards available.</p>
+        {onClose && (
+          <button onClick={onClose} className="mt-4 text-xs underline">Go back</button>
+        )}
       </div>
     )
   }
 
-  const card = data.cards[currentIndex]
-  const total = data.cards.length
+  const card = cards[currentIndex]
+  const total = cards.length
   const progress = ((currentIndex + 1) / total) * 100
   const bookmarked = isBookmarked(card.id)
   const isLast = currentIndex === total - 1
@@ -278,7 +304,7 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
   }
 
   const handleBookmarkAndNext = () => {
-    if (!bookmarked) {
+    if (!bookmarked && data) {
       if (cardIsEnding) {
         addBookmark({
           cardId: card.id,
@@ -307,35 +333,57 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
         })
       }
     }
-    if (isLast) onComplete()
+    if (isLast && onComplete) onComplete()
     else goNext()
   }
 
   const handleSkip = () => {
-    if (isLast) onComplete()
+    if (isLast && onComplete) onComplete()
     else goNext()
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 bg-white relative">
+      
+      {/* 닫기 버튼 (리뷰 모드일 때만 혹은 상시) */}
+      {onClose && (
+        <button 
+          onClick={onClose}
+          className="absolute top-3 right-4 z-20 p-2 rounded-full hover:bg-neutral-100 text-neutral-400 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
 
-      {/* 진행 바 + 카드 번호 + 타입 뱃지 */}
-      <div className="shrink-0 px-8 py-3 bg-white border-b border-neutral-100 flex items-center gap-3">
-        {cardIsEnding && (
-          <span className="shrink-0 text-[10px] font-bold text-primary uppercase tracking-widest bg-primary-50 px-2.5 py-0.5 rounded-full border border-primary-100">
-            어미
+      {/* 헤더: 학습 모드일 때만 프로그레스 바 표시 */}
+      {!isReviewMode ? (
+        <div className="shrink-0 px-8 py-3 bg-white border-b border-neutral-100 flex items-center gap-3">
+          {cardIsEnding && (
+            <span className="shrink-0 text-[10px] font-bold text-primary uppercase tracking-widest bg-primary-50 px-2.5 py-0.5 rounded-full border border-primary-100">
+              어미
+            </span>
+          )}
+          <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }} />
+          </div>
+          <span className="text-xs text-neutral-400 shrink-0">
+            <span className="font-bold text-neutral-700">{currentIndex + 1}</span>
+            <span className="mx-1 text-neutral-300">/</span>
+            {total}
           </span>
-        )}
-        <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-          <div className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }} />
         </div>
-        <span className="text-xs text-neutral-400 shrink-0">
-          <span className="font-bold text-neutral-700">{currentIndex + 1}</span>
-          <span className="mx-1 text-neutral-300">/</span>
-          {total}
-        </span>
-      </div>
+      ) : (
+        /* 리뷰 모드 헤더: 단순 카운트만 */
+        <div className="shrink-0 px-8 py-3 bg-white border-b border-neutral-50 flex items-center justify-between">
+          <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+            Bookmark Review
+          </p>
+          <span className="text-xs font-bold text-neutral-400">
+            {currentIndex + 1} / {total}
+          </span>
+        </div>
+      )}
 
       {/* 콘텐츠 */}
       <div className="flex-1 min-h-0 overflow-y-auto">
@@ -533,28 +581,30 @@ export default function FlashcardTab({ lessonId, onComplete }: FlashcardTabProps
         </div>
       </div>
 
-      {/* 액션 버튼 */}
-      <div className="shrink-0 px-8 py-5 border-t border-neutral-100 bg-white">
-        <div className="flex gap-3 max-w-2xl mx-auto">
-          <button onClick={handleSkip}
-            className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-semibold border-2 border-neutral-200 text-neutral-600 bg-white hover:border-neutral-400 hover:text-neutral-950 hover:bg-neutral-50 active:scale-[0.98] transition-all">
-            {isLast ? 'Done' : 'Already Know'}
-          </button>
-          <button onClick={handleBookmarkAndNext}
-            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-semibold active:scale-[0.98] transition-all ${
-              bookmarked
-                ? 'bg-primary-100 text-primary border-2 border-primary-200 hover:bg-primary-200'
-                : 'bg-neutral-950 text-white hover:bg-neutral-800 border-2 border-neutral-950'
-            }`}>
-            {bookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
-            {isLast
-              ? bookmarked ? 'Saved · Done' : 'Save & Done'
-              : bookmarked ? 'Saved · Next' : 'Save to Bookmarks'}
-          </button>
+      {/* 액션 버튼: 학습 모드일 때만 표시 */}
+      {!isReviewMode && (
+        <div className="shrink-0 px-8 py-5 border-t border-neutral-100 bg-white">
+          <div className="flex gap-3 max-w-2xl mx-auto">
+            <button onClick={handleSkip}
+              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-semibold border-2 border-neutral-200 text-neutral-600 bg-white hover:border-neutral-400 hover:text-neutral-950 hover:bg-neutral-50 active:scale-[0.98] transition-all">
+              {isLast ? 'Done' : 'Already Know'}
+            </button>
+            <button onClick={handleBookmarkAndNext}
+              className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-semibold active:scale-[0.98] transition-all ${
+                bookmarked
+                  ? 'bg-primary-100 text-primary border-2 border-primary-200 hover:bg-primary-200'
+                  : 'bg-neutral-950 text-white hover:bg-neutral-800 border-2 border-neutral-950'
+              }`}>
+              {bookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
+              {isLast
+                ? bookmarked ? 'Saved · Done' : 'Save & Done'
+                : bookmarked ? 'Saved · Next' : 'Save to Bookmarks'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Prev / Next */}
+      {/* Prev / Next: 리뷰 모드에서는 항상 노출 (이동용) */}
       <div className="shrink-0 px-8 py-3 border-t border-neutral-100 bg-neutral-50 flex items-center justify-between">
         <button onClick={goPrev} disabled={currentIndex === 0}
           className="flex items-center gap-1.5 px-4 py-2 rounded-pill text-sm font-medium border border-neutral-200 text-neutral-500 bg-white hover:border-neutral-400 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all">

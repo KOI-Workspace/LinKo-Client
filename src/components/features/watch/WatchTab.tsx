@@ -269,7 +269,7 @@ const WATCH_VOCAB: Record<string, Record<string, VocabEntry>> = {
 
 // ─── 자막 데이터 ───────────────────────────────────────────────────────────────
 
-const MOCK_SUBTITLES: SubtitleLine[] = [
+export const MOCK_SUBTITLES: SubtitleLine[] = [
   {
     id: 's1', startSec: 0, endSec: 5,
     korean: '안녕하세요! 오늘은 서울의 길거리 음식을 함께 즐겨볼게요.',

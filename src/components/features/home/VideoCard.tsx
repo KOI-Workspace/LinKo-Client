@@ -127,6 +127,12 @@ export default function VideoCard({
             {channelName && <span className="text-neutral-700 text-xs">·</span>}
             <p className="text-xs text-neutral-500">{date}</p>
           </div>
+          {/* 높이를 맞추기 위한 보이지 않는 공간 (ready 카드의 LearningSteps 영역만큼 차지) */}
+          {showLearning && (
+            <div className="invisible">
+              <LearningSteps flashcardDone={false} subtitleDone={false} />
+            </div>
+          )}
         </div>
       </div>
     )
