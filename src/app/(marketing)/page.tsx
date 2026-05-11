@@ -1117,7 +1117,18 @@ export default function LandingPage() {
                   <ArrowUp className="w-5 h-5" />
                 </button>
               </div>
-              <p className="mt-3 text-xs text-primary-100/60">Free to try · No credit card required</p>
+              
+              {/* Social Proof */}
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <div className="flex -space-x-2">
+                  <div className="w-7 h-7 rounded-full border-2 border-[#05071f] bg-primary-400" />
+                  <div className="w-7 h-7 rounded-full border-2 border-[#05071f] bg-secondary-400" />
+                  <div className="w-7 h-7 rounded-full border-2 border-[#05071f] bg-primary-200" />
+                </div>
+                <p className="text-sm font-medium text-primary-100/80">
+                  Korean learners from 72+ countries are trying Linko.
+                </p>
+              </div>
             </div>
 
           </div>
@@ -1224,7 +1235,7 @@ export default function LandingPage() {
                 Real reviews from Global Users
               </h2>
               <p className="text-sm text-neutral-400">
-                Beta users across 26+ countries say LinKo fits naturally into their study routine.
+                Beta users across 72+ countries say LinKo fits naturally into their study routine.
               </p>
             </div>
 
