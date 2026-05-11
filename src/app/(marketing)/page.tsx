@@ -716,10 +716,12 @@ export default function LandingPage() {
     }
 
     if (!trimmedValue.startsWith('https://')) {
+      setIsLoginModalOpen(false)
       setIsUnsupportedModalOpen(true)
       return
     }
 
+    setIsUnsupportedModalOpen(false)
     setIsLoginModalOpen(true)
   }
 
