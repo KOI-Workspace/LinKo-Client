@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Play, Star, ArrowUp, ChevronDown } from 'lucide-react'
+import { Play, ArrowUp, ChevronDown } from 'lucide-react'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
@@ -31,20 +31,38 @@ const REVIEWS = [
   {
     name: 'Sarah K.',
     country: '🇺🇸 USA',
-    rating: 5,
-    text: 'I\'ve tried every Korean app out there. LinKo is the first one that actually uses content I care about. My vocabulary doubled in two months.',
+    role: 'Product Designer',
+    text: 'LinKo made Korean study feel lighter. I learn from videos I already watch, so it actually sticks.',
   },
   {
     name: 'James L.',
     country: '🇦🇺 Australia',
-    rating: 5,
-    text: 'Being able to learn from BTS content made everything click. The dual subtitles feature alone is worth it.',
+    role: 'Startup Operator',
+    text: 'Dual subtitles helped me follow fast speech without losing the flow. It feels much more natural than drilling.',
   },
   {
     name: 'Mia T.',
     country: '🇯🇵 Japan',
-    rating: 5,
-    text: 'I paste a K-drama clip every morning and get a full lesson in seconds. It\'s become part of my daily routine.',
+    role: 'K-Drama Fan',
+    text: 'I paste one clip in the morning and get a useful lesson back in seconds. That routine has lasted.',
+  },
+  {
+    name: 'Daniel R.',
+    country: '🇨🇦 Canada',
+    role: 'Research Lead',
+    text: 'Cultural notes fill in the context other apps skip. I finally understand why certain phrases land the way they do.',
+  },
+  {
+    name: 'Lucia P.',
+    country: '🇪🇸 Spain',
+    role: 'Language Learner',
+    text: 'The flashcards are practical because they come from real scenes. Review feels connected, not random.',
+  },
+  {
+    name: 'Amina H.',
+    country: '🇦🇪 UAE',
+    role: 'Student',
+    text: 'I can study with K-pop, vlogs, and interviews in one place. That variety keeps me consistent.',
   },
 ]
 
@@ -181,28 +199,26 @@ function FeatureBlock({ chip, title, description, visualType }: typeof FEATURE_L
 }
 
 /** 리뷰 카드 */
-function ReviewCard({ name, country, rating, text }: typeof REVIEWS[number]) {
+function ReviewCard({ name, country, role, text }: typeof REVIEWS[number]) {
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 flex flex-col gap-4">
-      <div className="text-5xl text-primary-200 font-serif leading-none select-none">&ldquo;</div>
-      <p className="text-sm text-neutral-600 leading-relaxed flex-1">{text}</p>
-      <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-xs font-bold text-primary">
+    <article className="w-[320px] shrink-0 rounded-[28px] border border-neutral-200 bg-white p-6 sm:w-[420px] sm:p-8 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
+      <div className="flex h-full flex-col justify-between gap-8">
+        <p className="text-base leading-[1.8] text-neutral-700 sm:text-[17px]">
+          &ldquo;{text}&rdquo;
+        </p>
+        <div className="flex items-center gap-3 pt-1">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-sm font-bold text-primary">
             {name[0]}
           </div>
           <div>
-            <p className="text-sm font-semibold text-neutral-950">{name}</p>
-            <p className="text-xs text-neutral-400">{country}</p>
+            <p className="text-base font-semibold text-neutral-950">{name}</p>
+            <p className="text-sm text-neutral-400">
+              {role} · {country}
+            </p>
           </div>
         </div>
-        <div className="flex gap-0.5">
-          {Array.from({ length: rating }).map((_, i) => (
-            <Star key={i} className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" />
-          ))}
-        </div>
       </div>
-    </div>
+    </article>
   )
 }
 
@@ -588,10 +604,14 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {REVIEWS.map((review) => (
-                <ReviewCard key={review.name} {...review} />
-              ))}
+            <div className="relative overflow-hidden">
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-white to-transparent sm:w-24" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white to-transparent sm:w-24" />
+              <div className="flex w-max gap-5 animate-[testimonial-marquee_48s_linear_infinite] will-change-transform">
+                {[...REVIEWS, ...REVIEWS].map((review, index) => (
+                  <ReviewCard key={`${review.name}-${index}`} {...review} />
+                ))}
+              </div>
             </div>
           </div>
         </section>

@@ -32,6 +32,15 @@
     }
   }
 
+  @keyframes testimonial-marquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(calc(-50% - 0.625rem), 0, 0);
+    }
+  }
+
   /* 스크롤바 숨기기 (가로 스크롤 섹션용) */
   .scrollbar-hide {
     -ms-overflow-style: none;
