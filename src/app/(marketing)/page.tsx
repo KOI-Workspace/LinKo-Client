@@ -1,11 +1,15 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle, Loader2 } from 'lucide-react'
+import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle, Loader2, CreditCard, Captions } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
+import WatchTab from '@/components/features/watch/WatchTab'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import DotField from '@/components/ui/DotField'
 import { saveAuthToken } from '@/lib/api'
+import { getPublicPreviewLessons, getLesson, type LessonSummary } from '@/lib/lessonsApi'
+import { ArrowLeft } from 'lucide-react'
 import { loginWithGoogleIdToken } from '@/lib/authApi'
 import { createWaitlistEntry } from '@/lib/waitlistApi'
 
@@ -950,6 +954,122 @@ const VIDEO_EXAMPLES = [
   },
 ]
 
+function LessonPreviewModal({
+  isOpen,
+  onClose,
+  lessonId,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  lessonId: string
+}) {
+  const [activeTab, setActiveTab] = useState<'flashcard' | 'watch'>('flashcard')
+  const [lesson, setLesson] = useState<LessonSummary | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // 레슨 정보 가져오기
+  useEffect(() => {
+    if (isOpen && lessonId) {
+      setIsLoading(true)
+      getLesson(lessonId)
+        .then(data => setLesson(data))
+        .catch(err => console.error('Failed to fetch lesson:', err))
+        .finally(() => setIsLoading(false))
+    }
+  }, [isOpen, lessonId])
+
+  // 모달이 열릴 때 상태 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab('flashcard')
+    }
+  }, [isOpen])
+
+  // 바디 스크롤 방지
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-[120] flex flex-col bg-white overflow-hidden">
+      {/* ── 상단 레슨 정보 + 탭 (home UI와 동일하게) ── */}
+      <div className="shrink-0 border-b border-neutral-100 bg-white">
+        {/* 브레드크럼 / 닫기 */}
+        <div className="px-8 pt-5 pb-4 flex items-center justify-between">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1.5 text-sm text-neutral-400 hover:text-neutral-700 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Explorer
+          </button>
+        </div>
+
+        {/* 레슨 메타 정보 */}
+        <div className="px-8 pb-4">
+          <h1 className="text-lg font-bold text-neutral-950 leading-snug truncate">
+            {lesson?.title || (isLoading ? 'Loading...' : 'Lesson')}
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+            {lesson?.channelName && (
+              <span className="text-xs text-neutral-400">{lesson.channelName}</span>
+            )}
+            {lesson?.channelName && lesson?.date && (
+              <span className="text-neutral-200 text-xs">·</span>
+            )}
+            {lesson?.date && (
+              <span className="text-xs text-neutral-400">{lesson.date}</span>
+            )}
+          </div>
+        </div>
+
+        {/* 탭 바 */}
+        <div className="px-8 flex items-center gap-1 border-t border-neutral-100">
+          {([
+            { key: 'flashcard', label: 'Flashcard', icon: CreditCard },
+            { key: 'watch', label: 'Watch', icon: Captions },
+          ] as const).map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-all ${
+                activeTab === key
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" strokeWidth={1.5} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Content ── */}
+      <div className="flex-1 min-h-0 flex flex-col relative">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full text-neutral-400">
+            <Loader2 className="w-6 h-6 animate-spin" />
+          </div>
+        ) : activeTab === 'flashcard' ? (
+          <FlashcardTab lessonId={lessonId} isPublic={false} hideActions={true} onComplete={() => setActiveTab('watch')} />
+        ) : (
+          <WatchTab lessonId={lessonId} isPublic={false} onComplete={onClose} />
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   const router = useRouter()
   const [userInputValue, setUserInputValue] = useState('')
@@ -965,6 +1085,9 @@ export default function LandingPage() {
   const [isGoogleLoginLoading, setIsGoogleLoginLoading] = useState(false)
   const [googleLoginError, setGoogleLoginError] = useState<string | null>(null)
   const [submittedVideoUrl, setSubmittedVideoUrl] = useState<string | null>(null)
+  const [previewLessons, setPreviewLessons] = useState<any[]>([])
+  const [previewLessonId, setPreviewLessonId] = useState<string | null>(null)
+  const [pendingLessonId, setPendingLessonId] = useState<string | null>(null)
   const [scrollY, setScrollY] = useState(0)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
@@ -983,6 +1106,16 @@ export default function LandingPage() {
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    getPublicPreviewLessons()
+      .then(lessons => {
+        if (lessons && lessons.length > 0) {
+          setPreviewLessons(lessons)
+        }
+      })
+      .catch(err => console.error('Failed to fetch preview lessons:', err))
   }, [])
 
   useEffect(() => {
@@ -1128,6 +1261,10 @@ export default function LandingPage() {
             await createWaitlistEntry(submittedVideoUrl)
           }
           setIsEarlyAccessModalOpen(true)
+        } else if (pendingLessonId) {
+          setPreviewLessonId(pendingLessonId)
+          setPendingLessonId(null)
+          handleCloseLoginModal()
         } else {
           router.push('/home')
         }
@@ -1164,6 +1301,11 @@ export default function LandingPage() {
 
   return (
     <>
+      <LessonPreviewModal
+        isOpen={!!previewLessonId}
+        onClose={() => setPreviewLessonId(null)}
+        lessonId={previewLessonId || '15'}
+      />
       <EarlyAccessModal
         isOpen={isEarlyAccessModalOpen}
         onClose={handleCloseEarlyAccessModal}
@@ -1323,47 +1465,58 @@ export default function LandingPage() {
             </div>
 
             {/* 비디오 카드 그리드 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {VIDEO_EXAMPLES.map((video) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {(previewLessons.length > 0 ? previewLessons : VIDEO_EXAMPLES).map((video: any) => (
                 <div
-                  key={video.title}
+                  key={video.id || video.title}
                   role="button"
                   tabIndex={0}
-                  onClick={() => handleOpenLoginModal('video')}
+                  onClick={() => {
+                    setPendingLessonId(video.id || '15')
+                    handleOpenLoginModal('video')
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
+                      setPendingLessonId(video.id || '15')
                       handleOpenLoginModal('video')
                     }
                   }}
                   className="rounded-xl bg-neutral-100 border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all"
                 >
-                  <div className="aspect-video flex items-center justify-center bg-neutral-100 group-hover:bg-neutral-200 transition-colors relative">
-                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Play className="w-4 h-4 text-neutral-600 ml-0.5" fill="currentColor" />
+                  <div className="aspect-video relative overflow-hidden bg-neutral-200">
+                    <img
+                      src={video.thumbnailUrl || (video.youtubeId ? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg` : `https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg`)}
+                      alt={video.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-white/90 shadow-xl flex items-center justify-center scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
+                        <Play className="w-5 h-5 text-neutral-900 ml-0.5" fill="currentColor" />
+                      </div>
                     </div>
                     <div className="absolute bottom-2 right-2">
-                      <span className="rounded-md bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
-                        {video.duration}
+                      <span className="rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">
+                        {video.duration || '0:00'}
                       </span>
                     </div>
                   </div>
-                  <div className="px-3 py-3">
+                  <div className="px-4 py-4">
                     <div className="flex items-start gap-3">
                       <ChannelAvatar
                         name={video.channelName}
                         profileImageUrl={video.profileImageUrl}
                         size="sm"
-                        className="mt-0.5"
+                        className="mt-0.5 shadow-sm"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-neutral-950 truncate">
+                        <p className="text-[15px] font-bold text-neutral-950 leading-tight truncate">
                           {video.title}
                         </p>
-                        <div className="mt-0.5 flex items-center gap-1.5">
-                          <p className="text-xs text-neutral-500 truncate">{video.channelName}</p>
-                          <span className="text-xs text-neutral-300">·</span>
-                          <p className="text-xs text-neutral-500 shrink-0">{video.date}</p>
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <p className="text-[13px] font-medium text-neutral-500 truncate">{video.channelName}</p>
+                          <span className="text-[13px] text-neutral-300">·</span>
+                          <p className="text-[13px] font-medium text-neutral-500 shrink-0">{video.date || 'Today'}</p>
                         </div>
                       </div>
                     </div>

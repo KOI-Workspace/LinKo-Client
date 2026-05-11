@@ -81,3 +81,16 @@ export function getLessonFlashcards(lessonId: string) {
 export function getLessonSubtitles(lessonId: string) {
   return apiFetch<LessonSubtitlesResponse>(`/lessons/${lessonId}/subtitles`)
 }
+
+export function getPublicPreviewLessons() {
+  return apiFetch<LessonSummary[]>('/public/preview-lessons')
+}
+
+export function getPublicLessonFlashcards(lessonId: string) {
+  return apiFetch<LessonFlashcards>(`/public/lessons/${lessonId}/flashcards`)
+}
+
+export function getPublicLessonSubtitles(lessonId: string) {
+  return apiFetch<LessonSubtitlesResponse>(`/public/lessons/${lessonId}/subtitles`)
+}
+

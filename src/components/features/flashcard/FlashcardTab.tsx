@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { MOCK_FLASHCARDS } from './mockFlashcards'
 import { useBookmarks } from '@/hooks/useBookmarks'
-import { getLessonFlashcards } from '@/lib/lessonsApi'
+import { getLessonFlashcards, getPublicLessonFlashcards } from '@/lib/lessonsApi'
 import type {
   AnyFlashCard,
   RelatedVideo, ConversationTurn, ConjugationBadge,
@@ -340,20 +340,24 @@ function BadgeDetailPanel({ badges }: { badges: ConjugationBadge[] }) {
 
 interface FlashcardTabProps {
   lessonId?: string
+  isPublic?: boolean
   overrideCards?: AnyFlashCard[]
   mode?: 'study' | 'review'
   initialCardId?: string
   onComplete?: () => void
   onClose?: () => void
+  hideActions?: boolean
 }
 
 export default function FlashcardTab({
   lessonId,
+  isPublic = false,
   overrideCards,
   mode = 'study',
   initialCardId,
   onComplete,
   onClose,
+  hideActions = false,
 }: FlashcardTabProps) {
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -400,7 +404,8 @@ export default function FlashcardTab({
     setIsLoading(true)
     setError(null)
 
-    getLessonFlashcards(lessonId)
+    const fetchFn = isPublic ? getPublicLessonFlashcards : getLessonFlashcards
+    fetchFn(lessonId)
       .then((flashcards) => {
         if (!cancelled) setApiData(flashcards)
       })
@@ -674,7 +679,7 @@ export default function FlashcardTab({
                     </div>
                     <div className="flex flex-col gap-3">
                       {card.dailyConversation.map((turn, i) => (
-                        <ConversationBubble key={i} turn={turn} onSpeak={() => {}} />
+                        <ConversationBubble key={i} turn={turn} onSpeak={speak} />
                       ))}
                     </div>
                   </div>
@@ -685,8 +690,8 @@ export default function FlashcardTab({
         </div>
       </div>
 
-      {/* 액션 버튼: 학습 모드일 때만 표시 */}
-      {!isReviewMode && (
+      {/* 액션 버튼: 학습 모드일 때만 표시, hideActions가 아닐 때만 표시 */}
+      {!isReviewMode && !hideActions && (
         <div className="shrink-0 px-8 py-5 border-t border-neutral-100 bg-white">
           <div className="flex gap-3 max-w-2xl mx-auto">
             <button onClick={handleSkip}
@@ -715,9 +720,13 @@ export default function FlashcardTab({
           <ChevronLeft className="w-4 h-4" />Prev
         </button>
         <div />
-        <button onClick={goNext} disabled={isLast}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-pill text-sm font-medium border border-neutral-200 text-neutral-500 bg-white hover:border-neutral-400 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-          Next<ChevronRight className="w-4 h-4" />
+        <button 
+          onClick={isLast && hideActions ? onComplete : goNext} 
+          disabled={isLast && !hideActions}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-pill text-sm font-medium border border-neutral-200 text-neutral-500 bg-white hover:border-neutral-400 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          {isLast && hideActions ? 'Start Watching' : 'Next'}
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
