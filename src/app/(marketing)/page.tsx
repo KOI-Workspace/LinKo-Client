@@ -1106,7 +1106,7 @@ export default function LandingPage() {
               </div>
 
               <div className="mx-auto max-w-4xl">
-                <h1 className="text-[52px] font-bold leading-[1.1] tracking-[-0.04em] text-neutral-950 sm:text-[70px] lg:text-[82px]">
+                <h1 className="text-[clamp(3.25rem,7vw,5.125rem)] font-bold leading-[1.1] tracking-[-0.04em] text-neutral-950">
                   Learn Real Korean
                   <br />
                   with any
@@ -1117,7 +1117,7 @@ export default function LandingPage() {
                 </h1>
               </div>
 
-              <p className="text-lg text-neutral-600 mt-6 max-w-2xl mx-auto leading-relaxed sm:text-[21px]">
+              <p className="mt-6 mx-auto max-w-2xl text-[clamp(1.125rem,2vw,1.3125rem)] leading-relaxed text-neutral-600">
                 Get <span className="font-bold text-neutral-950">vocab</span>, <span className="font-bold text-neutral-950">grammar notes</span>, and <span className="font-bold text-neutral-950">dual subtitles</span> from any video.
               </p>
 
