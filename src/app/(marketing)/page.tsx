@@ -1047,8 +1047,7 @@ export default function LandingPage() {
         onPickOtherVideos={handlePickOtherVideos}
       />
 
-      {/* ── Navbar ── */}
-      <header className="sticky top-0 z-50 bg-transparent">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <span className="text-lg font-bold text-neutral-950 tracking-tight">LinKo</span>
         </div>
@@ -1056,7 +1055,7 @@ export default function LandingPage() {
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative flex min-h-[calc(100vh-3.5rem)] flex-col overflow-hidden bg-white">
+        <section className="relative flex min-h-screen flex-col overflow-hidden bg-white">
           {/* 1. 최하단 기본 배경색 (순수 화이트) */}
           <div className="absolute inset-0 bg-white" />
 
@@ -1077,11 +1076,9 @@ export default function LandingPage() {
             className="absolute inset-0 z-[1]"
           />
 
-
           {/* 3. 메인 콘텐츠 */}
-          <div className="relative z-10 flex flex-1 items-center pb-24 pt-16">
-
-            <div className="max-w-5xl mx-auto w-full px-6 text-center">
+          <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-20">
+            <div className="max-w-5xl mx-auto w-full text-center">
               {/* Social Proof */}
               <div className="mb-7 flex items-center justify-center gap-3">
                 <div className="flex -space-x-2">
