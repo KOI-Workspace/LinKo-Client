@@ -304,6 +304,96 @@
         }
       },
 
+      "modal": {
+        "overlay": {
+          "surfaceColor": "rgba(10, 10, 10, 0.55)",
+          "backdropBlur": "4px",
+          "paddingX": "16px",
+          "paddingY": "32px"
+        },
+        "shell": {
+          "maxWidth": "560px",
+          "surfaceColor": "#FFFFFF",
+          "border": "1px solid rgba(255,255,255,0.7)",
+          "borderRadius": "36px",
+          "padding": {
+            "mobile": "28px 28px 36px",
+            "desktop": "32px 40px 44px"
+          },
+          "shadow": "0 30px 100px rgba(15, 23, 42, 0.24)",
+          "topGlow": "radial-gradient(circle_at_top, rgba(124, 140, 255, 0.14), transparent 68%)"
+        },
+        "content": {
+          "maxWidth": "420px",
+          "alignment": "center"
+        },
+        "header": {
+          "eyebrow": {
+            "fontSize": "11px",
+            "fontWeight": 600,
+            "letterSpacing": "0.24em",
+            "textTransform": "uppercase",
+            "textColor": "#A3A3A3"
+          },
+          "title": {
+            "fontSize": {
+              "mobile": "30px",
+              "desktop": "32px"
+            },
+            "lineHeight": {
+              "mobile": "38px",
+              "desktop": "40px"
+            },
+            "fontWeight": 600,
+            "letterSpacing": "-0.02em",
+            "textColor": "#0A0A0A"
+          },
+          "description": {
+            "fontSize": {
+              "mobile": "15px",
+              "desktop": "16px"
+            },
+            "lineHeight": "28px",
+            "textColor": "#525252"
+          }
+        },
+        "badge": {
+          "size": "64px",
+          "borderRadius": "24px"
+        },
+        "actions": {
+          "primaryPill": {
+            "surfaceColor": "#0A0A0A",
+            "textColor": "#FFFFFF",
+            "borderRadius": "9999px",
+            "padding": "12px 24px",
+            "fontSize": "14px",
+            "fontWeight": 600,
+            "hoverSurface": "#262626"
+          },
+          "authButton": {
+            "surfaceColor": "#FAFAFA",
+            "textColor": "#0A0A0A",
+            "border": "1px solid #EAEAEA",
+            "borderRadius": "20px",
+            "padding": "20px 24px",
+            "fontSize": {
+              "mobile": "18px",
+              "desktop": "19px"
+            },
+            "fontWeight": 600,
+            "hoverBorder": "#DDD6FE",
+            "hoverSurface": "#FFFFFF",
+            "hoverShadow": "0 12px 30px rgba(15, 23, 42, 0.08)"
+          }
+        },
+        "interaction": {
+          "closeOnOverlayClick": true,
+          "closeIconDefault": false,
+          "note": "모달 닫기 규칙은 기본적으로 배경 클릭 우선. 별도 X 버튼은 명시적으로 필요한 경우에만 사용"
+        }
+      },
+
       "metricCard": {
         "surfaceColor": "#FFFFFF",
         "borderTreatment": "1px solid #EAEAEA",

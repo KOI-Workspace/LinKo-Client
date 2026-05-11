@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle } from 'lucide-react'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 
@@ -101,6 +101,20 @@ type FaqEntry = {
   levels?: FaqLevel[]
 }
 
+type SubmittedVideoPreview = {
+  title: string
+  channelName: string
+  thumbnailUrl: string
+  note: string
+}
+
+type ModalFrameProps = {
+  children: ReactNode
+  ariaLabel: string
+  onClose?: () => void
+  panelClassName?: string
+}
+
 const UNSUPPORTED_CASES = [
   '360° videos',
   'YouTube Shorts',
@@ -108,6 +122,74 @@ const UNSUPPORTED_CASES = [
   'Videos longer than 2 hours',
   'Videos that block external playback',
 ]
+
+function extractYouTubeVideoId(url: string) {
+  try {
+    const parsedUrl = new URL(url)
+
+    if (parsedUrl.hostname.includes('youtu.be')) {
+      const id = parsedUrl.pathname.replace('/', '').trim()
+      return id || null
+    }
+
+    const videoId = parsedUrl.searchParams.get('v')
+    if (videoId) {
+      return videoId
+    }
+
+    const embedMatch = parsedUrl.pathname.match(/\/embed\/([^/]+)/)
+    if (embedMatch?.[1]) {
+      return embedMatch[1]
+    }
+
+    const shortsMatch = parsedUrl.pathname.match(/\/shorts\/([^/]+)/)
+    if (shortsMatch?.[1]) {
+      return shortsMatch[1]
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+function createPlaceholderThumbnail(label: string) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#edf1ff" />
+          <stop offset="100%" stop-color="#dfe6ff" />
+        </linearGradient>
+        <radialGradient id="glow" cx="50%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#7c8cff" stop-opacity="0.28" />
+          <stop offset="100%" stop-color="#7c8cff" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="960" height="540" rx="42" fill="url(#bg)" />
+      <rect width="960" height="540" rx="42" fill="url(#glow)" />
+      <circle cx="480" cy="270" r="68" fill="white" opacity="0.92" />
+      <path d="M465 233L531 270L465 307Z" fill="#1f2937" />
+      <text x="480" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#4f46e5">${label}</text>
+    </svg>
+  `
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
+function buildFallbackSubmittedVideoPreview(url: string): SubmittedVideoPreview {
+  const videoId = extractYouTubeVideoId(url)
+  const thumbnailUrl = videoId && videoId.length >= 6
+    ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+    : createPlaceholderThumbnail('Saved for early access')
+
+  return {
+    title: 'Submitted YouTube video',
+    channelName: 'YouTube',
+    thumbnailUrl,
+    note: 'Queued for future lesson generation.',
+  }
+}
 
 const FAQ_ITEMS: FaqEntry[] = [
   {
@@ -354,12 +436,67 @@ function FaqItem({
   )
 }
 
+function ModalFrame({
+  children,
+  ariaLabel,
+  onClose,
+  panelClassName = '',
+}: ModalFrameProps) {
+  return (
+    <div
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className={`relative w-full max-w-[560px] overflow-hidden rounded-[36px] border border-white/70 bg-white px-7 pb-9 pt-7 shadow-[0_30px_100px_rgba(15,23,42,0.24)] sm:px-10 sm:pb-11 sm:pt-8 ${panelClassName}`}
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(124,140,255,0.14),transparent_68%)]" />
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function ModalHeader({
+  badge,
+  eyebrow = 'LinKo',
+  title,
+  description,
+}: {
+  badge?: ReactNode
+  eyebrow?: string
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      {badge ? <div className="mb-5">{badge}</div> : null}
+      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-400">
+        {eyebrow}
+      </p>
+      <h2 className="mt-4 text-[30px] font-semibold tracking-tight text-neutral-950 sm:text-[32px]">
+        {title}
+      </h2>
+      <p className="mt-3 max-w-[420px] text-[15px] leading-7 text-neutral-500 sm:text-base">
+        {description}
+      </p>
+    </div>
+  )
+}
+
 /** 미허용 케이스 안내 모달 */
 function UnsupportedCaseModal({
   isOpen,
+  onClose,
   onPickOtherVideos,
 }: {
   isOpen: boolean
+  onClose: () => void
   onPickOtherVideos: () => void
 }) {
   if (!isOpen) {
@@ -367,57 +504,181 @@ function UnsupportedCaseModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm">
-      <div className="relative w-full max-w-[560px] overflow-hidden rounded-[36px] border border-white/70 bg-white px-7 pb-9 pt-7 shadow-[0_30px_100px_rgba(15,23,42,0.28)] sm:px-10 sm:pb-11 sm:pt-8">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(124,140,255,0.14),transparent_68%)]" />
-        <div className="relative mx-auto max-w-[420px]">
-          <div className="flex items-start gap-4">
-            <div className="mt-1 flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-[#fff2f3] text-[#ff5f66] shadow-[0_12px_30px_rgba(255,95,102,0.12)]">
-              <AlertCircle className="h-6 w-6" />
+    <ModalFrame ariaLabel="지원되지 않는 링크 안내 모달" onClose={onClose}>
+      <div className="relative mx-auto max-w-[420px]">
+        <ModalHeader
+          badge={(
+            <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[#fff2f3] text-[#ff5f66] shadow-[0_16px_36px_rgba(255,95,102,0.12)]">
+              <AlertCircle className="h-7 w-7" />
             </div>
-            <div>
-              <p className="text-[30px] font-semibold tracking-tight text-neutral-950 sm:text-[32px]">
-                This link is not supported yet
-              </p>
-              <p className="mt-3 max-w-md text-[15px] leading-7 text-neutral-500 sm:text-base">
-                Linko currently supports standard Korean YouTube videos. Some formats still cannot be converted into learning materials.
-              </p>
-            </div>
-          </div>
+          )}
+          title="This link is not supported yet"
+          description="Linko currently supports standard Korean YouTube videos. Some formats still cannot be converted into learning materials."
+        />
 
-          <div className="mt-9">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
-              Unsupported cases
-            </p>
-            <div className="mt-4 grid gap-3">
-              {UNSUPPORTED_CASES.map((item, index) => (
-                <div
-                  key={item}
-                  className="rounded-[20px] border border-neutral-200 bg-neutral-50 px-4 py-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950 shadow-sm">
-                      {index + 1}
-                    </div>
-                    <p className="text-sm leading-6 text-neutral-700 sm:text-[15px]">{item}</p>
+        <div className="mt-9">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-400">
+            Unsupported cases
+          </p>
+          <div className="mt-4 grid gap-3">
+            {UNSUPPORTED_CASES.map((item, index) => (
+              <div
+                key={item}
+                className="rounded-[20px] border border-neutral-200 bg-neutral-50 px-4 py-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950 shadow-sm">
+                    {index + 1}
                   </div>
+                  <p className="text-sm leading-6 text-neutral-700 sm:text-[15px]">{item}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              onClick={onPickOtherVideos}
-              className="rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
-            >
-              Pick Other Videos
-            </button>
+              </div>
+            ))}
           </div>
         </div>
+
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={onPickOtherVideos}
+            className="rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+          >
+            Pick Other Videos
+          </button>
+        </div>
       </div>
-    </div>
+    </ModalFrame>
+  )
+}
+
+/** 얼리 액세스 안내 모달 */
+function EarlyAccessModal({
+  isOpen,
+  onClose,
+  onPickOtherVideos,
+  submittedVideoUrl,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  onPickOtherVideos: () => void
+  submittedVideoUrl: string | null
+}) {
+  const [videoPreview, setVideoPreview] = useState<SubmittedVideoPreview>(() =>
+    buildFallbackSubmittedVideoPreview(submittedVideoUrl ?? 'https://youtube.com')
+  )
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen || !submittedVideoUrl) {
+      return
+    }
+
+    let isCancelled = false
+    const fallbackPreview = buildFallbackSubmittedVideoPreview(submittedVideoUrl)
+
+    setVideoPreview(fallbackPreview)
+    setIsPreviewLoading(true)
+
+    const loadPreview = async () => {
+      try {
+        const response = await fetch(
+          `https://www.youtube.com/oembed?url=${encodeURIComponent(submittedVideoUrl)}&format=json`
+        )
+
+        if (!response.ok) {
+          throw new Error('oEmbed request failed')
+        }
+
+        const data = await response.json() as {
+          title?: string
+          author_name?: string
+          thumbnail_url?: string
+        }
+
+        if (isCancelled) {
+          return
+        }
+
+        setVideoPreview({
+          title: data.title?.trim() || fallbackPreview.title,
+          channelName: data.author_name?.trim() || fallbackPreview.channelName,
+          thumbnailUrl: data.thumbnail_url?.trim() || fallbackPreview.thumbnailUrl,
+          note: 'Queued for future lesson generation.',
+        })
+      } catch {
+        if (!isCancelled) {
+          setVideoPreview(fallbackPreview)
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsPreviewLoading(false)
+        }
+      }
+    }
+
+    void loadPreview()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [isOpen, submittedVideoUrl])
+
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <ModalFrame ariaLabel="얼리 액세스 안내 모달" onClose={onClose}>
+      <div className="relative mx-auto flex max-w-[420px] flex-col items-center text-center">
+        <ModalHeader
+          title="You&rsquo;re officially on the early access list."
+          description="When Linko officially launches, we&rsquo;ll email you an exclusive launch code."
+        />
+
+        <div className="mt-7 w-full overflow-hidden rounded-[24px] border border-neutral-200 bg-neutral-50 p-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
+          <div className="relative overflow-hidden rounded-[20px] bg-white">
+            <div className="relative aspect-[16/9] bg-neutral-100">
+              {isPreviewLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[1px]">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
+                </div>
+              )}
+              <img
+                src={videoPreview.thumbnailUrl}
+                alt={videoPreview.title}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+            </div>
+
+            <div className="space-y-3 px-4 py-4">
+              <div className="min-w-0">
+                <p className="text-[15px] font-semibold leading-6 text-neutral-950">
+                  {videoPreview.title}
+                </p>
+                <div className="mt-1 flex items-center gap-2 text-[12px] text-neutral-500">
+                  <span className="truncate">{videoPreview.channelName}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-3 text-[13px] leading-6 text-neutral-500">
+          {videoPreview.note}
+        </p>
+
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={onPickOtherVideos}
+            className="rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+          >
+            Pick Other Videos
+          </button>
+        </div>
+      </div>
+    </ModalFrame>
   )
 }
 
@@ -425,94 +686,80 @@ function UnsupportedCaseModal({
 function LoginModal({
   isOpen,
   onClose,
+  onGoogleLogin,
 }: {
   isOpen: boolean
   onClose: () => void
+  onGoogleLogin: () => void
 }) {
   if (!isOpen) {
     return null
   }
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm">
-      <div className="relative w-full max-w-[560px] overflow-hidden rounded-[36px] border border-white/70 bg-white px-7 pb-9 pt-7 shadow-[0_30px_100px_rgba(15,23,42,0.28)] sm:px-10 sm:pb-11 sm:pt-8">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(124,140,255,0.14),transparent_68%)]" />
+    <ModalFrame ariaLabel="로그인 모달" onClose={onClose}>
+      <div className="relative mx-auto flex max-w-[420px] flex-col items-center text-center">
+        <ModalHeader
+          badge={(
+            <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[radial-gradient(circle_at_30%_30%,#65d8ff_0%,#5a63ff_42%,#6c3cff_72%,#2b175e_100%)] shadow-[0_18px_44px_rgba(90,99,255,0.24)]">
+              <div className="h-9 w-9 rounded-[16px] bg-white/18 backdrop-blur-[2px]" />
+            </div>
+          )}
+          title="Start learning in seconds"
+          description="Sign in with Google to turn your favorite YouTube videos into Korean lessons."
+        />
+
         <button
           type="button"
-          onClick={onClose}
-          className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
-          aria-label="로그인 모달 닫기"
+          onClick={onGoogleLogin}
+          className="mt-10 flex w-full items-center justify-center gap-3 rounded-[20px] border border-neutral-200 bg-neutral-50 px-6 py-5 text-[18px] font-semibold text-neutral-950 transition-all hover:border-primary-200 hover:bg-white hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:text-[19px]"
         >
-          <X className="h-6 w-6 stroke-[1.75]" />
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-5 w-5"
+            >
+              <path
+                fill="#EA4335"
+                d="M12 10.2v3.9h5.5c-.24 1.26-.96 2.33-2.04 3.05l3.3 2.56c1.92-1.77 3.03-4.38 3.03-7.5 0-.72-.06-1.4-.18-2.06H12Z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 22c2.7 0 4.96-.9 6.61-2.45l-3.3-2.56c-.91.62-2.08.99-3.31.99-2.54 0-4.7-1.72-5.47-4.03l-3.42 2.64C4.74 19.87 8.07 22 12 22Z"
+              />
+              <path
+                fill="#4A90E2"
+                d="M6.53 13.95A5.98 5.98 0 0 1 6.22 12c0-.68.12-1.33.31-1.95L3.11 7.41A10 10 0 0 0 2 12c0 1.61.38 3.13 1.11 4.59l3.42-2.64Z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M12 5.98c1.47 0 2.79.5 3.83 1.48l2.87-2.87C16.95 2.98 14.69 2 12 2 8.07 2 4.74 4.13 3.11 7.41l3.42 2.64c.77-2.31 2.93-4.07 5.47-4.07Z"
+              />
+            </svg>
+          </span>
+          <span>Login with Google</span>
         </button>
 
-        <div className="relative mx-auto flex max-w-[420px] flex-col items-center text-center">
-          <div className="mt-4 flex h-20 w-20 items-center justify-center rounded-[28px] bg-[radial-gradient(circle_at_30%_30%,#65d8ff_0%,#5a63ff_42%,#6c3cff_72%,#2b175e_100%)] shadow-[0_20px_50px_rgba(90,99,255,0.28)]">
-            <div className="h-11 w-11 rounded-[18px] bg-white/18 backdrop-blur-[2px]" />
-          </div>
-          <div className="mt-8">
-            <p className="text-[42px] font-bold tracking-tight text-neutral-950 sm:text-[48px]">
-              LinKo
-            </p>
-            <h2 className="mt-5 text-[28px] font-semibold tracking-tight text-neutral-950 sm:text-[34px]">
-              Start learning in seconds
-            </h2>
-            <p className="mt-3 text-[16px] leading-7 text-neutral-500 sm:text-[17px]">
-              Sign in with Google to turn your favorite YouTube videos into Korean lessons.
-            </p>
-          </div>
-
+        <p className="mt-8 max-w-[360px] text-[14px] leading-7 text-neutral-400 sm:text-[15px]">
+          By continuing, you agree to our{' '}
           <button
             type="button"
-            className="mt-10 flex w-full items-center justify-center gap-3 rounded-[20px] border border-neutral-200 bg-neutral-50 px-6 py-5 text-[18px] font-semibold text-neutral-950 transition-all hover:border-primary-200 hover:bg-white hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:text-[19px]"
+            className="font-semibold text-neutral-500 underline underline-offset-4"
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="h-5 w-5"
-              >
-                <path
-                  fill="#EA4335"
-                  d="M12 10.2v3.9h5.5c-.24 1.26-.96 2.33-2.04 3.05l3.3 2.56c1.92-1.77 3.03-4.38 3.03-7.5 0-.72-.06-1.4-.18-2.06H12Z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 22c2.7 0 4.96-.9 6.61-2.45l-3.3-2.56c-.91.62-2.08.99-3.31.99-2.54 0-4.7-1.72-5.47-4.03l-3.42 2.64C4.74 19.87 8.07 22 12 22Z"
-                />
-                <path
-                  fill="#4A90E2"
-                  d="M6.53 13.95A5.98 5.98 0 0 1 6.22 12c0-.68.12-1.33.31-1.95L3.11 7.41A10 10 0 0 0 2 12c0 1.61.38 3.13 1.11 4.59l3.42-2.64Z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M12 5.98c1.47 0 2.79.5 3.83 1.48l2.87-2.87C16.95 2.98 14.69 2 12 2 8.07 2 4.74 4.13 3.11 7.41l3.42 2.64c.77-2.31 2.93-4.07 5.47-4.07Z"
-                />
-              </svg>
-            </span>
-            <span>Login with Google</span>
+            Terms of Service
+          </button>{' '}
+          and{' '}
+          <button
+            type="button"
+            className="font-semibold text-neutral-500 underline underline-offset-4"
+          >
+            Privacy Policy
           </button>
-
-          <p className="mt-8 max-w-[360px] text-[14px] leading-7 text-neutral-400 sm:text-[15px]">
-            By continuing, you agree to our{' '}
-            <button
-              type="button"
-              className="font-semibold text-neutral-500 underline underline-offset-4"
-            >
-              Terms of Service
-            </button>{' '}
-            and{' '}
-            <button
-              type="button"
-              className="font-semibold text-neutral-500 underline underline-offset-4"
-            >
-              Privacy Policy
-            </button>
-            .
-          </p>
-        </div>
+          .
+        </p>
       </div>
-    </div>
+    </ModalFrame>
   )
 }
 
@@ -607,6 +854,9 @@ export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
   const [isUnsupportedModalOpen, setIsUnsupportedModalOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isEarlyAccessModalOpen, setIsEarlyAccessModalOpen] = useState(false)
+  const [loginModalSource, setLoginModalSource] = useState<'hero' | 'video' | 'cta' | null>(null)
+  const [submittedVideoUrl, setSubmittedVideoUrl] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
   const showPlaceholderPreview = isFocused && !userInputValue
@@ -717,11 +967,16 @@ export default function LandingPage() {
 
     if (!trimmedValue.startsWith('https://')) {
       setIsLoginModalOpen(false)
+      setIsEarlyAccessModalOpen(false)
       setIsUnsupportedModalOpen(true)
+      setSubmittedVideoUrl(null)
       return
     }
 
     setIsUnsupportedModalOpen(false)
+    setIsEarlyAccessModalOpen(false)
+    setSubmittedVideoUrl(trimmedValue)
+    setLoginModalSource('hero')
     setIsLoginModalOpen(true)
   }
 
@@ -729,12 +984,27 @@ export default function LandingPage() {
     setIsUnsupportedModalOpen(false)
   }
 
-  const handleOpenLoginModal = () => {
+  const handleOpenLoginModal = (source: 'video' | 'cta' = 'video') => {
+    setLoginModalSource(source)
     setIsLoginModalOpen(true)
   }
 
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false)
+  }
+
+  const handleGoogleLogin = () => {
+    setIsLoginModalOpen(false)
+
+    if (loginModalSource === 'hero') {
+      setIsEarlyAccessModalOpen(true)
+    }
+
+    setLoginModalSource(null)
+  }
+
+  const handleCloseEarlyAccessModal = () => {
+    setIsEarlyAccessModalOpen(false)
   }
 
   const handlePickOtherVideos = () => {
@@ -745,14 +1015,30 @@ export default function LandingPage() {
     })
   }
 
+  const handlePickOtherVideosFromEarlyAccess = () => {
+    handleCloseEarlyAccessModal()
+    document.getElementById('video-explorer-section')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   return (
     <>
+      <EarlyAccessModal
+        isOpen={isEarlyAccessModalOpen}
+        onClose={handleCloseEarlyAccessModal}
+        onPickOtherVideos={handlePickOtherVideosFromEarlyAccess}
+        submittedVideoUrl={submittedVideoUrl}
+      />
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={handleCloseLoginModal}
+        onGoogleLogin={handleGoogleLogin}
       />
       <UnsupportedCaseModal
         isOpen={isUnsupportedModalOpen}
+        onClose={handleCloseUnsupportedModal}
         onPickOtherVideos={handlePickOtherVideos}
       />
 
@@ -867,11 +1153,11 @@ export default function LandingPage() {
                   key={video.title}
                   role="button"
                   tabIndex={0}
-                  onClick={handleOpenLoginModal}
+                  onClick={() => handleOpenLoginModal('video')}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
-                      handleOpenLoginModal()
+                      handleOpenLoginModal('video')
                     }
                   }}
                   className="rounded-xl bg-neutral-100 border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all"
@@ -964,9 +1250,9 @@ export default function LandingPage() {
               Start learning through your favorite videos.
             </p>
             <div className="flex items-center justify-center">
-              <button
+                <button
                 type="button"
-                onClick={handleOpenLoginModal}
+                onClick={() => handleOpenLoginModal('cta')}
                 className="rounded-pill bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg transition-colors hover:bg-primary-50"
               >
                 Get Started for Free

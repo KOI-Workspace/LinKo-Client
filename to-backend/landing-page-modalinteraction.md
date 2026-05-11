@@ -1,9 +1,10 @@
 # Landing Page Modal Interaction
 
-랜딩페이지에서는 링크 입력 및 CTA 클릭 시 두 종류의 모달이 등장합니다.
+랜딩페이지에서는 링크 입력 및 CTA 클릭 시 세 종류의 모달이 등장합니다.
 
 - **Login Modal**
 - **Unsupported Case Modal**
+- **Early Access Modal**
 
 이 문서는 현재 프론트엔드에서 임시로 처리해둔 방식과, 실제로는 백엔드와 어떻게 연결되어야 하는지를 정리한 문서입니다.
 
@@ -34,6 +35,13 @@
 
 ---
 
+### D. Login Modal에서 Google 로그인 클릭
+Hero Section에서 들어온 링크라면, `Login Modal`에서 `Login with Google`을 누른 뒤 `Early Access Modal`이 이어서 열립니다.
+
+이 모달은 "바로 전체 레슨 생성이 되는 것은 아니지만, 제출한 영상을 저장해두고 얼리 액세스 혜택을 안내하는 단계"입니다.
+
+---
+
 ## 2. 현재 프론트엔드 임시 처리 방식
 
 백엔드 미연동 상태이기 때문에, 지금은 Hero Section 제출 버튼에서만 아주 단순한 임시 검사를 넣어둔 상태입니다.
@@ -41,6 +49,7 @@
 ### 현재 임시 규칙
 - 입력값이 `https://`로 시작하지 않으면 → `Unsupported Case Modal`
 - 입력값이 `https://`로 시작하면 → `Login Modal`
+- `Login Modal`에서 Google 로그인 완료 후, Hero 제출 건이면 → `Early Access Modal`
 
 즉, 지금은 아래처럼 동작합니다.
 
@@ -50,6 +59,12 @@
 | `abc` | Unsupported Case Modal |
 | `http://youtube.com/...` | Unsupported Case Modal |
 | `https://youtube.com/...` | Login Modal |
+
+그리고 Hero 제출 건은 로그인 이후 다음 흐름으로 이어집니다.
+
+- `Login Modal`에서 Google 로그인
+- `Early Access Modal` 오픈
+- `Pick Other Videos` 클릭 시 `Start with these videos` 섹션으로 스크롤
 
 이건 **진짜 유효성 검사**가 아니라, 화면 연결 확인을 위한 임시 분기입니다.
 
@@ -148,12 +163,28 @@
 
 ---
 
+### Early Access Modal
+목적:
+- 전체 레슨 생성은 아직 단계적으로 열고 있다는 점을 안내
+- 사용자가 제출한 영상을 저장해두고, 정식 런칭 시 이메일로 혜택 코드를 받을 수 있게 안내
+
+등장 위치:
+- Hero Section에서 허용 링크 제출 후
+- `Login Modal`에서 Google 로그인 완료 시
+
+보조 동작:
+- `Pick Other Videos` 버튼 클릭 시 `Start with these videos` 섹션으로 스크롤 이동
+- 사용자가 제출한 영상 프리뷰를 보여줌
+
+---
+
 ## 7. 정리
 
 지금은 프론트에서 아래처럼 임시로 처리 중입니다.
 
 - `https://`로 시작하지 않음 → Unsupported
 - `https://`로 시작함 → Login
+- Hero 제출 건의 Google 로그인 완료 → Early Access
 
 하지만 실제 서비스에서는 반드시 백엔드가 링크를 검사해서 허용 여부를 내려줘야 합니다.
 
