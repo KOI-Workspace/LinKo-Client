@@ -17,7 +17,7 @@ import {
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
-import { getLessonSubtitles } from '@/lib/lessonsApi'
+import { getLessonSubtitles, getPublicLessonSubtitles } from '@/lib/lessonsApi'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
@@ -750,7 +750,15 @@ function SubtitleText({
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
-export default function WatchTab({ lessonId, onComplete }: { lessonId: string; onComplete?: () => void }) {
+export default function WatchTab({ 
+  lessonId, 
+  isPublic = false,
+  onComplete 
+}: { 
+  lessonId: string; 
+  isPublic?: boolean;
+  onComplete?: () => void 
+}) {
   const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentSec, setCurrentSec]     = useState(0)
   const [isPlaying, setIsPlaying]       = useState(false)
@@ -806,7 +814,8 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     setIsLoading(true)
     setError(null)
 
-    getLessonSubtitles(lessonId)
+    const fetchFn = isPublic ? getPublicLessonSubtitles : getLessonSubtitles
+    fetchFn(lessonId)
       .then((subtitlesResponse) => {
         if (!cancelled) setApiData(subtitlesResponse)
       })
@@ -834,27 +843,50 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     )
   }, [])
 
-  // 시뮬레이션 타이머 — 종료 시 reachedEnd 플래그 설정
+  // YouTube IFrame과 상태 동기화
   const reachedEnd = useRef(false)
   useEffect(() => {
-    if (!isPlaying) return
-    const interval = setInterval(() => {
-      setCurrentSec((prev) => {
-        const next = prev + speed * 0.5
-        if (next >= totalDuration) {
-          setIsPlaying(false)
-          reachedEnd.current = true
-          return totalDuration
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== 'https://www.youtube.com') return
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data
+        if (data.event === 'infoDelivery' && data.info) {
+          if (data.info.currentTime !== undefined) {
+            setCurrentSec(data.info.currentTime)
+          }
+          if (data.info.playerState !== undefined) {
+            const state = data.info.playerState
+            // 1: playing, 2: paused, 3: buffering, 0: ended
+            if (state === 1) setIsPlaying(true)
+            else if (state === 2 || state === 0) setIsPlaying(false)
+            
+            if (state === 0) reachedEnd.current = true
+          }
         }
-        return next
-      })
-    }, 500)
-    return () => clearInterval(interval)
-  }, [isPlaying, speed, totalDuration])
+      } catch (e) {}
+    }
 
-  useEffect(() => {
-    sendYouTubeCommand(isPlaying ? 'playVideo' : 'pauseVideo')
-  }, [isPlaying, sendYouTubeCommand])
+    window.addEventListener('message', handleMessage)
+    const interval = setInterval(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: 'listening' }),
+        '*'
+      )
+    }, 1000)
+
+    return () => {
+      window.removeEventListener('message', handleMessage)
+      clearInterval(interval)
+    }
+  }, [])
+
+  const togglePlay = useCallback(() => {
+    setIsPlaying((prev) => {
+      const next = !prev
+      sendYouTubeCommand(next ? 'playVideo' : 'pauseVideo')
+      return next
+    })
+  }, [sendYouTubeCommand])
 
   useEffect(() => {
     sendYouTubeCommand('setPlaybackRate', [speed])
@@ -894,7 +926,8 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   const seekTo = (seconds: number) => {
     setCurrentSec(seconds)
     sendYouTubeCommand('seekTo', [seconds, true])
-    if (isPlaying) sendYouTubeCommand('playVideo')
+    sendYouTubeCommand('playVideo')
+    setIsPlaying(true)
   }
 
   const subtitleProps = {
@@ -1031,7 +1064,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
           <div className="flex items-center gap-3 flex-wrap">
             <button
-              onClick={() => setIsPlaying((v) => !v)}
+              onClick={togglePlay}
               className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
             >
               {isPlaying
