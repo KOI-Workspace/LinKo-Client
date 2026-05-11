@@ -266,95 +266,107 @@ export default function LandingPage() {
     }
   }
 
+  const handleScrollCueClick = () => {
+    document.getElementById('video-explorer-section')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   return (
     <>
       {/* ── Navbar ── */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#090b28]/85 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-lg font-bold text-neutral-950 tracking-tight">LinKo</span>
+          <span className="text-lg font-bold text-white tracking-tight">LinKo</span>
         </div>
       </header>
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative bg-gradient-to-b from-primary-50 to-white pt-24 pb-20 overflow-hidden">
+        <section className="relative flex min-h-[calc(100vh-3.5rem)] flex-col overflow-hidden bg-[#05071f]">
           {/* 배경 장식 */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-100 rounded-full blur-3xl opacity-30 pointer-events-none" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(103,120,255,0.12),transparent_34%),radial-gradient(circle_at_18%_100%,rgba(88,54,255,0.18),transparent_28%),radial-gradient(circle_at_82%_86%,rgba(85,192,255,0.16),transparent_26%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#090b28] via-[#060821] to-[#080a23]" />
 
-          <div className="relative max-w-3xl mx-auto px-6 text-center">
-            <h1 className="text-5xl font-bold text-neutral-950 leading-tight tracking-tight mb-5">
-              Learn real Korean with any
-              <br />
-              <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                YouTube video
-              </span>
-            </h1>
+          <div className="relative flex flex-1 items-center pb-24 pt-10">
+            <div className="max-w-3xl mx-auto w-full px-6 text-center">
+              <h1 className="text-5xl font-bold text-white leading-tight tracking-tight mb-5">
+                Learn real Korean with any
+                <br />
+                <span className="bg-gradient-to-r from-white to-primary-200 bg-clip-text text-transparent">
+                  YouTube video
+                </span>
+              </h1>
 
-            <p className="text-lg text-neutral-500 mb-10 max-w-lg mx-auto leading-relaxed">
-              Just paste a link to get vocab, grammar notes, cultural insights, and dual subtitles.
-            </p>
+              <p className="text-lg text-primary-100/80 mb-10 max-w-lg mx-auto leading-relaxed">
+                Just paste a link to get vocab, grammar notes, cultural insights, and dual subtitles.
+              </p>
 
-            <div className="flex items-center justify-center gap-3 mb-10">
-              <button className="rounded-pill bg-white text-neutral-950 text-sm font-medium px-5 py-2.5 border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 transition-colors">
-                Explore Videos
-              </button>
-              <button className="rounded-pill bg-neutral-950 text-white text-sm font-medium px-5 py-2.5 hover:bg-neutral-800 transition-colors">
-                Start Studying
-              </button>
-            </div>
-
-            {/* URL 입력 */}
-            <div className="max-w-xl mx-auto flex min-h-[152px] items-end gap-4 rounded-[32px] border border-neutral-200 bg-white px-6 py-6 shadow-md">
-              <div className="relative flex-1 self-stretch">
-                <textarea
-                  ref={inputRef}
-                  value={isAnimating ? animatedValue : userInputValue}
-                  placeholder={INPUT_PLACEHOLDER_TEXT}
-                  rows={2}
-                  className={`h-full w-full resize-none bg-transparent align-top outline-none text-[17px] leading-[1.6] ${
-                    showOverlayText
-                      ? 'text-transparent caret-transparent placeholder:text-transparent'
-                      : 'text-neutral-950 caret-neutral-500 placeholder:text-neutral-400'
-                  }`}
-                  onChange={(event) => setUserInputValue(event.target.value)}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                />
-                {showOverlayText && (
-                  <div className={`pointer-events-none absolute left-0 top-0 inline-flex items-center text-[17px] font-normal leading-[1.6] ${displayTextColor}`}>
-                    {showPlaceholderPreview ? (
-                      <>
-                        <span className="relative top-px h-[1.15em] w-px shrink-0 bg-neutral-500 animate-[blink_1s_step-end_infinite]" />
-                        <span className="ml-0.5 whitespace-pre">{displayText}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="whitespace-pre">{displayText}</span>
-                        <span className="relative top-px ml-0.5 h-[1.15em] w-px shrink-0 bg-neutral-500 animate-[blink_1s_step-end_infinite]" />
-                      </>
-                    )}
-                  </div>
-                )}
+              {/* URL 입력 */}
+              <div className="max-w-xl mx-auto flex min-h-[152px] items-end gap-4 rounded-[32px] border border-neutral-200 bg-white px-6 py-6 shadow-md">
+                <div className="relative flex-1 self-stretch">
+                  <textarea
+                    ref={inputRef}
+                    value={isAnimating ? animatedValue : userInputValue}
+                    placeholder={INPUT_PLACEHOLDER_TEXT}
+                    rows={2}
+                    className={`h-full w-full resize-none bg-transparent align-top outline-none text-[17px] leading-[1.6] ${
+                      showOverlayText
+                        ? 'text-transparent caret-transparent placeholder:text-transparent'
+                        : 'text-neutral-950 caret-neutral-500 placeholder:text-neutral-400'
+                    }`}
+                    onChange={(event) => setUserInputValue(event.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                  {showOverlayText && (
+                    <div className={`pointer-events-none absolute left-0 top-0 inline-flex items-center text-[17px] font-normal leading-[1.6] ${displayTextColor}`}>
+                      {showPlaceholderPreview ? (
+                        <>
+                          <span className="relative top-px h-[1.15em] w-px shrink-0 bg-neutral-500 animate-[blink_1s_step-end_infinite]" />
+                          <span className="ml-0.5 whitespace-pre">{displayText}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="whitespace-pre">{displayText}</span>
+                          <span className="relative top-px ml-0.5 h-[1.15em] w-px shrink-0 bg-neutral-500 animate-[blink_1s_step-end_infinite]" />
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  disabled={!userInputValue.trim()}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-primary text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
+                  aria-label="링크 변환"
+                >
+                  <ArrowUp className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                type="button"
-                disabled={!userInputValue.trim()}
-                className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-primary text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
-                aria-label="링크 변환"
-              >
-                <ArrowUp className="w-5 h-5" />
-              </button>
+              <p className="mt-3 text-xs text-primary-100/60">Free to try · No credit card required</p>
             </div>
-            <p className="text-xs text-neutral-400 mt-3">Free to try · No credit card required</p>
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-8 sm:bottom-10">
+            <button
+              type="button"
+              onClick={handleScrollCueClick}
+              className="pointer-events-auto mx-auto flex flex-col items-center justify-center gap-4 text-center text-xs font-semibold uppercase tracking-[0.28em] text-white/90 transition-colors hover:text-white"
+            >
+              <span>Pick a video to start learning</span>
+              <ChevronDown className="h-5 w-5 animate-bounce" />
+            </button>
           </div>
         </section>
 
         {/* ── Stats ── */}
-        <section className="border-y border-neutral-100 bg-neutral-50">
+        <section className="border-y border-neutral-100 bg-white">
           <div className="max-w-3xl mx-auto px-6 py-10">
             <div className="grid grid-cols-3 gap-6 text-center">
               {STATS.map((stat) => (
@@ -368,12 +380,12 @@ export default function LandingPage() {
         </section>
 
         {/* ── Video Explorer ── */}
-        <section className="py-20 bg-white">
+        <section id="video-explorer-section" className="py-20 bg-white">
           <div className="max-w-6xl mx-auto px-6">
             <div className="max-w-xl mb-10">
               <span className="text-xs font-medium text-primary uppercase tracking-widest">Explore</span>
               <h2 className="text-3xl font-bold text-neutral-950 mt-2 mb-3">
-                Any video. Any topic. Your lesson.
+                Start with these videos
               </h2>
               <p className="text-sm text-neutral-500 leading-relaxed">
                 From K-pop to dramas to street food vlogs — if it&apos;s on YouTube, LinKo can turn it into a lesson.
