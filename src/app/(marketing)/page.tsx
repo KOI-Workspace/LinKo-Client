@@ -1,14 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Search, Play, Star, ArrowUp, ChevronRight, ChevronDown } from 'lucide-react'
+import { Play, Star, ArrowUp, ChevronDown } from 'lucide-react'
+import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
-
-const VIDEO_CATEGORIES = [
-  'All', 'BTS', 'Stray Kids', 'BLACKPINK', 'IVE', 'LE SSERAFIM',
-  'JungKook', 'Lisa', 'K-Drama',
-]
 
 const FEATURE_LIST = [
   {
@@ -159,6 +155,76 @@ const PLACEHOLDER_TEXTS = [
 ]
 
 const INPUT_PLACEHOLDER_TEXT = 'Paste a YouTube link to get started'
+
+function createAvatarDataUrl(label: string, color: string) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+      <defs>
+        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${color}" />
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.12" />
+        </linearGradient>
+      </defs>
+      <rect width="96" height="96" rx="48" fill="url(#g)" />
+      <text
+        x="48"
+        y="56"
+        text-anchor="middle"
+        font-family="Arial, sans-serif"
+        font-size="34"
+        font-weight="700"
+        fill="#ffffff"
+      >${label}</text>
+    </svg>
+  `
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
+const VIDEO_EXAMPLES = [
+  {
+    title: 'Korean Pronunciation Guide...',
+    channelName: 'Korean Class 101',
+    duration: '8:15',
+    date: '2026.05.07',
+    profileImageUrl: createAvatarDataUrl('K', '#7c8cff'),
+  },
+  {
+    title: '10 Must-Know Korean Slang Words',
+    channelName: 'Talk To Me In Korean',
+    duration: '6:42',
+    date: '2026.05.06',
+    profileImageUrl: createAvatarDataUrl('T', '#9b7cff'),
+  },
+  {
+    title: 'Korean Food Vocabulary with Chef',
+    channelName: 'Maangchi',
+    duration: '15:20',
+    date: '2026.05.06',
+    profileImageUrl: createAvatarDataUrl('M', '#4db7ff'),
+  },
+  {
+    title: 'K-pop Lyrics Korean Lesson',
+    channelName: 'SMTOWN',
+    duration: '4:58',
+    date: '2026.05.05',
+    profileImageUrl: createAvatarDataUrl('S', '#6ee7b7'),
+  },
+  {
+    title: 'BTS Spring Day — 가사로 배우는 한국어',
+    channelName: 'BANGTANTV',
+    duration: '5:42',
+    date: '2026.05.05',
+    profileImageUrl: createAvatarDataUrl('B', '#ff8a6d'),
+  },
+  {
+    title: '눈물의 여왕 EP.14 — 명장면 대사 분석',
+    channelName: 'KBS Drama',
+    duration: '9:47',
+    date: '2026.05.04',
+    profileImageUrl: createAvatarDataUrl('D', '#f59e0b'),
+  },
+]
 
 export default function LandingPage() {
   const [userInputValue, setUserInputValue] = useState('')
@@ -364,66 +430,53 @@ export default function LandingPage() {
         <section id="video-explorer-section" className="py-20 bg-white">
           <div className="max-w-6xl mx-auto px-6">
             <div className="max-w-xl mb-10">
-              <span className="text-xs font-medium text-primary uppercase tracking-widest">Explore</span>
               <h2 className="text-3xl font-bold text-neutral-950 mt-2 mb-3">
                 Start with these videos
               </h2>
               <p className="text-sm text-neutral-500 leading-relaxed">
-                From K-pop to dramas to street food vlogs — if it&apos;s on YouTube, LinKo can turn it into a lesson.
+                Start from videos people already love.
               </p>
             </div>
 
-            {/* 검색창 */}
-            <div className="flex items-center gap-2 bg-white border border-neutral-200 rounded-lg px-3 py-2.5 mb-5 max-w-sm shadow-xs">
-              <Search className="w-4 h-4 text-neutral-400 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search by genre or title..."
-                className="flex-1 text-sm placeholder:text-neutral-400 bg-transparent outline-none"
-                readOnly
-              />
-            </div>
-
-            {/* 카테고리 필터 */}
-            <div className="flex flex-wrap gap-2 mb-8">
-              {VIDEO_CATEGORIES.map((cat, i) => (
-                <button
-                  key={cat}
-                  className={`rounded-pill px-4 py-1.5 text-xs font-medium border transition-colors ${
-                    i === 0
-                      ? 'bg-neutral-950 text-white border-neutral-950'
-                      : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400 hover:text-neutral-950'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
             {/* 비디오 카드 그리드 */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {VIDEO_EXAMPLES.map((video) => (
                 <div
-                  key={i}
+                  key={video.title}
                   className="rounded-xl bg-neutral-100 border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all"
                 >
                   <div className="aspect-video flex items-center justify-center bg-neutral-100 group-hover:bg-neutral-200 transition-colors relative">
                     <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
                       <Play className="w-4 h-4 text-neutral-600 ml-0.5" fill="currentColor" />
                     </div>
+                    <div className="absolute bottom-2 right-2">
+                      <span className="rounded-md bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
+                        {video.duration}
+                      </span>
+                    </div>
                   </div>
-                  <div className="px-3 py-2.5">
-                    <div className="h-2.5 bg-neutral-200 rounded-full w-3/4 mb-1.5" />
-                    <div className="h-2 bg-neutral-200 rounded-full w-1/2" />
+                  <div className="px-3 py-3">
+                    <div className="flex items-start gap-3">
+                      <ChannelAvatar
+                        name={video.channelName}
+                        profileImageUrl={video.profileImageUrl}
+                        size="sm"
+                        className="mt-0.5"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-neutral-950 truncate">
+                          {video.title}
+                        </p>
+                        <div className="mt-0.5 flex items-center gap-1.5">
+                          <p className="text-xs text-neutral-500 truncate">{video.channelName}</p>
+                          <span className="text-xs text-neutral-300">·</span>
+                          <p className="text-xs text-neutral-500 shrink-0">{video.date}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="flex justify-center mt-8">
-              <button className="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
-                Browse all videos <ChevronRight className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </section>
