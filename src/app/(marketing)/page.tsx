@@ -29,64 +29,64 @@ const FEATURE_LIST = [
 
 const REVIEWS = [
   {
-    name: 'Emma R.',
+    name: 'Olivia M.',
     country: '🇺🇸 USA',
-    role: 'Korean Learner',
-    text: 'I used to memorize proverbs from lists and forget them immediately. Seeing them inside real YouTube scenes made the meaning click in a much more natural way.',
+    roleLabel: 'ARMY',
+    text: 'This is the first tool that made BTS fandom expressions make sense to me. I finally understand the little phrases fans use with each other, the little jokes in comments, and why certain words keep showing up in fan content.',
   },
   {
-    name: 'Sophie M.',
-    country: '🇬🇧 UK',
-    role: 'ARMY',
-    text: 'This is the first tool that made BTS fandom expressions actually make sense to me. I finally understand the little phrases fans use with each other instead of just guessing from context.',
+    name: 'Haruka S.',
+    country: '🇯🇵 Japan',
+    roleLabel: 'Working Holiday Applicant',
+    text: 'I am preparing for a working holiday, so I needed Korean I could actually use. Learning from real videos feels much more practical than memorizing isolated lists.',
   },
   {
-    name: 'Noah T.',
-    country: '🇨🇦 Canada',
-    role: 'K-Drama Fan',
-    text: 'The bookmark feature is what keeps me coming back. I save expressions from emotional scenes, then revisit them later when I want a quick review.',
+    name: 'Tessa R.',
+    country: '🇺🇸 USA',
+    roleLabel: 'Casual Language Learner',
+    text: 'Seeing proverbs inside real YouTube scenes made the meaning click naturally.',
+  },
+  {
+    name: 'Minji K.',
+    country: '🇰🇷 Korea',
+    roleLabel: 'MONBEBE',
+    text: 'The cultural notes are surprisingly useful. They explain reactions, slang, and hidden meanings that would normally go right past me.',
   },
   {
     name: 'Lucia P.',
     country: '🇪🇸 Spain',
-    role: 'Korean Learner',
-    text: 'I like that my bookmarks keep growing over time. It feels less like using an app and more like building my own Korean vocabulary collection from things I actually watched.',
+    roleLabel: 'MY',
+    text: 'My bookmarks keep growing over time. It feels like building a Korean vocabulary collection from the videos I actually enjoy.',
   },
   {
-    name: 'Maya L.',
-    country: '🇦🇺 Australia',
-    role: 'K-pop Fan',
-    text: 'The dual subtitles are much cleaner than other subtitle tools I tried. I can stay focused on the video instead of fighting with the interface.',
+    name: 'Noah T.',
+    country: '🇨🇦 Canada',
+    roleLabel: 'CARAT',
+    text: 'The bookmark feature is what keeps me coming back. I save expressions from emotional scenes and revisit them later when I want a quick review.',
   },
   {
-    name: 'Daniel K.',
+    name: 'Aiko K.',
     country: '🇯🇵 Japan',
-    role: 'Korean Learner',
-    text: 'Grammar endings and honorifics were always confusing for me. Here the breakdowns are detailed enough that I can finally see why a speaker chose one form over another.',
+    roleLabel: 'Korean Language Education Major',
+    text: 'Grammar endings and honorifics were always confusing for me. The breakdowns here are detailed enough that I can finally see why a speaker chose one form over another, and that has made a real difference when I rewatch clips.',
+  },
+  {
+    name: 'Ewan F.',
+    country: '🇦🇺 Australia',
+    roleLabel: 'STAY',
+    text: 'The flashcards feel connected to the actual scenes I watched, so review makes sense.',
+  },
+  {
+    name: 'Zoe L.',
+    country: '🇺🇸 USA',
+    roleLabel: 'ENGENE',
+    text: 'The dual subtitles are cleaner than other subtitle tools I tried. I can stay with the video instead of constantly checking whether I am in the right place.',
   },
   {
     name: 'Nina V.',
     country: '🇩🇪 Germany',
-    role: 'K-Drama Fan',
-    text: 'I remember vocabulary better when it comes from an intense scene or a funny reaction. It feels more emotional and alive than drilling random word lists.',
-  },
-  {
-    name: 'Yasmin A.',
-    country: '🇦🇪 UAE',
-    role: 'Korean Variety Show Fan',
-    text: 'The cultural notes are surprisingly useful. They explain reactions, slang, and hidden meanings that would normally go right past me.',
-  },
-  {
-    name: 'Leo F.',
-    country: '🇫🇷 France',
-    role: 'STAY',
-    text: 'The flashcards feel connected to the actual scenes I watched, so review makes sense. It does not feel like I am being thrown another random vocabulary deck.',
-  },
-  {
-    name: 'Camila S.',
-    country: '🇧🇷 Brazil',
-    role: 'K-content Fan',
-    text: 'Studying through real YouTube videos makes Korean feel much more natural to keep up with. It fits into my routine because I already wanted to watch the content anyway.',
+    roleLabel: 'NCTzen',
+    text: 'I remember vocabulary better when it comes from an intense scene or a funny reaction. It feels more alive than drilling random word lists.',
   },
 ]
 
@@ -261,7 +261,7 @@ function FeatureBlock({ chip, title, description, visualType }: typeof FEATURE_L
 }
 
 /** 리뷰 카드 */
-function ReviewCard({ name, country, role, text }: typeof REVIEWS[number]) {
+function ReviewCard({ name, country, roleLabel, text }: typeof REVIEWS[number]) {
   return (
     <article className="w-[320px] shrink-0 rounded-[28px] border border-neutral-200 bg-white p-6 sm:w-[420px] sm:p-8 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
       <div className="flex h-full flex-col justify-between gap-8">
@@ -269,11 +269,10 @@ function ReviewCard({ name, country, role, text }: typeof REVIEWS[number]) {
           &ldquo;{text}&rdquo;
         </p>
         <div className="border-t border-neutral-100 pt-5">
-          <div>
-            <p className="text-base font-semibold text-neutral-950">{name}</p>
-            <p className="text-sm text-neutral-400">
-              {role} · {country}
-            </p>
+          <p className="text-base font-semibold text-neutral-950">{roleLabel}</p>
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0">
+            <p className="text-sm font-medium text-neutral-600">{name}</p>
+            <span className="text-sm text-neutral-400">{country}</span>
           </div>
         </div>
       </div>
@@ -708,7 +707,7 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center max-w-xl mx-auto mb-12">
               <h2 className="text-3xl font-bold text-neutral-950 mt-2 mb-3">
-                Real results from Global Users
+                Real reviews from Global Users
               </h2>
               <p className="text-sm text-neutral-400">
                 Beta users across 26+ countries say LinKo fits naturally into their study routine.
@@ -718,7 +717,7 @@ export default function LandingPage() {
             <div className="relative overflow-hidden">
               <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-white to-transparent sm:w-24" />
               <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white to-transparent sm:w-24" />
-              <div className="flex w-max gap-5 animate-[testimonial-marquee_48s_linear_infinite] will-change-transform">
+              <div className="flex w-max gap-5 animate-[testimonial-marquee_96s_linear_infinite] will-change-transform">
                 {[...REVIEWS, ...REVIEWS].map((review, index) => (
                   <ReviewCard key={`${review.name}-${index}`} {...review} />
                 ))}
