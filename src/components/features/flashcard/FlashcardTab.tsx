@@ -1,17 +1,18 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import {
-  Volume2, ChevronLeft, ChevronRight, Play,
+  Volume2, ChevronLeft, ChevronRight, Play, Pause,
   ExternalLink, Bookmark, BookmarkCheck,
   Repeat, Gauge, MessageCircle, ChevronDown, ChevronUp, X,
 } from 'lucide-react'
 import { MOCK_FLASHCARDS } from './mockFlashcards'
 import { useBookmarks } from '@/hooks/useBookmarks'
+import { getLessonFlashcards } from '@/lib/lessonsApi'
 import type {
   AnyFlashCard,
   RelatedVideo, ConversationTurn, ConjugationBadge,
-  EndingCard, EndingCategory, BadgePartDetail,
+  EndingCard, EndingCategory, BadgePartDetail, LessonFlashcards,
 } from './flashcard.types'
 
 // ─── 어미 카테고리 스타일 ──────────────────────────────────────────────────────
@@ -68,12 +69,12 @@ function formatTime(sec: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-function speak(text: string, slow: boolean) {
+function speak(text: string) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = 'ko-KR'
-  utterance.rate = slow ? 0.5 : 0.9
+  utterance.rate = 0.9
   window.speechSynthesis.speak(utterance)
 }
 
@@ -83,24 +84,138 @@ function isEndingCard(card: { type?: string }): card is EndingCard {
 
 // ─── 서브 컴포넌트 ────────────────────────────────────────────────────────────
 
-function VideoSegmentPlayer({ youtubeId, startSec, endSec, loop }: {
-  youtubeId: string; startSec: number; endSec: number; loop: boolean
+function VideoSegmentPlayer({ youtubeId, startSec, endSec }: {
+  youtubeId: string; startSec: number; endSec: number
 }) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const playbackBaseSec = useRef(startSec)
+  const playbackStartedAt = useRef<number | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [loop, setLoop] = useState(true)
+  const [isSlow, setIsSlow] = useState(false)
+  const [currentVideoSec, setCurrentVideoSec] = useState(startSec)
+  const origin = typeof window === 'undefined' ? '' : window.location.origin
   const params = new URLSearchParams({
     start: String(startSec), end: String(endSec),
-    autoplay: '1', rel: '0', modestbranding: '1',
-    ...(loop ? { loop: '1', playlist: youtubeId } : {}),
+    autoplay: '0', rel: '0', modestbranding: '1',
+    controls: '0', disablekb: '1', playsinline: '1', enablejsapi: '1',
+    ...(origin ? { origin } : {}),
   })
   const src = `https://www.youtube.com/embed/${youtubeId}?${params.toString()}`
+  const playbackRate = isSlow ? 0.5 : 1
+
+  const sendCommand = useCallback((func: string, args: unknown[] = []) => {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func, args }),
+      '*',
+    )
+  }, [])
+
+  useEffect(() => {
+    sendCommand('setPlaybackRate', [playbackRate])
+  }, [playbackRate, sendCommand])
+
+  useEffect(() => {
+    playbackBaseSec.current = startSec
+    playbackStartedAt.current = null
+    setCurrentVideoSec(startSec)
+    setIsPlaying(false)
+    sendCommand('pauseVideo')
+    sendCommand('seekTo', [startSec, true])
+  }, [endSec, sendCommand, startSec, youtubeId])
+
+  useEffect(() => {
+    if (!isPlaying) return
+
+    const interval = window.setInterval(() => {
+      if (playbackStartedAt.current === null) return
+
+      const elapsedSec = ((Date.now() - playbackStartedAt.current) / 1000) * playbackRate
+      const nextSec = playbackBaseSec.current + elapsedSec
+
+      if (nextSec >= endSec) {
+        if (loop) {
+          playbackBaseSec.current = startSec
+          playbackStartedAt.current = Date.now()
+          setCurrentVideoSec(startSec)
+          sendCommand('seekTo', [startSec, true])
+          sendCommand('playVideo')
+        } else {
+          playbackBaseSec.current = endSec
+          playbackStartedAt.current = null
+          setCurrentVideoSec(endSec)
+          setIsPlaying(false)
+          sendCommand('pauseVideo')
+        }
+        return
+      }
+
+      setCurrentVideoSec(nextSec)
+    }, 250)
+
+    return () => window.clearInterval(interval)
+  }, [endSec, isPlaying, loop, playbackRate, sendCommand, startSec])
+
+  const togglePlay = () => {
+    setIsPlaying((playing) => {
+      if (playing) {
+        const startedAt = playbackStartedAt.current
+        if (startedAt !== null) {
+          const elapsedSec = ((Date.now() - startedAt) / 1000) * playbackRate
+          const pausedAt = Math.min(endSec, playbackBaseSec.current + elapsedSec)
+          playbackBaseSec.current = pausedAt
+          setCurrentVideoSec(pausedAt)
+        }
+        playbackStartedAt.current = null
+        sendCommand('pauseVideo')
+      } else {
+        const resumeAt = currentVideoSec >= endSec ? startSec : currentVideoSec
+        playbackBaseSec.current = resumeAt
+        playbackStartedAt.current = Date.now()
+        setCurrentVideoSec(resumeAt)
+        sendCommand('seekTo', [resumeAt, true])
+        sendCommand('playVideo')
+      }
+      return !playing
+    })
+  }
+
   return (
-    <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-neutral-950 shadow-lg">
-      <iframe key={src} src={src} className="absolute inset-0 w-full h-full"
-        allow="autoplay; encrypted-media" allowFullScreen title="Video segment" />
-      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-lg backdrop-blur-sm">
-        <Play className="w-3 h-3" fill="currentColor" />
-        {formatTime(startSec)} – {formatTime(endSec)}
+    <>
+      <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-neutral-950 shadow-lg">
+        <iframe ref={iframeRef} key={src} src={src} className="absolute inset-0 w-full h-full"
+          allow="autoplay; encrypted-media" allowFullScreen title="Video segment" />
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-lg backdrop-blur-sm">
+          <Play className="w-3 h-3" fill="currentColor" />
+          {formatTime(startSec)} – {formatTime(endSec)}
+        </div>
       </div>
-    </div>
+      <div className="flex gap-2 mt-3 justify-center">
+        <button
+          onClick={togglePlay}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800 transition-all"
+        >
+          {isPlaying ? <Pause className="w-3.5 h-3.5" fill="currentColor" /> : <Play className="w-3.5 h-3.5" fill="currentColor" />}
+          {isPlaying ? 'Pause' : 'Play'}
+        </button>
+        <button
+          onClick={() => setLoop((v) => !v)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+            loop ? 'bg-primary text-white border-primary' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
+          }`}
+        >
+          <Repeat className="w-3.5 h-3.5" />Loop
+        </button>
+        <button
+          onClick={() => setIsSlow((v) => !v)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+            isSlow ? 'bg-primary text-white border-primary' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
+          }`}
+        >
+          <Gauge className="w-3.5 h-3.5" />Slow
+        </button>
+      </div>
+    </>
   )
 }
 
@@ -145,12 +260,19 @@ function ConversationBubble({ turn, onSpeak }: { turn: ConversationTurn; onSpeak
 
 /** 어미 변형 배지 — 제거된 부분(주황)과 추가된 부분(초록)을 한 뱃지에 표시 */
 function ConjugationBadgeTag({ badge }: { badge: ConjugationBadge }) {
+  const removedTextColor = badge.removedDetail
+    ? CATEGORY_STYLE[badge.removedDetail.category].chipText
+    : 'text-orange-400'
+  const addedTextColor = badge.addedDetail
+    ? CATEGORY_STYLE[badge.addedDetail.category].chipText
+    : 'text-teal-300'
+
   return (
     <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-neutral-800 text-sm font-bold tracking-wide">
       {badge.removed && (
-        <span className="text-orange-400">-{badge.removed}</span>
+        <span className={removedTextColor}>-{badge.removed}</span>
       )}
-      <span className="text-teal-300">+{badge.added}</span>
+      <span className={addedTextColor}>+{badge.added}</span>
     </span>
   )
 }
@@ -235,15 +357,15 @@ export default function FlashcardTab({
 }: FlashcardTabProps) {
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isSpeaking, setIsSpeaking] = useState(false)
-  const [slowMode, setSlowMode] = useState(false)
-  const [loop, setLoop] = useState(true)
   const [expandedBadge, setExpandedBadge] = useState(false)
+  const [apiData, setApiData] = useState<LessonFlashcards | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const isReviewMode = mode === 'review'
 
   // 목업 데이터가 없는 레슨도 학습 화면을 확인할 수 있도록 기본 카드 세트를 재사용합니다.
-  const data = useMemo(() => {
+  const fallbackData = useMemo(() => {
     if (!lessonId) return null
     return MOCK_FLASHCARDS[lessonId] ?? {
       ...MOCK_FLASHCARDS['3'],
@@ -251,6 +373,7 @@ export default function FlashcardTab({
       lessonTitle: 'Generated lesson preview',
     }
   }, [lessonId])
+  const data = apiData ?? fallbackData
   const cards = useMemo(
     () => overrideCards || data?.cards || [],
     [overrideCards, data]
@@ -263,6 +386,38 @@ export default function FlashcardTab({
       if (idx !== -1) setCurrentIndex(idx)
     }
   }, [initialCardId, cards])
+
+  useEffect(() => {
+    let cancelled = false
+    if (!lessonId || overrideCards) {
+      setIsLoading(false)
+      setError(null)
+      return () => {
+        cancelled = true
+      }
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    getLessonFlashcards(lessonId)
+      .then((flashcards) => {
+        if (!cancelled) setApiData(flashcards)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setApiData(null)
+          setError(fallbackData ? null : err instanceof Error ? err.message : 'Could not load flashcards.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [lessonId, overrideCards, fallbackData])
 
   const goNext = useCallback(() => {
     if (currentIndex < cards.length - 1) setCurrentIndex((i) => i + 1)
@@ -287,6 +442,22 @@ export default function FlashcardTab({
     return () => window.removeEventListener('keydown', handler)
   }, [goNext, goPrev, onClose])
 
+  if (isLoading && !data) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 gap-2 text-neutral-400 py-20">
+        <p className="text-sm font-medium">Loading flashcards...</p>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 gap-2 text-neutral-400 py-20">
+        <p className="text-sm font-medium">{error ?? 'No flashcards available for this lesson yet.'}</p>
+      </div>
+    )
+  }
+
   if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 gap-2 text-neutral-400 py-20">
@@ -304,15 +475,6 @@ export default function FlashcardTab({
   const bookmarked = isBookmarked(card.id)
   const isLast = currentIndex === total - 1
   const cardIsEnding = isEndingCard(card)
-
-  // 발음 재생 대상 텍스트 (단어 카드: 표현, 어미 카드: 활용형)
-  const speakText = cardIsEnding ? card.conjugatedForm : card.expression
-
-  const handleSpeak = () => {
-    setIsSpeaking(true)
-    speak(speakText, false)
-    setTimeout(() => setIsSpeaking(false), 1500)
-  }
 
   const handleBookmarkAndNext = () => {
     if (!bookmarked && data) {
@@ -385,30 +547,7 @@ export default function FlashcardTab({
                 youtubeId={card.video.youtubeId}
                 startSec={card.video.startSec}
                 endSec={card.video.endSec}
-                loop={loop}
               />
-              <div className="flex gap-2 mt-3 justify-center">
-                <button
-                  onClick={() => setLoop((v) => !v)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
-                    loop ? 'bg-primary text-white border-primary' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
-                  }`}
-                >
-                  <Repeat className="w-3.5 h-3.5" />Loop
-                </button>
-                <button
-                  onClick={() => {
-                    setIsSpeaking(true); setSlowMode(true)
-                    speak(speakText, true)
-                    setTimeout(() => { setIsSpeaking(false); setSlowMode(false) }, 2000)
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
-                    isSpeaking && slowMode ? 'bg-primary text-white border-primary' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
-                  }`}
-                >
-                  <Gauge className="w-3.5 h-3.5" />Slow
-                </button>
-              </div>
             </div>
 
             <div>
@@ -472,7 +611,20 @@ export default function FlashcardTab({
                   )
                 })()}
 
-                {/* 한국어 설명 (제거됨) */}
+                <div className="rounded-xl border border-primary-100 bg-primary-50/60 p-4 mb-6">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <p className="text-[10px] font-semibold text-primary uppercase tracking-widest mb-1">
+                        Ending Pattern
+                      </p>
+                      <h3 className="text-base font-bold text-neutral-950">{card.ending}</h3>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary border border-primary-100">
+                      {card.endingMeaning}
+                    </span>
+                  </div>
+                  <p className="text-sm leading-relaxed text-neutral-700">{card.endingExplanation}</p>
+                </div>
 
                 <div className="h-px bg-neutral-100 mb-6" />
 

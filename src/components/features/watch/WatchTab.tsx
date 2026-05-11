@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Play,
   Pause,
@@ -17,13 +17,14 @@ import {
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
+import { getLessonSubtitles } from '@/lib/lessonsApi'
 
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
 interface VocabEntry {
   meaning: string
-  cardId: string
-  lessonId: string
+  cardId?: string
+  lessonId?: string
   expression: string
   exampleSentence: string
   exampleTranslation: string
@@ -695,6 +696,7 @@ function SubtitleText({
 
         const { word, entry } = token
         const bookmark = bookmarks.find((b) => b.expression === word)
+        const fallbackCardId = `custom-${currentLessonId}-${word}`
         const resolvedEntry = entry ?? (bookmark
           ? {
               meaning: bookmark.meaning,
@@ -705,6 +707,7 @@ function SubtitleText({
               exampleTranslation: bookmark.exampleTranslation,
             }
           : undefined)
+        const resolvedCardId = resolvedEntry?.cardId ?? fallbackCardId
         const isCurrentLesson = resolvedEntry?.lessonId === currentLessonId
         const bookmarked = Boolean(bookmark || resolvedEntry && bookmarks.some((b) => b.cardId === resolvedEntry.cardId))
 
@@ -712,7 +715,7 @@ function SubtitleText({
           e.stopPropagation()
           const expression = resolvedEntry?.expression ?? word
           addBookmark({
-            cardId: resolvedEntry?.cardId ?? `custom-${currentLessonId}-${expression}`,
+            cardId: resolvedCardId,
             lessonId: currentLessonId,
             lessonTitle,
             expression,
@@ -733,9 +736,9 @@ function SubtitleText({
             bookmarked={bookmarked}
             onAdd={handleAdd}
             isBlind={Boolean(resolvedEntry) && isBlind}
-            revealed={resolvedEntry ? revealedCards.has(resolvedEntry.cardId) : false}
+            revealed={resolvedEntry ? revealedCards.has(resolvedCardId) : false}
             onRevealToggle={() => {
-              if (resolvedEntry) onRevealToggle(resolvedEntry.cardId)
+              if (resolvedEntry) onRevealToggle(resolvedCardId)
             }}
             forceTooltipBelow={forceTooltipBelow}
           />
@@ -759,14 +762,29 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   const [sidePanelWidth, setSidePanelWidth] = useState(SIDE_PANEL_DEFAULT_WIDTH)
   const [isResizingSidePanel, setIsResizingSidePanel] = useState(false)
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
+  const [apiData, setApiData] = useState<{
+    youtubeId: string
+    durationSec: number
+    lines: SubtitleLine[]
+    vocabMap: Record<string, VocabEntry>
+    culturalNotes: CulturalNote[]
+  } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const lineRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const completionFired = useRef(false)
 
-  const vocabMap    = WATCH_VOCAB[lessonId] ?? {}
-  const lessonTitle = MOCK_FLASHCARDS[lessonId]?.lessonTitle ?? ''
+  const hasMockLesson = Boolean(MOCK_FLASHCARDS[lessonId])
+  const subtitles = apiData?.lines ?? (hasMockLesson ? MOCK_SUBTITLES : [])
+  const vocabMap    = apiData?.vocabMap ?? WATCH_VOCAB[lessonId] ?? {}
+  const lessonTitle = MOCK_FLASHCARDS[lessonId]?.lessonTitle ?? 'Generated lesson'
+  const youtubeId = apiData?.youtubeId ?? (hasMockLesson ? YOUTUBE_ID : '')
+  const youtubeOrigin = typeof window === 'undefined' ? '' : window.location.origin
+  const totalDuration = apiData?.durationSec ?? subtitles[subtitles.length - 1]?.endSec ?? 0
   const culturalNotes = useMemo(
-    () => MOCK_CULTURAL_NOTES_BY_LESSON[lessonId] ?? [],
-    [lessonId],
+    () => apiData?.culturalNotes ?? MOCK_CULTURAL_NOTES_BY_LESSON[lessonId] ?? [],
+    [apiData?.culturalNotes, lessonId],
   )
   const mergedBookmarks = useMemo(() => {
     const mockBookmarks = MOCK_BOOKMARKS_BY_LESSON[lessonId] ?? []
@@ -783,7 +801,39 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
   }, [bookmarks, lessonId])
 
   // 현재 자막 (currentSec 기준 마지막으로 시작된 라인)
-  const activeLine = MOCK_SUBTITLES.slice().reverse().find((s) => currentSec >= s.startSec) ?? MOCK_SUBTITLES[0]
+  useEffect(() => {
+    let cancelled = false
+    setIsLoading(true)
+    setError(null)
+
+    getLessonSubtitles(lessonId)
+      .then((subtitlesResponse) => {
+        if (!cancelled) setApiData(subtitlesResponse)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setApiData(null)
+          setError(MOCK_FLASHCARDS[lessonId] ? null : err instanceof Error ? err.message : 'Could not load subtitles.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [lessonId])
+
+  const activeLine = subtitles.slice().reverse().find((s) => currentSec >= s.startSec) ?? subtitles[0]
+
+  const sendYouTubeCommand = useCallback((func: string, args: unknown[] = []) => {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func, args }),
+      '*',
+    )
+  }, [])
+
   // 시뮬레이션 타이머 — 종료 시 reachedEnd 플래그 설정
   const reachedEnd = useRef(false)
   useEffect(() => {
@@ -791,16 +841,24 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     const interval = setInterval(() => {
       setCurrentSec((prev) => {
         const next = prev + speed * 0.5
-        if (next >= TOTAL_DURATION) {
+        if (next >= totalDuration) {
           setIsPlaying(false)
           reachedEnd.current = true
-          return TOTAL_DURATION
+          return totalDuration
         }
         return next
       })
     }, 500)
     return () => clearInterval(interval)
-  }, [isPlaying, speed])
+  }, [isPlaying, speed, totalDuration])
+
+  useEffect(() => {
+    sendYouTubeCommand(isPlaying ? 'playVideo' : 'pauseVideo')
+  }, [isPlaying, sendYouTubeCommand])
+
+  useEffect(() => {
+    sendYouTubeCommand('setPlaybackRate', [speed])
+  }, [sendYouTubeCommand, speed])
 
   // 자연 재생 종료 감지 → onComplete 호출 (1회만)
   useEffect(() => {
@@ -813,8 +871,9 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
   // 현재 자막 라인으로 자동 스크롤
   useEffect(() => {
+    if (!activeLine) return
     lineRefs.current[activeLine.id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }, [activeLine.id])
+  }, [activeLine])
 
   const toggleBlind = () => {
     setIsBlind((v) => {
@@ -832,11 +891,17 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     })
   }
 
+  const seekTo = (seconds: number) => {
+    setCurrentSec(seconds)
+    sendYouTubeCommand('seekTo', [seconds, true])
+    if (isPlaying) sendYouTubeCommand('playVideo')
+  }
+
   const subtitleProps = {
     vocabMap, bookmarks: mergedBookmarks, currentLessonId: lessonId, lessonTitle, addBookmark,
     isBlind, revealedCards, onRevealToggle: toggleReveal,
   }
-  const firstSubtitleId = MOCK_SUBTITLES[0]?.id
+  const firstSubtitleId = subtitles[0]?.id
 
   const subtitleModeOptions: Array<{ value: SubtitleDisplayMode; label: string }> = [
     { value: 'bilingual', label: 'Dual' },
@@ -870,6 +935,22 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
     }
   }, [isResizingSidePanel])
 
+  if (isLoading && !apiData && !hasMockLesson) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-neutral-950 text-sm font-medium text-neutral-400">
+        Loading subtitles...
+      </div>
+    )
+  }
+
+  if (!activeLine) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-neutral-950 text-sm font-medium text-neutral-400">
+        {error ?? 'No subtitles available for this lesson yet.'}
+      </div>
+    )
+  }
+
   const toggleSentenceBookmark = (line: SubtitleLine) => {
     const sentenceBookmarkId = `sentence-${lessonId}-${line.id}`
 
@@ -897,13 +978,20 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
         {/* 유튜브 임베드 */}
         <div className="relative w-full aspect-video shrink-0 bg-black">
-          <iframe
-            src={`https://www.youtube.com/embed/${YOUTUBE_ID}?rel=0&modestbranding=1`}
-            className="absolute inset-0 w-full h-full"
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-            title="Lesson video"
-          />
+          {youtubeId ? (
+            <iframe
+              ref={iframeRef}
+              src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&controls=0&disablekb=1&playsinline=1&enablejsapi=1${youtubeOrigin ? `&origin=${encodeURIComponent(youtubeOrigin)}` : ''}`}
+              className="absolute inset-0 w-full h-full"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              title="Lesson video"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-neutral-500">
+              Video is not available.
+            </div>
+          )}
         </div>
 
         {/* 현재 자막 (크게) */}
@@ -928,13 +1016,17 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
         <div className="shrink-0 px-8 py-5">
           <input
             type="range"
-            min={0} max={TOTAL_DURATION} value={currentSec} step={0.5}
-            onChange={(e) => setCurrentSec(Number(e.target.value))}
+            min={0} max={totalDuration} value={currentSec} step={0.5}
+            onChange={(e) => {
+              const nextSec = Number(e.target.value)
+              setCurrentSec(nextSec)
+              sendYouTubeCommand('seekTo', [nextSec, true])
+            }}
             className="w-full h-1 mb-1 cursor-pointer accent-violet-500"
           />
           <div className="flex justify-between text-[10px] text-neutral-600 mb-5">
             <span>{formatTime(currentSec)}</span>
-            <span>{formatTime(TOTAL_DURATION)}</span>
+            <span>{formatTime(totalDuration)}</span>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -1078,7 +1170,7 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
                     </div>
                   </div>
                 </div>
-                <span className="text-xs text-neutral-500">{MOCK_SUBTITLES.length} lines</span>
+                <span className="text-xs text-neutral-500">{subtitles.length} lines</span>
               </div>
             </div>
           ) : (
@@ -1090,14 +1182,14 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
 
         {isSidePanelOpen && sidePanelTab === 'transcript' ? (
           <div className="flex-1 overflow-y-auto">
-            {MOCK_SUBTITLES.map((line) => {
+            {subtitles.map((line) => {
               const isActive = line.id === activeLine.id
               const isSentenceBookmarked = isBookmarked(`sentence-${lessonId}-${line.id}`)
               return (
                 <div
                   key={line.id}
                   ref={(el) => { lineRefs.current[line.id] = el }}
-                  onClick={() => setCurrentSec(line.startSec)}
+                  onClick={() => seekTo(line.startSec)}
                   className={`px-5 py-3.5 border-b border-neutral-800/60 cursor-pointer transition-all ${
                     isActive ? 'bg-neutral-800 border-l-2 border-l-primary' : 'hover:bg-neutral-800/50'
                   }`}
@@ -1163,12 +1255,12 @@ export default function WatchTab({ lessonId, onComplete }: { lessonId: string; o
               <div className="flex flex-col gap-3">
                 {culturalNotes.map((note) => {
                   const isFocused = note.subtitleId === activeLine.id
-                  const linkedSubtitle = MOCK_SUBTITLES.find((line) => line.id === note.subtitleId)
+                  const linkedSubtitle = subtitles.find((line) => line.id === note.subtitleId)
                   return (
                     <div
                       key={note.id}
                       onClick={() => {
-                        if (linkedSubtitle) setCurrentSec(linkedSubtitle.startSec)
+                        if (linkedSubtitle) seekTo(linkedSubtitle.startSec)
                       }}
                       className={`cursor-pointer rounded-2xl border px-4 py-4 transition-all ${
                         isFocused
