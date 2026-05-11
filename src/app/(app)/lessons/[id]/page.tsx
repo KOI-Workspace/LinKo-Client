@@ -7,6 +7,7 @@ import { MOCK_LESSONS } from '@/data/mockLessons'
 import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import WatchTab from '@/components/features/watch/WatchTab'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
+import { getLesson, type LessonSummary } from '@/lib/lessonsApi'
 
 type Tab = 'flashcard' | 'watch'
 
@@ -109,6 +110,9 @@ export default function LessonDetailPage() {
   const [flashcardCompleted, setFlashcardCompleted] = useState(false)
   const [watchCompleted, setWatchCompleted] = useState(false)
   const [showCompletionModal, setShowCompletionModal] = useState(false)
+  const [apiLesson, setApiLesson] = useState<LessonSummary | null>(null)
+  const [isLoadingLesson, setIsLoadingLesson] = useState(true)
+  const [lessonError, setLessonError] = useState<string | null>(null)
 
   // URL searchParam으로 초기 탭 결정
   useEffect(() => {
@@ -117,12 +121,46 @@ export default function LessonDetailPage() {
     if (tab === 'watch' || tab === 'flashcard') setActiveTab(tab)
   }, [])
 
-  const lesson = MOCK_LESSONS.find((l) => l.id === id)
+  const mockLesson = MOCK_LESSONS.find((l) => l.id === id)
+
+  useEffect(() => {
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    const loadLesson = async () => {
+      try {
+        const lesson = await getLesson(id)
+        if (cancelled) return
+        setApiLesson(lesson)
+        setLessonError(null)
+        if (lesson.generationStatus === 'generating') {
+          timer = setTimeout(loadLesson, 2500)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setApiLesson(null)
+          setLessonError(mockLesson ? null : err instanceof Error ? err.message : 'Could not load this lesson.')
+        }
+      } finally {
+        if (!cancelled) setIsLoadingLesson(false)
+      }
+    }
+
+    setIsLoadingLesson(true)
+    loadLesson()
+
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
+  }, [id, mockLesson])
+
+  const lesson = apiLesson ?? mockLesson
 
   if (!lesson) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-neutral-400">
-        <p className="text-sm">Lesson not found.</p>
+        <p className="text-sm">{isLoadingLesson ? 'Loading lesson...' : lessonError ?? 'Lesson not found.'}</p>
         <button onClick={() => router.push('/lessons')} className="text-sm text-primary hover:underline">
           Back to Lessons
         </button>
@@ -131,6 +169,7 @@ export default function LessonDetailPage() {
   }
 
   const isGenerating = lesson.generationStatus === 'generating'
+  const isFailed = lesson.generationStatus === 'failed'
   const flashcardCardCount = MOCK_FLASHCARDS[id]?.cards.length ?? 0
 
   const handleFlashcardComplete = () => {
@@ -214,8 +253,13 @@ export default function LessonDetailPage() {
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-neutral-400">
           <p className="text-sm font-medium">Still generating this lesson...</p>
           <p className="text-xs">
-            {lesson.minutesLeft != null ? `~${lesson.minutesLeft} min left` : 'Processing...'}
+            {'minutesLeft' in lesson && lesson.minutesLeft != null ? `~${lesson.minutesLeft} min left` : 'Processing...'}
           </p>
+        </div>
+      ) : isFailed ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-neutral-400">
+          <p className="text-sm font-medium">Lesson generation failed.</p>
+          <p className="text-xs">{apiLesson?.errorMessage ?? 'Try another Korean-captioned video.'}</p>
         </div>
       ) : activeTab === 'flashcard' ? (
         <FlashcardTab lessonId={id} onComplete={handleFlashcardComplete} />

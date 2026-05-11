@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import UrlInput from '@/components/features/home/UrlInput'
 import VideoCard from '@/components/features/home/VideoCard'
-import MyLessonsSection from '@/components/features/home/MyLessonsSection'
+import HomeMyLessons from '@/components/features/home/HomeMyLessons'
 import MyChannelsSection from '@/components/features/home/MyChannelsSection'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
 
@@ -104,7 +104,7 @@ export default function HomePage() {
       {/* 콘텐츠 영역 */}
       <div className="px-10 py-8 space-y-10">
         {/* My Lessons — 상태 필터 포함 클라이언트 컴포넌트 */}
-        <MyLessonsSection lessons={MOCK_MY_LESSONS} />
+        <HomeMyLessons fallbackLessons={MOCK_MY_LESSONS} />
 
         {/* My Channels */}
         <MyChannelsSection initialChannels={MOCK_CHANNELS} />

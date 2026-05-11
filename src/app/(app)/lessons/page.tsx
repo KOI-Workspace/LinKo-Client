@@ -1,20 +1,26 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, ChevronLeft, ChevronRight, CreditCard, Captions,
-  Loader2, ChevronDown, ArrowUpDown, Play,
+  Loader2, ChevronDown, ArrowUpDown, Play, RefreshCw,
 } from 'lucide-react'
 import UrlInput from '@/components/features/home/UrlInput'
 import { ActivityPill, deriveDisplayStatus } from '@/components/features/home/VideoCard'
 import type { LessonData } from '@/components/features/home/MyLessonsSection'
 import { MOCK_LESSONS } from '@/data/mockLessons'
+import { listLessons, type LessonSummary } from '@/lib/lessonsApi'
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
 type StatusFilter = 'all' | 'not_started' | 'in_progress' | 'completed' | 'generating'
 type SortOrder   = 'newest' | 'oldest'
+type LessonListItem = Omit<LessonData, 'date' | 'generationStatus'> & {
+  date?: string | null
+  generationStatus: LessonSummary['generationStatus']
+  errorMessage?: string | null
+}
 
 const PAGE_SIZE = 10
 
@@ -23,19 +29,21 @@ const PAGE_SIZE = 10
 function LessonRow({
   lesson,
 }: {
-  lesson: LessonData
+  lesson: LessonListItem
 }) {
   const isGenerating = lesson.generationStatus === 'generating'
+  const isFailed = lesson.generationStatus === 'failed'
   const flashcardHref = `/lessons/${lesson.id}?tab=flashcard`
   const watchHref = `/lessons/${lesson.id}?tab=watch`
-  const displayStatus = isGenerating
+  const displayStatus = isGenerating || isFailed
     ? null
-    : deriveDisplayStatus(lesson.generationStatus, lesson.flashcardDone, lesson.subtitleDone)
+    : deriveDisplayStatus('ready', lesson.flashcardDone, lesson.subtitleDone)
 
   const statusLabel =
     displayStatus === 'not_started' ? 'Not Started'
     : displayStatus === 'in_progress' ? 'In Progress'
     : displayStatus === 'completed' ? 'Completed'
+    : isFailed ? 'Failed'
     : null
 
   return (
@@ -45,8 +53,8 @@ function LessonRow({
       }`}
     >
       <a
-        href={isGenerating ? undefined : flashcardHref}
-        aria-disabled={isGenerating}
+        href={isGenerating || isFailed ? undefined : flashcardHref}
+        aria-disabled={isGenerating || isFailed}
         className="flex flex-1 min-w-0 items-center gap-4"
       >
         {/* 썸네일 */}
@@ -87,6 +95,10 @@ function LessonRow({
           <span className="flex items-center gap-1 text-xs text-neutral-400">
             <Loader2 className="w-3 h-3 animate-spin" strokeWidth={1.5} />
             {lesson.minutesLeft != null ? `~${lesson.minutesLeft} min left` : 'Processing...'}
+          </span>
+        ) : isFailed ? (
+          <span className="max-w-48 truncate text-xs font-medium text-red-500" title={lesson.errorMessage ?? undefined}>
+            Generation failed
           </span>
         ) : (
           <>
@@ -152,9 +164,42 @@ export default function LessonsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortOrder, setSortOrder]     = useState<SortOrder>('newest')
   const [page, setPage]               = useState(1)
+  const [apiLessons, setApiLessons]   = useState<LessonSummary[]>([])
+  const [isLoadingLessons, setIsLoadingLessons] = useState(true)
+  const [lessonsError, setLessonsError] = useState<string | null>(null)
+
+  const loadLessons = async () => {
+    setIsLoadingLessons(true)
+    setLessonsError(null)
+    try {
+      const response = await listLessons()
+      setApiLessons(response.lessons)
+    } catch (err) {
+      setApiLessons([])
+      setLessonsError(err instanceof Error ? err.message : 'Could not load lessons.')
+    } finally {
+      setIsLoadingLessons(false)
+    }
+  }
+
+  useEffect(() => {
+    loadLessons()
+  }, [])
+
+  const normalizedApiLessons = useMemo<LessonListItem[]>(
+    () => apiLessons.map((lesson) => ({
+      ...lesson,
+      channelName: lesson.channelName ?? undefined,
+      thumbnailUrl: lesson.thumbnailUrl ?? undefined,
+      duration: lesson.duration ?? undefined,
+      date: lesson.date ?? undefined,
+    })),
+    [apiLessons],
+  )
+  const lessons = normalizedApiLessons.length > 0 ? normalizedApiLessons : lessonsError ? MOCK_LESSONS : normalizedApiLessons
 
   const filtered = useMemo(() => {
-    let result = MOCK_LESSONS
+    let result: LessonListItem[] = lessons
     if (search.trim()) {
       const q = search.toLowerCase()
       result = result.filter(
@@ -166,7 +211,7 @@ export default function LessonsPage() {
         if (statusFilter === 'generating') return l.generationStatus === 'generating'
         return (
           l.generationStatus === 'ready' &&
-          deriveDisplayStatus(l.generationStatus, l.flashcardDone, l.subtitleDone) === statusFilter
+          deriveDisplayStatus('ready', l.flashcardDone, l.subtitleDone) === statusFilter
         )
       })
     }
@@ -174,7 +219,7 @@ export default function LessonsPage() {
       sortOrder === 'newest' ? parseInt(b.id) - parseInt(a.id) : parseInt(a.id) - parseInt(b.id)
     )
     return result
-  }, [search, statusFilter, sortOrder])
+  }, [lessons, search, statusFilter, sortOrder])
 
   const totalPages   = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage  = Math.min(page, totalPages)
@@ -207,7 +252,25 @@ export default function LessonsPage() {
               <span className="text-neutral-300 text-sm">/</span>
               <span className="text-sm font-semibold text-primary">My Lessons</span>
             </div>
-            <span className="text-sm text-neutral-400">{filtered.length} lessons</span>
+            <div className="flex items-center gap-2">
+              {lessonsError && (
+                <span className="text-xs text-red-500">Showing mock lessons</span>
+              )}
+              <button
+                onClick={loadLessons}
+                disabled={isLoadingLessons}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-400 transition-colors hover:border-neutral-300 hover:text-neutral-700 disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Refresh lessons"
+                title="Refresh lessons"
+              >
+                {isLoadingLessons ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                )}
+              </button>
+              <span className="text-sm text-neutral-400">{filtered.length} lessons</span>
+            </div>
           </div>
 
           {/* 컨트롤 바 */}
@@ -244,7 +307,13 @@ export default function LessonsPage() {
           </div>
 
           {/* 목록 */}
-          {paginated.length > 0 ? (
+          {isLoadingLessons && apiLessons.length === 0 && !lessonsError ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Loader2 className="mb-3 h-5 w-5 animate-spin text-neutral-400" />
+              <p className="text-sm font-semibold text-neutral-950 mb-1">Loading lessons</p>
+              <p className="text-xs text-neutral-400">Fetching your generated YouTube lessons.</p>
+            </div>
+          ) : paginated.length > 0 ? (
             <div className="flex flex-col gap-2">
               {paginated.map((lesson) => (
                 <LessonRow
