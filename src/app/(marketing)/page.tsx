@@ -8,34 +8,24 @@ import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 
 const FEATURE_LIST = [
   {
-    badge: 'Level Customization',
-    title: 'Turn any link into level-based learning materials',
-    description: 'Learning materials for Korean learners on every level',
-    imageSide: 'right' as const,
-    imageNote: '링크 삽입 → 레벨 선택 모달 (1 / 2 / 3 레벨)',
+    chip: 'Dual Subtitles',
+    title: 'Understand videos while learning naturally',
+    description: 'Follow Korean and your native language side by side while watching real content.',
+    visualType: 'dualSubtitles' as const,
   },
   {
-    badge: 'Real Expression Quiz',
-    title: 'Learn real expressions through quizzes',
-    description: 'Quiz to ~~~',
-    imageSide: 'left' as const,
-    imageNote: '퀴즈 한 장씩 넘어가는 UI',
+    chip: 'Cultural Notes',
+    title: 'Understand the culture behind the language',
+    description: 'Learn Slang, reactions, and cultural references you won\'t find from Korean videos.',
+    visualType: 'culturalNotes' as const,
   },
   {
-    badge: 'Watch with dual subtitles',
-    title: 'Study with dual subtitles while watching',
-    description: 'Provides the best dual subtitle ~~',
-    imageSide: 'right' as const,
-    imageNote: '듀얼 서브타이틀 이미지',
+    chip: 'Flashcards',
+    title: 'Learn real Korean expressions through flashcards',
+    description: 'Review useful expressions, vocabulary, and grammar breakdowns through flashcards while exploring how similar expressions are used in other videos.',
+    visualType: 'flashcards' as const,
   },
-  {
-    badge: 'Save expressions to review',
-    title: 'Review saved expressions anytime',
-    description: 'Review saved expressions anytime you want and study expressions',
-    imageSide: 'left' as const,
-    imageNote: '표현 저장 → 저장한 표현으로 복습',
-  },
-]
+] as const
 
 const REVIEWS = [
   {
@@ -66,39 +56,126 @@ const FAQ_ITEMS = [
 
 // ─── 서브 컴포넌트 ──────────────────────────────────────────────────────────
 
-/** 기능 섹션의 이미지 플레이스홀더 */
-function FeatureImagePlaceholder({ note }: { note: string }) {
-  return (
-    <div className="w-full aspect-[4/3] rounded-xl bg-neutral-100 flex flex-col items-center justify-center gap-2 border border-neutral-200">
-      <div className="w-10 h-10 rounded-lg bg-neutral-300 flex items-center justify-center">
-        <Play className="w-5 h-5 text-neutral-500" fill="currentColor" />
+/** 기능 시각 요소 */
+function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]['visualType'] }) {
+  if (visualType === 'dualSubtitles') {
+    return (
+      <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-7 sm:p-10 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+        <div className="rounded-[24px] border border-neutral-200 bg-white overflow-hidden min-h-[440px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 min-h-[440px]">
+            <div className="border-b md:border-b-0 md:border-r border-neutral-100 bg-neutral-950 px-6 py-8 text-left text-white flex flex-col justify-between min-h-[220px] md:min-h-full">
+              <div className="text-xs uppercase tracking-[0.24em] text-white/45">Korean</div>
+              <div className="space-y-3">
+                <p className="text-xl sm:text-2xl font-semibold leading-relaxed">오늘은 영상으로 공부해볼까요?</p>
+                <p className="text-base text-white/70 leading-relaxed">자막과 함께 자연스럽게 의미를 따라가 보세요.</p>
+              </div>
+            </div>
+            <div className="bg-white px-6 py-8 text-left text-neutral-950 flex flex-col justify-between min-h-[220px] md:min-h-full">
+              <div className="text-xs uppercase tracking-[0.24em] text-primary-500">Native language</div>
+              <div className="space-y-3">
+                <p className="text-xl sm:text-2xl font-semibold leading-relaxed">Learn from real content, side by side.</p>
+                <p className="text-base text-neutral-500 leading-relaxed">두 언어를 함께 보면 이해가 더 빠릅니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <p className="text-xs text-neutral-400 text-center px-6">{note}</p>
+    )
+  }
+
+  if (visualType === 'culturalNotes') {
+    return (
+      <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-7 sm:p-10 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+        <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] min-h-[440px]">
+          <div className="rounded-[22px] bg-neutral-950 p-7 text-left text-white min-h-[440px] flex flex-col justify-between">
+            <p className="text-xs uppercase tracking-[0.24em] text-white/45 mb-6">Cultural Notes</p>
+            <div className="space-y-4">
+              <div className="rounded-2xl bg-white/8 border border-white/10 px-5 py-5">
+                <p className="text-base font-semibold">“대박”</p>
+                <p className="mt-1 text-base text-white/70">Used to express surprise, excitement, or admiration.</p>
+              </div>
+              <div className="rounded-2xl bg-white/8 border border-white/10 px-5 py-5">
+                <p className="text-base font-semibold">Reaction culture</p>
+                <p className="mt-1 text-base text-white/70">Why people say things a certain way in everyday Korean videos.</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-[22px] border border-neutral-200 bg-white p-7 min-h-[440px] flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="h-4 w-24 rounded-full bg-primary-200" />
+              <div className="h-4 w-4/5 rounded-full bg-neutral-200" />
+              <div className="h-4 w-2/3 rounded-full bg-neutral-100" />
+            </div>
+            <div className="mt-6 rounded-2xl bg-neutral-50 border border-neutral-200 p-5">
+              <p className="text-xs uppercase tracking-[0.22em] text-neutral-400 mb-2">Reference</p>
+              <p className="text-base text-neutral-600 leading-relaxed">
+                Slang, tone, and context explained in one place.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-7 sm:p-10 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+      <div className="grid gap-4 md:grid-cols-[0.95fr_1.05fr] min-h-[440px]">
+        <div className="rounded-[22px] border border-neutral-200 bg-white p-6 sm:p-7 min-h-[440px] flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-5">
+            <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">Flashcards</span>
+            <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary">B1</span>
+          </div>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-primary-100 bg-primary-50 px-5 py-5">
+              <p className="text-base font-semibold text-neutral-950">먹어보다</p>
+              <p className="mt-1 text-sm text-neutral-500">to try eating / to give it a try</p>
+            </div>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-5">
+              <p className="text-base font-semibold text-neutral-950">-아/어요</p>
+              <p className="mt-1 text-sm text-neutral-500">polite present tense ending</p>
+            </div>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-5">
+              <p className="text-base font-semibold text-neutral-950">진짜</p>
+              <p className="mt-1 text-sm text-neutral-500">really / seriously</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-[22px] bg-neutral-950 p-7 sm:p-9 text-white flex items-end justify-between min-h-[440px]">
+          <div className="max-w-sm">
+            <p className="text-xs uppercase tracking-[0.24em] text-white/45 mb-4">Review in context</p>
+            <p className="text-2xl sm:text-3xl font-semibold leading-tight">
+              Learn the expression, then see how it shows up again.
+            </p>
+          </div>
+          <div className="hidden sm:block rounded-full border border-white/15 px-4 py-2 text-xs text-white/70">
+            Similar usage across videos
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
 /** 기능 소개 한 블록 */
-function FeatureBlock({ badge, title, description, imageSide, imageNote }: typeof FEATURE_LIST[number]) {
-  const textBlock = (
-    <div className="flex flex-col justify-center gap-4">
-      <span className="inline-flex self-start items-center px-3 py-1 rounded-pill bg-neutral-800 text-white text-xs font-medium">
-        {badge}
-      </span>
-      <h3 className="text-2xl font-bold text-neutral-950 leading-snug">{title}</h3>
-      <p className="text-sm text-neutral-500 leading-relaxed">{description}</p>
-    </div>
-  )
-
-  const imageBlock = <FeatureImagePlaceholder note={imageNote} />
-
+function FeatureBlock({ chip, title, description, visualType }: typeof FEATURE_LIST[number]) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center py-16">
-      {imageSide === 'right' ? (
-        <>{textBlock}{imageBlock}</>
-      ) : (
-        <>{imageBlock}{textBlock}</>
-      )}
+    <div className="py-14 sm:py-18">
+      <div className="max-w-4xl mx-auto text-center">
+        <span className="inline-flex items-center justify-center px-3 py-1 rounded-pill bg-neutral-800 text-white text-xs font-medium">
+          {chip}
+        </span>
+        <h3 className="mt-4 text-3xl sm:text-4xl font-bold text-neutral-950 leading-tight">
+          {title}
+        </h3>
+        <p className="mt-4 text-base sm:text-lg text-neutral-500 leading-relaxed max-w-2xl mx-auto">
+          {description}
+        </p>
+      </div>
+
+      <div className="mt-10 max-w-5xl mx-auto">
+        <FeatureVisual visualType={visualType} />
+      </div>
     </div>
   )
 }
@@ -493,7 +570,7 @@ export default function LandingPage() {
 
             <div className="divide-y divide-neutral-100">
               {FEATURE_LIST.map((feature) => (
-                <FeatureBlock key={feature.badge} {...feature} />
+                <FeatureBlock key={feature.chip} {...feature} />
               ))}
             </div>
           </div>
