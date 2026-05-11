@@ -710,17 +710,14 @@ export default function LandingPage() {
         <section className="py-24 bg-gradient-to-br from-primary-600 to-primary-800">
           <div className="max-w-2xl mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Start learning Korean today
+              So, ready to give it a try?
             </h2>
             <p className="text-primary-200 text-base mb-10 leading-relaxed">
-              Join thousands of learners turning their YouTube habits into Korean fluency.
+              Start learning through your favorite videos.
             </p>
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center">
               <button className="rounded-pill bg-white text-primary-700 font-semibold text-sm px-6 py-3 hover:bg-primary-50 transition-colors shadow-lg">
-                Get Started for Free →
-              </button>
-              <button className="rounded-pill bg-transparent text-white font-medium text-sm px-6 py-3 border border-primary-400 hover:border-white transition-colors">
-                See how it works
+                Get Started for Free
               </button>
             </div>
           </div>
