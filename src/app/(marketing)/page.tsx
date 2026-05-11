@@ -965,7 +965,8 @@ export default function LandingPage() {
     }
   }
 
-  const handleScrollCueClick = () => {
+  const handleScrollCueClick = (e: React.MouseEvent) => {
+    e.preventDefault()
     document.getElementById('video-explorer-section')?.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
@@ -1170,7 +1171,7 @@ export default function LandingPage() {
 
           </div>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-8 sm:bottom-10">
+          <div className="pointer-events-none absolute inset-x-0 bottom-8 z-20 sm:bottom-10">
             <a
               href="#video-explorer-section"
               onClick={handleScrollCueClick}
