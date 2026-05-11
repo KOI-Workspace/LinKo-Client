@@ -10,12 +10,6 @@ const VIDEO_CATEGORIES = [
   'JungKook', 'Lisa', 'K-Drama',
 ]
 
-const STATS = [
-  { value: '10,000+', label: 'Active Learners' },
-  { value: '50,000+', label: 'Lessons Created' },
-  { value: '4.9★',    label: 'Average Rating' },
-]
-
 const FEATURE_LIST = [
   {
     badge: 'Level Customization',
@@ -351,6 +345,7 @@ export default function LandingPage() {
               </div>
               <p className="mt-3 text-xs text-primary-100/60">Free to try · No credit card required</p>
             </div>
+
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-8 sm:bottom-10">
@@ -362,20 +357,6 @@ export default function LandingPage() {
               <span>Pick a video to start learning</span>
               <ChevronDown className="h-5 w-5 animate-bounce" />
             </button>
-          </div>
-        </section>
-
-        {/* ── Stats ── */}
-        <section className="border-y border-neutral-100 bg-white">
-          <div className="max-w-3xl mx-auto px-6 py-10">
-            <div className="grid grid-cols-3 gap-6 text-center">
-              {STATS.map((stat) => (
-                <div key={stat.label}>
-                  <div className="text-3xl font-bold text-neutral-950 tracking-tight">{stat.value}</div>
-                  <div className="text-sm text-neutral-500 mt-1">{stat.label}</div>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
