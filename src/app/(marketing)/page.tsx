@@ -862,6 +862,7 @@ export default function LandingPage() {
   const [isEarlyAccessModalOpen, setIsEarlyAccessModalOpen] = useState(false)
   const [loginModalSource, setLoginModalSource] = useState<'hero' | 'video' | 'cta' | null>(null)
   const [submittedVideoUrl, setSubmittedVideoUrl] = useState<string | null>(null)
+  const [scrollY, setScrollY] = useState(0)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
   const showPlaceholderPreview = isFocused && !userInputValue
@@ -872,6 +873,14 @@ export default function LandingPage() {
     ? 'text-neutral-400'
     : 'text-neutral-950'
   const showOverlayText = isAnimating || showPlaceholderPreview
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     if (isFocused || userInputValue) {
