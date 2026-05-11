@@ -1096,9 +1096,9 @@ export default function LandingPage() {
               {/* Social Proof */}
               <div className="mb-4 flex items-center justify-center gap-3">
                 <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-400" />
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-secondary-300" />
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-200" />
+                  <img src="/images/social/user-1.png" alt="User" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                  <img src="/images/social/user-2.png" alt="User" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                  <img src="/images/social/user-3.png" alt="User" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                 </div>
                 <p className="text-base font-medium text-neutral-500">
                   Korean learners from <span className="font-bold text-neutral-950">72+ countries</span> are trying Linko.
