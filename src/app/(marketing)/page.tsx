@@ -1058,8 +1058,8 @@ export default function LandingPage() {
       />
 
       <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-lg font-bold text-neutral-950 tracking-tight">LinKo</span>
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-start">
+          <span className="text-xl font-bold text-neutral-950 tracking-tight">LinKo</span>
         </div>
       </header>
 
