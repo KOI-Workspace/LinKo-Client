@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Play, ArrowUp, ChevronDown, Plus, X } from 'lucide-react'
+import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle } from 'lucide-react'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
@@ -100,6 +100,14 @@ type FaqEntry = {
   answer: string
   levels?: FaqLevel[]
 }
+
+const UNSUPPORTED_CASES = [
+  '360° videos',
+  'YouTube Shorts',
+  'Non-Korean videos',
+  'Videos longer than 2 hours',
+  'Videos that block external playback',
+]
 
 const FAQ_ITEMS: FaqEntry[] = [
   {
@@ -346,6 +354,72 @@ function FaqItem({
   )
 }
 
+/** 미허용 케이스 안내 모달 */
+function UnsupportedCaseModal({
+  isOpen,
+  onPickOtherVideos,
+}: {
+  isOpen: boolean
+  onPickOtherVideos: () => void
+}) {
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm">
+      <div className="relative w-full max-w-xl rounded-[28px] border border-neutral-200 bg-white p-6 shadow-[0_28px_80px_rgba(15,23,42,0.28)] sm:p-7">
+        <div>
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#ff5f66]">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-2xl font-semibold tracking-tight text-neutral-950">
+                This link is not supported yet
+              </p>
+              <p className="mt-3 max-w-md text-sm leading-6 text-neutral-500">
+                Linko currently supports standard Korean YouTube videos. Some formats still cannot be converted into learning materials.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-7">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-neutral-400">
+              Unsupported cases
+            </p>
+            <div className="mt-4 grid gap-3">
+              {UNSUPPORTED_CASES.map((item, index) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3.5"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950">
+                      {index + 1}
+                    </div>
+                    <p className="text-sm leading-6 text-neutral-700">{item}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-7 flex justify-center">
+            <button
+              type="button"
+              onClick={onPickOtherVideos}
+              className="rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+            >
+              Pick Other Videos
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── 메인 페이지 ────────────────────────────────────────────────────────────
 
 const PLACEHOLDER_TEXTS = [
@@ -435,6 +509,7 @@ export default function LandingPage() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
+  const [isUnsupportedModalOpen, setIsUnsupportedModalOpen] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
   const showPlaceholderPreview = isFocused && !userInputValue
@@ -536,8 +611,33 @@ export default function LandingPage() {
     })
   }
 
+  const handleHeroSubmit = () => {
+    if (!userInputValue.trim()) {
+      return
+    }
+
+    setIsUnsupportedModalOpen(true)
+  }
+
+  const handleCloseUnsupportedModal = () => {
+    setIsUnsupportedModalOpen(false)
+  }
+
+  const handlePickOtherVideos = () => {
+    handleCloseUnsupportedModal()
+    document.getElementById('video-explorer-section')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   return (
     <>
+      <UnsupportedCaseModal
+        isOpen={isUnsupportedModalOpen}
+        onPickOtherVideos={handlePickOtherVideos}
+      />
+
       {/* ── Navbar ── */}
       <header className="sticky top-0 z-50 border-b border-white/5 bg-[#090b28]/85 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -606,6 +706,7 @@ export default function LandingPage() {
                 <button
                   type="button"
                   disabled={!userInputValue.trim()}
+                  onClick={handleHeroSubmit}
                   className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-primary text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
                   aria-label="링크 변환"
                 >
