@@ -10,13 +10,13 @@ const FEATURE_LIST = [
   {
     chip: 'Dual Subtitles',
     title: 'Understand videos while learning naturally',
-    description: 'Follow Korean and your native language side by side while watching real content.',
+    description: 'Follow Korean and your native language side by side while watching real content, and learn more effectively through Blind.',
     visualType: 'dualSubtitles' as const,
   },
   {
     chip: 'Cultural Notes',
     title: 'Understand the culture behind the language',
-    description: 'Learn Slang, reactions, and cultural references you won\'t find from Korean videos.',
+    description: 'Learn Slang, reactions, and cultural references you won\'t find from other Korean learning apps.',
     visualType: 'culturalNotes' as const,
   },
   {
