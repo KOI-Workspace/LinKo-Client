@@ -70,7 +70,7 @@ YouTube URL을 받아 학습자료 생성을 요청하는 핵심 진입점. Home
 ## Mock 데이터 전략
 백엔드 미연동 상태. 모든 데이터는 각 페이지 파일 상단의 `MOCK_*` 상수로 관리.
 - `isLesson?: boolean` — channels 페이지 영상에서 레슨화 여부 구분 (`false`면 `showLearning={false}`)
-- 실제 API 연동 시 `NEXT_PUBLIC_API_URL` 환경변수 사용
+- 실제 API 연동 시 `../LinKo-Server`를 참고해 endpoint shape, request/response 타입, env 기대값을 맞추고 `NEXT_PUBLIC_API_URL` 환경변수 사용
 
 ## 디자인 시스템 (Lavender Pulse)
 - **`design.json`** — 색상·여백·라운딩 정확한 스펙. 컴포넌트 구현 시 참조, 값 임의 수정 금지
