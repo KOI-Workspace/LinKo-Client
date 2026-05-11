@@ -29,40 +29,64 @@ const FEATURE_LIST = [
 
 const REVIEWS = [
   {
-    name: 'Sarah K.',
+    name: 'Emma R.',
     country: '🇺🇸 USA',
-    role: 'Product Designer',
-    text: 'LinKo made Korean study feel lighter. I learn from videos I already watch, so it actually sticks.',
+    role: 'Korean Learner',
+    text: 'I used to memorize proverbs from lists and forget them immediately. Seeing them inside real YouTube scenes made the meaning click in a much more natural way.',
   },
   {
-    name: 'James L.',
-    country: '🇦🇺 Australia',
-    role: 'Startup Operator',
-    text: 'Dual subtitles helped me follow fast speech without losing the flow. It feels much more natural than drilling.',
+    name: 'Sophie M.',
+    country: '🇬🇧 UK',
+    role: 'ARMY',
+    text: 'This is the first tool that made BTS fandom expressions actually make sense to me. I finally understand the little phrases fans use with each other instead of just guessing from context.',
   },
   {
-    name: 'Mia T.',
-    country: '🇯🇵 Japan',
-    role: 'K-Drama Fan',
-    text: 'I paste one clip in the morning and get a useful lesson back in seconds. That routine has lasted.',
-  },
-  {
-    name: 'Daniel R.',
+    name: 'Noah T.',
     country: '🇨🇦 Canada',
-    role: 'Research Lead',
-    text: 'Cultural notes fill in the context other apps skip. I finally understand why certain phrases land the way they do.',
+    role: 'K-Drama Fan',
+    text: 'The bookmark feature is what keeps me coming back. I save expressions from emotional scenes, then revisit them later when I want a quick review.',
   },
   {
     name: 'Lucia P.',
     country: '🇪🇸 Spain',
-    role: 'Language Learner',
-    text: 'The flashcards are practical because they come from real scenes. Review feels connected, not random.',
+    role: 'Korean Learner',
+    text: 'I like that my bookmarks keep growing over time. It feels less like using an app and more like building my own Korean vocabulary collection from things I actually watched.',
   },
   {
-    name: 'Amina H.',
+    name: 'Maya L.',
+    country: '🇦🇺 Australia',
+    role: 'K-pop Fan',
+    text: 'The dual subtitles are much cleaner than other subtitle tools I tried. I can stay focused on the video instead of fighting with the interface.',
+  },
+  {
+    name: 'Daniel K.',
+    country: '🇯🇵 Japan',
+    role: 'Korean Learner',
+    text: 'Grammar endings and honorifics were always confusing for me. Here the breakdowns are detailed enough that I can finally see why a speaker chose one form over another.',
+  },
+  {
+    name: 'Nina V.',
+    country: '🇩🇪 Germany',
+    role: 'K-Drama Fan',
+    text: 'I remember vocabulary better when it comes from an intense scene or a funny reaction. It feels more emotional and alive than drilling random word lists.',
+  },
+  {
+    name: 'Yasmin A.',
     country: '🇦🇪 UAE',
-    role: 'Student',
-    text: 'I can study with K-pop, vlogs, and interviews in one place. That variety keeps me consistent.',
+    role: 'Korean Variety Show Fan',
+    text: 'The cultural notes are surprisingly useful. They explain reactions, slang, and hidden meanings that would normally go right past me.',
+  },
+  {
+    name: 'Leo F.',
+    country: '🇫🇷 France',
+    role: 'STAY',
+    text: 'The flashcards feel connected to the actual scenes I watched, so review makes sense. It does not feel like I am being thrown another random vocabulary deck.',
+  },
+  {
+    name: 'Camila S.',
+    country: '🇧🇷 Brazil',
+    role: 'K-content Fan',
+    text: 'Studying through real YouTube videos makes Korean feel much more natural to keep up with. It fits into my routine because I already wanted to watch the content anyway.',
   },
 ]
 
@@ -244,10 +268,7 @@ function ReviewCard({ name, country, role, text }: typeof REVIEWS[number]) {
         <p className="text-base leading-[1.8] text-neutral-700 sm:text-[17px]">
           &ldquo;{text}&rdquo;
         </p>
-        <div className="flex items-center gap-3 pt-1">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-sm font-bold text-primary">
-            {name[0]}
-          </div>
+        <div className="border-t border-neutral-100 pt-5">
           <div>
             <p className="text-base font-semibold text-neutral-950">{name}</p>
             <p className="text-sm text-neutral-400">
