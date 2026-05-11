@@ -1,4 +1,7 @@
-import { Search, Play, Star, ChevronRight, Youtube, ChevronDown } from 'lucide-react'
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { Search, Play, Star, ArrowUp, ChevronRight, ChevronDown } from 'lucide-react'
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
 
@@ -153,7 +156,115 @@ function FaqItem({ q, a }: typeof FAQ_ITEMS[number]) {
 
 // ─── 메인 페이지 ────────────────────────────────────────────────────────────
 
+const PLACEHOLDER_TEXTS = [
+  'https://youtube.com/btscomebacklive',
+  'https://youtube.com/blackpinkvid',
+  'https://youtube.com/learnkoreanwithme',
+  'https://youtube.com/koreanvlogdaily',
+  'https://youtube.com/dramasceneclip',
+]
+
+const INPUT_PLACEHOLDER_TEXT = 'Paste a YouTube link to get started'
+
 export default function LandingPage() {
+  const [userInputValue, setUserInputValue] = useState('')
+  const [animatedValue, setAnimatedValue] = useState('')
+  const [isTypingActive, setIsTypingActive] = useState(true)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [isFocused, setIsFocused] = useState(false)
+  const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const isAnimating = isTypingActive && !isFocused && !userInputValue
+  const showPlaceholderPreview = isFocused && !userInputValue
+  const displayText = showPlaceholderPreview
+    ? INPUT_PLACEHOLDER_TEXT
+    : userInputValue || animatedValue
+  const displayTextColor = showPlaceholderPreview || isAnimating
+    ? 'text-neutral-400'
+    : 'text-neutral-950'
+  const showOverlayText = isAnimating || showPlaceholderPreview
+
+  useEffect(() => {
+    if (isFocused || userInputValue) {
+      return
+    }
+
+    const activeText = PLACEHOLDER_TEXTS[placeholderIndex]
+    let currentIndex = 0
+    let isDeleting = false
+    let startTimeoutId: number | undefined
+    let typeIntervalId: number | undefined
+    let holdTimeoutId: number | undefined
+    let deleteIntervalId: number | undefined
+    let restartTimeoutId: number | undefined
+
+    const syncCursorToEnd = () => {
+      window.requestAnimationFrame(() => {
+        const length = inputRef.current?.value.length ?? 0
+        inputRef.current?.setSelectionRange(length, length)
+      })
+    }
+
+    startTimeoutId = window.setTimeout(() => {
+      typeIntervalId = window.setInterval(() => {
+        if (!isDeleting) {
+          currentIndex += 1
+          setAnimatedValue(activeText.slice(0, currentIndex))
+          syncCursorToEnd()
+
+          if (currentIndex >= activeText.length) {
+            isDeleting = true
+            window.clearInterval(typeIntervalId)
+            holdTimeoutId = window.setTimeout(() => {
+              deleteIntervalId = window.setInterval(() => {
+                currentIndex -= 1
+                setAnimatedValue(activeText.slice(0, currentIndex))
+                syncCursorToEnd()
+
+                if (currentIndex <= 0) {
+                  window.clearInterval(deleteIntervalId)
+                  setAnimatedValue('')
+                  restartTimeoutId = window.setTimeout(() => {
+                    setPlaceholderIndex((current) => (current + 1) % PLACEHOLDER_TEXTS.length)
+                  }, 1000)
+                }
+              }, 55)
+            }, 2000)
+          }
+        }
+      }, 55)
+    }, 1000)
+
+    return () => {
+      if (startTimeoutId) {
+        window.clearTimeout(startTimeoutId)
+      }
+      if (typeIntervalId) {
+        window.clearInterval(typeIntervalId)
+      }
+      if (deleteIntervalId) {
+        window.clearInterval(deleteIntervalId)
+      }
+      if (holdTimeoutId) {
+        window.clearTimeout(holdTimeoutId)
+      }
+      if (restartTimeoutId) {
+        window.clearTimeout(restartTimeoutId)
+      }
+    }
+  }, [isFocused, placeholderIndex, userInputValue])
+
+  const handleFocus = () => {
+    setIsFocused(true)
+    setIsTypingActive(false)
+  }
+
+  const handleBlur = () => {
+    setIsFocused(false)
+    if (!userInputValue) {
+      setIsTypingActive(true)
+    }
+  }
+
   return (
     <>
       {/* ── Navbar ── */}
@@ -192,16 +303,49 @@ export default function LandingPage() {
             </div>
 
             {/* URL 입력 */}
-            <div className="max-w-xl mx-auto flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 shadow-md">
-              <Youtube className="w-5 h-5 text-red-500 shrink-0" />
-              <input
-                type="text"
-                placeholder="Paste any YouTube URL to start learning..."
-                className="flex-1 text-sm text-neutral-950 placeholder:text-neutral-400 bg-transparent outline-none"
-                readOnly
-              />
-              <button className="rounded-pill bg-primary text-white text-sm font-medium px-4 py-2 hover:bg-primary-700 transition-colors shrink-0">
-                Convert →
+            <div className="max-w-xl mx-auto flex min-h-[152px] items-end gap-4 rounded-[32px] border border-neutral-200 bg-white px-6 py-6 shadow-md">
+              <div className="relative flex-1 self-stretch">
+                <textarea
+                  ref={inputRef}
+                  value={isAnimating ? animatedValue : userInputValue}
+                  placeholder={INPUT_PLACEHOLDER_TEXT}
+                  rows={2}
+                  className={`h-full w-full resize-none bg-transparent align-top outline-none text-[17px] leading-[1.6] ${
+                    showOverlayText
+                      ? 'text-transparent caret-transparent placeholder:text-transparent'
+                      : 'text-neutral-950 caret-neutral-500 placeholder:text-neutral-400'
+                  }`}
+                  onChange={(event) => setUserInputValue(event.target.value)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                />
+                {showOverlayText && (
+                  <div className={`pointer-events-none absolute left-0 top-0 inline-flex items-center text-[17px] font-normal leading-[1.6] ${displayTextColor}`}>
+                    {showPlaceholderPreview ? (
+                      <>
+                        <span className="relative top-px h-[1.15em] w-px shrink-0 bg-neutral-500 animate-[blink_1s_step-end_infinite]" />
+                        <span className="ml-0.5 whitespace-pre">{displayText}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="whitespace-pre">{displayText}</span>
+                        <span className="relative top-px ml-0.5 h-[1.15em] w-px shrink-0 bg-neutral-500 animate-[blink_1s_step-end_infinite]" />
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                disabled={!userInputValue.trim()}
+                className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-primary text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
+                aria-label="링크 변환"
+              >
+                <ArrowUp className="w-5 h-5" />
               </button>
             </div>
             <p className="text-xs text-neutral-400 mt-3">Free to try · No credit card required</p>
