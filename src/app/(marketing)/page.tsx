@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Play, ArrowUp, ChevronDown } from 'lucide-react'
+import { Play, ArrowUp, ChevronDown, Plus, X } from 'lucide-react'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
@@ -66,11 +66,49 @@ const REVIEWS = [
   },
 ]
 
-const FAQ_ITEMS = [
-  { q: 'What types of YouTube videos work best?', a: 'Any YouTube video with clear Korean speech works — K-pop, dramas, vlogs, cooking shows, and more.' },
-  { q: 'Is LinKo free to use?',                  a: 'Yes, LinKo offers a free plan with limited conversions per month. Upgrade to Pro for unlimited lessons.' },
-  { q: 'How long does it take to generate a lesson?', a: 'Most lessons are ready in under 60 seconds. Longer videos may take a few minutes.' },
-]
+type FaqLevel = {
+  title: string
+  description: string
+}
+
+type FaqEntry = {
+  question: string
+  answer: string
+  levels?: FaqLevel[]
+}
+
+const FAQ_ITEMS: FaqEntry[] = [
+  {
+    question: 'Is Linko for beginners or advanced learners?',
+    answer: 'Both. Linko offers beginner, intermediate, and advanced learning modes so you can learn Korean at the level that feels right for you.',
+    levels: [
+      {
+        title: 'Beginner',
+        description: 'You’re just starting to learn Korean and still rely heavily on subtitles.',
+      },
+      {
+        title: 'Intermediate',
+        description: 'You can understand some K-drama lines or K-pop lyrics, but fast conversations are still difficult.',
+      },
+      {
+        title: 'Advanced',
+        description: 'You can follow most Korean content and want to learn more natural expressions and nuance.',
+      },
+    ],
+  },
+  {
+    question: 'How are the learning materials created?',
+    answer: 'Linko’s lessons are designed and reviewed by team members with Korean linguistics major, combining AI generated learning materials with real Korean expressions, grammar explanations, and cultural context.',
+  },
+  {
+    question: 'What languages does Linko support?',
+    answer: 'Currently, Linko supports English. More languages will be added very soon.',
+  },
+  {
+    question: 'Is Linko free to use?',
+    answer: 'Yes. Linko offers a free plan. Free users can create up to 5 learning materials per week, while Pro users get unlimited access and exclusive study materials.',
+  },
+] as const
 
 // ─── 서브 컴포넌트 ──────────────────────────────────────────────────────────
 
@@ -223,16 +261,67 @@ function ReviewCard({ name, country, role, text }: typeof REVIEWS[number]) {
 }
 
 /** FAQ 항목 */
-function FaqItem({ q, a }: typeof FAQ_ITEMS[number]) {
+function FaqItem({
+  item,
+  index,
+  isOpen,
+  onToggle,
+}: {
+  item: FaqEntry
+  index: number
+  isOpen: boolean
+  onToggle: () => void
+}) {
   return (
-    <div className="border border-neutral-200 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 bg-white cursor-pointer group hover:bg-neutral-50 transition-colors">
-        <span className="text-sm font-semibold text-neutral-950">{q}</span>
-        <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0 group-hover:text-neutral-600 transition-colors" />
-      </div>
-      <div className="px-5 py-3 bg-neutral-50 border-t border-neutral-100">
-        <p className="text-sm text-neutral-500 leading-relaxed">{a}</p>
-      </div>
+    <div className="border-t border-neutral-200">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 py-7 text-left transition-colors hover:text-neutral-950"
+      >
+        <span className="pt-1 text-sm font-semibold tracking-[0.18em] text-neutral-300">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <span className="text-xl sm:text-2xl font-medium text-neutral-950">
+          {item.question}
+        </span>
+        <span className="shrink-0 text-neutral-950">
+          {isOpen ? <X className="h-7 w-7 stroke-[1.5]" /> : <Plus className="h-7 w-7 stroke-[1.5]" />}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="pb-8 pl-10 pr-12">
+          <p className="max-w-3xl text-base leading-8 text-neutral-500">
+            {item.answer}
+          </p>
+
+          {item.levels && (
+            <div className="mt-8 grid gap-4">
+              {item.levels.map((level: FaqLevel, levelIndex: number) => (
+                <div
+                  key={level.title}
+                  className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.04)]"
+                >
+                  <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-sm font-semibold text-primary">
+                      {String(levelIndex + 1).padStart(2, '0')}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-semibold tracking-tight text-neutral-950">
+                        {level.title}
+                      </p>
+                      <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-500">
+                        {level.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -325,6 +414,7 @@ export default function LandingPage() {
   const [isTypingActive, setIsTypingActive] = useState(true)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
   const showPlaceholderPreview = isFocused && !userInputValue
@@ -637,15 +727,24 @@ export default function LandingPage() {
         </section>
 
         {/* ── FAQ ── */}
-        <section id="faq" className="py-20 bg-white border-t border-neutral-100">
-          <div className="max-w-2xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <span className="text-xs font-medium text-primary uppercase tracking-widest">FAQ</span>
-              <h2 className="text-3xl font-bold text-neutral-950 mt-2">Frequently asked questions</h2>
+        <section id="faq" className="border-t border-neutral-100 bg-white py-24">
+          <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[0.9fr_1.45fr] lg:gap-20">
+            <div>
+              <h2 className="text-4xl font-bold leading-tight text-neutral-950 sm:text-5xl">
+                Frequently
+                <br />
+                Asked Questions
+              </h2>
             </div>
-            <div className="space-y-3">
-              {FAQ_ITEMS.map((item) => (
-                <FaqItem key={item.q} {...item} />
+            <div className="border-b border-neutral-200">
+              {FAQ_ITEMS.map((item, index) => (
+                <FaqItem
+                  key={item.question}
+                  item={item}
+                  index={index}
+                  isOpen={openFaqIndex === index}
+                  onToggle={() => setOpenFaqIndex((current) => (current === index ? null : index))}
+                />
               ))}
             </div>
           </div>
