@@ -1047,35 +1047,35 @@ export default function LandingPage() {
       />
 
       {/* ── Navbar ── */}
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#090b28]/85 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-primary-100/70 bg-white/88 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-lg font-bold text-white tracking-tight">LinKo</span>
+          <span className="text-lg font-bold text-neutral-950 tracking-tight">LinKo</span>
         </div>
       </header>
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative flex min-h-[calc(100vh-3.5rem)] flex-col overflow-hidden bg-[#05071f]">
+        <section className="relative flex min-h-[calc(100vh-3.5rem)] flex-col overflow-hidden bg-[#faf8ff]">
           {/* 배경 장식 */}
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(103,120,255,0.12),transparent_34%),radial-gradient(circle_at_18%_100%,rgba(88,54,255,0.18),transparent_28%),radial-gradient(circle_at_82%_86%,rgba(85,192,255,0.16),transparent_26%)]" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#090b28] via-[#060821] to-[#080a23]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(139,92,246,0.18),transparent_34%),radial-gradient(circle_at_14%_100%,rgba(139,92,246,0.12),transparent_26%),radial-gradient(circle_at_86%_12%,rgba(236,72,153,0.08),transparent_24%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-[#fbf9ff] to-[#f5f2ff]" />
 
           <div className="relative flex flex-1 items-center pb-24 pt-10">
             <div className="max-w-3xl mx-auto w-full px-6 text-center">
-              <h1 className="text-5xl font-bold text-white leading-tight tracking-tight mb-5">
+              <h1 className="text-5xl font-bold text-neutral-950 leading-tight tracking-tight mb-5">
                 Learn real Korean with any
                 <br />
-                <span className="bg-gradient-to-r from-white to-primary-200 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent">
                   YouTube video
                 </span>
               </h1>
 
-              <p className="text-lg text-primary-100/80 mb-10 max-w-lg mx-auto leading-relaxed">
+              <p className="text-lg text-neutral-600 mb-10 max-w-lg mx-auto leading-relaxed">
                 Just paste a link to get vocab, grammar notes, cultural insights, and dual subtitles.
               </p>
 
               {/* URL 입력 */}
-              <div className="max-w-xl mx-auto flex min-h-[152px] items-end gap-4 rounded-[32px] border border-neutral-200 bg-white px-6 py-6 shadow-md">
+              <div className="max-w-xl mx-auto flex min-h-[152px] items-end gap-4 rounded-[32px] border border-primary-100 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(139,92,246,0.08)]">
                 <div className="relative flex-1 self-stretch">
                   <textarea
                     ref={inputRef}
@@ -1115,7 +1115,7 @@ export default function LandingPage() {
                   type="button"
                   disabled={!userInputValue.trim()}
                   onClick={handleHeroSubmit}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-primary text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-neutral-950 text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
                   aria-label="링크 변환"
                 >
                   <ArrowUp className="w-5 h-5" />
@@ -1125,11 +1125,11 @@ export default function LandingPage() {
               {/* Social Proof */}
               <div className="mt-8 flex items-center justify-center gap-3">
                 <div className="flex -space-x-2">
-                  <div className="w-7 h-7 rounded-full border-2 border-[#05071f] bg-primary-400" />
-                  <div className="w-7 h-7 rounded-full border-2 border-[#05071f] bg-secondary-400" />
-                  <div className="w-7 h-7 rounded-full border-2 border-[#05071f] bg-primary-200" />
+                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-400" />
+                  <div className="w-7 h-7 rounded-full border-2 border-white bg-secondary-300" />
+                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-200" />
                 </div>
-                <p className="text-sm font-medium text-primary-100/80">
+                <p className="text-sm font-medium text-neutral-600">
                   Korean learners from 72+ countries are trying Linko.
                 </p>
               </div>
@@ -1141,7 +1141,7 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={handleScrollCueClick}
-              className="pointer-events-auto mx-auto flex flex-col items-center justify-center gap-4 text-center text-xs font-semibold uppercase tracking-[0.28em] text-white/90 transition-colors hover:text-white"
+              className="pointer-events-auto mx-auto flex flex-col items-center justify-center gap-4 text-center text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500 transition-colors hover:text-neutral-700"
             >
               <span>Pick a video to start learning</span>
               <ChevronDown className="h-5 w-5 animate-bounce" />
