@@ -580,11 +580,12 @@ export default function LandingPage() {
         <section className="py-20 bg-white border-t border-neutral-100">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center max-w-xl mx-auto mb-12">
-              <span className="text-xs font-medium text-primary uppercase tracking-widest">Testimonials</span>
               <h2 className="text-3xl font-bold text-neutral-950 mt-2 mb-3">
-                Real results from real learners
+                Real results from Global Users
               </h2>
-              <p className="text-sm text-neutral-400">Based on {REVIEWS.length * 1000}+ reviews</p>
+              <p className="text-sm text-neutral-400">
+                Beta users across 26+ countries say LinKo fits naturally into their study routine.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
