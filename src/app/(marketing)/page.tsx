@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle } from 'lucide-react'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
+import DotField from '@/components/ui/DotField'
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
 
@@ -1047,7 +1048,7 @@ export default function LandingPage() {
       />
 
       {/* ── Navbar ── */}
-      <header className="sticky top-0 z-50 border-b border-primary-100/70 bg-white/88 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 bg-transparent">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <span className="text-lg font-bold text-neutral-950 tracking-tight">LinKo</span>
         </div>
@@ -1055,27 +1056,46 @@ export default function LandingPage() {
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative flex min-h-[calc(100vh-3.5rem)] flex-col overflow-hidden bg-[#faf8ff]">
-          {/* 배경 장식 */}
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(139,92,246,0.18),transparent_34%),radial-gradient(circle_at_14%_100%,rgba(139,92,246,0.12),transparent_26%),radial-gradient(circle_at_86%_12%,rgba(236,72,153,0.08),transparent_24%)]" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-[#fbf9ff] to-[#f5f2ff]" />
+        <section className="relative flex min-h-[calc(100vh-3.5rem)] flex-col overflow-hidden bg-white">
+          {/* 1. 최하단 기본 배경색 (순수 화이트) */}
+          <div className="absolute inset-0 bg-white" />
 
-          <div className="relative flex flex-1 items-center pb-24 pt-10">
+          {/* 2. 도트 필드 */}
+          <DotField
+            dotRadius={2.5}
+            dotSpacing={38}
+            bulgeStrength={30}
+            glowRadius={220}
+            sparkle={false}
+            waveAmplitude={0}
+            cursorRadius={300}
+            cursorForce={1}
+            bulgeOnly
+            gradientFrom="#B8B8B8" // 아주 미세하게 진해진 그레이
+            gradientTo="#B8B8B8"   // 아주 미세하게 진해진 그레이
+            glowColor="transparent" // 마우스 주변 보라색 블러 제거
+            className="absolute inset-0 z-[1]"
+          />
+
+
+          {/* 3. 메인 콘텐츠 */}
+          <div className="relative z-10 flex flex-1 items-center pb-24 pt-16">
+
             <div className="max-w-5xl mx-auto w-full px-6 text-center">
               {/* Social Proof */}
-              <div className="mb-8 flex items-center justify-center gap-3">
+              <div className="mb-7 flex items-center justify-center gap-3">
                 <div className="flex -space-x-2">
-                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-400" />
-                  <div className="w-7 h-7 rounded-full border-2 border-white bg-secondary-300" />
-                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-200" />
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-400" />
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-secondary-300" />
+                  <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-200" />
                 </div>
-                <p className="text-sm font-medium text-neutral-600">
+                <p className="text-base font-medium text-neutral-600">
                   Korean learners from 72+ countries are trying Linko.
                 </p>
               </div>
 
               <div className="mx-auto max-w-4xl">
-                <h1 className="text-[58px] font-bold leading-[0.98] tracking-[-0.04em] text-neutral-950 sm:text-[78px] lg:text-[92px]">
+                <h1 className="text-[52px] font-bold leading-[1.1] tracking-[-0.04em] text-neutral-950 sm:text-[70px] lg:text-[82px]">
                   Learn Real Korean
                   <br />
                   with any
@@ -1087,12 +1107,12 @@ export default function LandingPage() {
                 </h1>
               </div>
 
-              <p className="text-lg text-neutral-600 mt-8 max-w-2xl mx-auto leading-relaxed sm:text-[21px]">
-                Turn one video into vocab, grammar notes, cultural context, and dual subtitles without losing the feeling of real content.
+              <p className="text-lg text-neutral-600 mt-6 max-w-2xl mx-auto leading-relaxed sm:text-[21px]">
+                Get vocab, grammar notes, and dual subtitles from any video.
               </p>
 
               {/* URL 입력 */}
-              <div className="max-w-xl mx-auto mt-10 flex min-h-[152px] items-end gap-4 rounded-[32px] border border-primary-100 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(139,92,246,0.08)]">
+              <div className="max-w-2xl mx-auto mt-14 flex min-h-[168px] items-end gap-4 rounded-[32px] border border-neutral-300 bg-white px-6 py-6 ring-[12px] ring-neutral-100/80 shadow-sm transition-all">
                 <div className="relative flex-1 self-stretch">
                   <textarea
                     ref={inputRef}
