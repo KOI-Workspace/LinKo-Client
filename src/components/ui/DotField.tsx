@@ -158,7 +158,7 @@ const DotField = memo(({
       if (!ctx) return;
       ctx.clearRect(0, 0, w, h);
 
-      const grad = ctx.createLinearGradient(0, 0, w, h);
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
       grad.addColorStop(0, p.gradientFrom);
       grad.addColorStop(1, p.gradientTo);
       ctx.fillStyle = grad;

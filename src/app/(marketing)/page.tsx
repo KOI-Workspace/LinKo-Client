@@ -10,14 +10,14 @@ import DotField from '@/components/ui/DotField'
 const FEATURE_LIST = [
   {
     chip: 'Dual Subtitles',
-    title: 'Understand videos while learning naturally',
-    description: 'Follow Korean and your native language side by side while watching real content, and learn more effectively through Blind.',
+    title: 'Understand and learn naturally',
+    description: 'Follow Korean and your language side by side with real content.',
     visualType: 'dualSubtitles' as const,
   },
   {
     chip: 'Cultural Notes',
-    title: 'Understand the culture behind the language',
-    description: 'Learn Slang, reactions, and cultural references you won\'t find from other Korean learning apps.',
+    title: 'Discover hidden cultural context',
+    description: 'Learn slang and reactions you won\'t find in textbooks.',
     visualType: 'culturalNotes' as const,
   },
   {
@@ -333,10 +333,10 @@ function FeatureBlock({ chip, title, description, visualType }: typeof FEATURE_L
   return (
     <div className="py-14 sm:py-18">
       <div className="max-w-4xl mx-auto text-center">
-        <span className="inline-flex items-center justify-center px-3 py-1 rounded-pill bg-neutral-800 text-white text-xs font-medium">
+        <span className="inline-flex items-center justify-center rounded-pill bg-primary-100 px-4 py-2 text-sm font-semibold text-primary-700 sm:px-5 sm:py-2.5 sm:text-[15px]">
           {chip}
         </span>
-        <h3 className="mt-4 text-3xl sm:text-4xl font-bold text-neutral-950 leading-tight">
+        <h3 className="mt-5 text-[38px] font-bold leading-[1.12] tracking-tight text-neutral-950 sm:text-[46px]">
           {title}
         </h3>
         <p className="mt-4 text-base sm:text-lg text-neutral-500 leading-relaxed max-w-2xl mx-auto">
@@ -1064,11 +1064,11 @@ export default function LandingPage() {
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative flex min-h-screen flex-col overflow-hidden bg-white">
+        <section className="relative flex min-h-screen flex-col bg-white">
           {/* 1. 최하단 기본 배경색 (순수 화이트) */}
           <div className="absolute inset-0 bg-white" />
 
-          {/* 2. 도트 필드 */}
+          {/* 2. 도트 필드 (히어로 아래까지 확장 및 자연스러운 페이드) */}
           <DotField
             dotRadius={2.5}
             dotSpacing={38}
@@ -1079,24 +1079,28 @@ export default function LandingPage() {
             cursorRadius={300}
             cursorForce={1}
             bulgeOnly
-            gradientFrom="#B8B8B8" // 아주 미세하게 진해진 그레이
-            gradientTo="#B8B8B8"   // 아주 미세하게 진해진 그레이
-            glowColor="transparent" // 마우스 주변 보라색 블러 제거
-            className="absolute inset-0 z-[1]"
+            gradientFrom="#B8B8B8"
+            gradientTo="transparent" // 아래로 갈수록 투명하게
+            glowColor="transparent"
+            className="absolute inset-x-0 top-0 z-[1] h-[120%]" // 히어로 높이보다 20% 더 길게 확장
+            style={{ 
+              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' 
+            }}
           />
 
           {/* 3. 메인 콘텐츠 */}
           <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-20">
             <div className="max-w-5xl mx-auto w-full text-center">
               {/* Social Proof */}
-              <div className="mb-7 flex items-center justify-center gap-3">
+              <div className="mb-4 flex items-center justify-center gap-3">
                 <div className="flex -space-x-2">
                   <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-400" />
                   <div className="w-8 h-8 rounded-full border-2 border-white bg-secondary-300" />
                   <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-200" />
                 </div>
-                <p className="text-base font-medium text-neutral-600">
-                  Korean learners from 72+ countries are trying Linko.
+                <p className="text-base font-medium text-neutral-500">
+                  Korean learners from <span className="font-bold text-neutral-950">72+ countries</span> are trying Linko.
                 </p>
               </div>
 
@@ -1106,14 +1110,12 @@ export default function LandingPage() {
                   <br />
                   with any
                   <br />
-                  <span className="relative inline-block">
-                    YouTube Video
-                  </span>
+                  YouTube Video
                 </h1>
               </div>
 
               <p className="text-lg text-neutral-600 mt-6 max-w-2xl mx-auto leading-relaxed sm:text-[21px]">
-                Get vocab, grammar notes, and dual subtitles from any video.
+                Get <span className="font-bold text-neutral-950">vocab</span>, <span className="font-bold text-neutral-950">grammar notes</span>, and <span className="font-bold text-neutral-950">dual subtitles</span> from any video.
               </p>
 
               {/* URL 입력 */}
@@ -1169,25 +1171,25 @@ export default function LandingPage() {
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-8 sm:bottom-10">
-            <button
-              type="button"
+            <a
+              href="#video-explorer-section"
               onClick={handleScrollCueClick}
-              className="pointer-events-auto mx-auto flex flex-col items-center justify-center gap-4 text-center text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500 transition-colors hover:text-neutral-700"
+              className="pointer-events-auto mx-auto flex w-fit flex-col items-center justify-center gap-4 text-center text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500 transition-colors hover:text-neutral-700"
             >
               <span>Pick a video to start learning</span>
               <ChevronDown className="h-5 w-5 animate-bounce" />
-            </button>
+            </a>
           </div>
         </section>
 
         {/* ── Video Explorer ── */}
         <section id="video-explorer-section" className="py-20 bg-white">
           <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-xl mx-auto mb-10 text-center">
-              <h2 className="text-3xl font-bold text-neutral-950 mt-2 mb-3">
+            <div className="mx-auto mb-14 max-w-3xl text-center">
+              <h2 className="text-[40px] font-bold leading-[1.08] tracking-tight text-neutral-950 sm:text-[52px]">
                 Start with these videos
               </h2>
-              <p className="text-sm text-neutral-500 leading-relaxed">
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-neutral-500 sm:text-lg">
                 Start from videos people already love.
               </p>
             </div>
@@ -1247,13 +1249,6 @@ export default function LandingPage() {
         {/* ── Features ── */}
         <section id="features" className="py-16 bg-white border-t border-neutral-100">
           <div className="max-w-6xl mx-auto px-6">
-            <h2 className="text-3xl font-bold text-neutral-950 text-center mb-2">
-              Everything you need to learn Korean naturally
-            </h2>
-            <p className="text-sm text-neutral-500 text-center mb-0 max-w-2xl mx-auto">
-              From Dual Subtitles to Personalized quizzed, Linko turns video into an interactive lessons.
-            </p>
-
             <div className="divide-y divide-neutral-100">
               {FEATURE_LIST.map((feature) => (
                 <FeatureBlock key={feature.chip} {...feature} />
@@ -1265,11 +1260,11 @@ export default function LandingPage() {
         {/* ── Reviews ── */}
         <section className="py-20 bg-white border-t border-neutral-100">
           <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center max-w-xl mx-auto mb-12">
-              <h2 className="text-3xl font-bold text-neutral-950 mt-2 mb-3">
+            <div className="mx-auto mb-14 max-w-3xl text-center">
+              <h2 className="text-[40px] font-bold leading-[1.08] tracking-tight text-neutral-950 sm:text-[52px]">
                 Real reviews from Global Users
               </h2>
-              <p className="text-sm text-neutral-400">
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-neutral-500 sm:text-lg">
                 Beta users across 72+ countries say LinKo fits naturally into their study routine.
               </p>
             </div>
@@ -1289,19 +1284,19 @@ export default function LandingPage() {
         </section>
 
         {/* ── CTA ── */}
-        <section className="py-24 bg-gradient-to-br from-primary-600 to-primary-800">
+        <section className="py-28 bg-primary-50">
           <div className="max-w-2xl mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
+            <h2 className="text-[40px] font-bold leading-[1.08] tracking-tight text-neutral-950 sm:text-[52px]">
               So, ready to give it a try?
             </h2>
-            <p className="text-primary-200 text-base mb-10 leading-relaxed">
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-neutral-600 sm:text-lg">
               Start learning through your favorite videos.
             </p>
-            <div className="flex items-center justify-center">
-                <button
+            <div className="mt-10 flex items-center justify-center">
+              <button
                 type="button"
                 onClick={() => handleOpenLoginModal('cta')}
-                className="rounded-pill bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg transition-colors hover:bg-primary-50"
+                className="rounded-pill bg-neutral-950 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-neutral-800 hover:scale-[1.02] active:scale-[0.98]"
               >
                 Get Started for Free
               </button>
