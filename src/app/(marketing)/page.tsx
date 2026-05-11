@@ -8,7 +8,7 @@ import WatchTab from '@/components/features/watch/WatchTab'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import DotField from '@/components/ui/DotField'
 import { saveAuthToken } from '@/lib/api'
-import { getPublicPreviewLessons, getLesson, type LessonSummary } from '@/lib/lessonsApi'
+import { getPublicPreviewLessons, getLesson, checkVideoValidity, type LessonSummary } from '@/lib/lessonsApi'
 import { ArrowLeft } from 'lucide-react'
 import { loginWithGoogleIdToken } from '@/lib/authApi'
 import { createWaitlistEntry } from '@/lib/waitlistApi'
@@ -1088,6 +1088,7 @@ export default function LandingPage() {
   const [previewLessons, setPreviewLessons] = useState<any[]>([])
   const [previewLessonId, setPreviewLessonId] = useState<string | null>(null)
   const [pendingLessonId, setPendingLessonId] = useState<string | null>(null)
+  const [isLoadingVideoCheck, setIsLoadingVideoCheck] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
@@ -1209,14 +1210,18 @@ export default function LandingPage() {
     })
   }
 
-  const handleHeroSubmit = () => {
+  const handleHeroSubmit = async () => {
     const trimmedValue = userInputValue.trim()
 
     if (!trimmedValue) {
       return
     }
 
-    if (!trimmedValue.startsWith('https://')) {
+    const isYoutube = trimmedValue.includes('youtube.com/') || trimmedValue.includes('youtu.be/')
+    const isShorts = trimmedValue.includes('/shorts/')
+
+    // 1. 기본적인 패턴 체크 (프론트)
+    if (!trimmedValue.startsWith('https://') || !isYoutube || isShorts) {
       setIsLoginModalOpen(false)
       setIsEarlyAccessModalOpen(false)
       setIsUnsupportedModalOpen(true)
@@ -1224,11 +1229,26 @@ export default function LandingPage() {
       return
     }
 
-    setIsUnsupportedModalOpen(false)
-    setIsEarlyAccessModalOpen(false)
-    setSubmittedVideoUrl(trimmedValue)
-    setLoginModalSource('hero')
-    setIsLoginModalOpen(true)
+    // 2. 백엔드 상세 검증 호출
+    try {
+      setIsLoadingVideoCheck(true)
+      await checkVideoValidity(trimmedValue)
+
+      // 검증 통과 시 로그인 진행
+      setIsUnsupportedModalOpen(false)
+      setIsEarlyAccessModalOpen(false)
+      setSubmittedVideoUrl(trimmedValue)
+      setLoginModalSource('hero')
+      setIsLoginModalOpen(true)
+    } catch (err) {
+      // 360도 영상, 2시간 초과, 외부재생 불가 등 백엔드에서 던진 상세 에러 처리
+      setIsLoginModalOpen(false)
+      setIsEarlyAccessModalOpen(false)
+      setIsUnsupportedModalOpen(true)
+      setSubmittedVideoUrl(null)
+    } finally {
+      setIsLoadingVideoCheck(false)
+    }
   }
 
   const handleCloseUnsupportedModal = () => {
@@ -1427,12 +1447,16 @@ export default function LandingPage() {
                 </div>
                 <button
                   type="button"
-                  disabled={!userInputValue.trim()}
+                  disabled={!userInputValue.trim() || isLoadingVideoCheck}
                   onClick={handleHeroSubmit}
                   className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-neutral-950 text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-950 disabled:text-white disabled:opacity-35"
                   aria-label="링크 변환"
                 >
-                  <ArrowUp className="w-5 h-5" />
+                  {isLoadingVideoCheck ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <ArrowUp className="w-5 h-5" />
+                  )}
                 </button>
               </div>
 

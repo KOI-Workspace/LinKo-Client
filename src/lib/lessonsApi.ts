@@ -94,3 +94,14 @@ export function getPublicLessonSubtitles(lessonId: string) {
   return apiFetch<LessonSubtitlesResponse>(`/public/lessons/${lessonId}/subtitles`)
 }
 
+export interface VideoCheckResponse {
+  video_id: string
+  title: string
+  channel_title: string
+  thumbnail_url: string
+  is_valid: boolean
+}
+
+export function checkVideoValidity(url: string) {
+  return apiFetch<VideoCheckResponse>(`/public/videos/check?url=${encodeURIComponent(url)}`)
+}
