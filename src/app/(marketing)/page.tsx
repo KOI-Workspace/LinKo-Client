@@ -1061,21 +1061,38 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-[#fbf9ff] to-[#f5f2ff]" />
 
           <div className="relative flex flex-1 items-center pb-24 pt-10">
-            <div className="max-w-3xl mx-auto w-full px-6 text-center">
-              <h1 className="text-5xl font-bold text-neutral-950 leading-tight tracking-tight mb-5">
-                Learn real Korean with any
-                <br />
-                <span className="bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent">
-                  YouTube video
-                </span>
-              </h1>
+            <div className="max-w-5xl mx-auto w-full px-6 text-center">
+              {/* Social Proof */}
+              <div className="mb-8 flex items-center justify-center gap-3">
+                <div className="flex -space-x-2">
+                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-400" />
+                  <div className="w-7 h-7 rounded-full border-2 border-white bg-secondary-300" />
+                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-200" />
+                </div>
+                <p className="text-sm font-medium text-neutral-600">
+                  Korean learners from 72+ countries are trying Linko.
+                </p>
+              </div>
 
-              <p className="text-lg text-neutral-600 mb-10 max-w-lg mx-auto leading-relaxed">
-                Just paste a link to get vocab, grammar notes, cultural insights, and dual subtitles.
+              <div className="mx-auto max-w-4xl">
+                <h1 className="text-[58px] font-bold leading-[0.98] tracking-[-0.04em] text-neutral-950 sm:text-[78px] lg:text-[92px]">
+                  Learn Real Korean
+                  <br />
+                  with any
+                  <br />
+                  <span className="relative inline-block">
+                    YouTube Video
+                    <span className="absolute inset-x-2 bottom-3 -z-10 h-4 rounded-full bg-neutral-200/70 sm:bottom-4 sm:h-5" />
+                  </span>
+                </h1>
+              </div>
+
+              <p className="text-lg text-neutral-600 mt-8 max-w-2xl mx-auto leading-relaxed sm:text-[21px]">
+                Turn one video into vocab, grammar notes, cultural context, and dual subtitles without losing the feeling of real content.
               </p>
 
               {/* URL 입력 */}
-              <div className="max-w-xl mx-auto flex min-h-[152px] items-end gap-4 rounded-[32px] border border-primary-100 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(139,92,246,0.08)]">
+              <div className="max-w-xl mx-auto mt-10 flex min-h-[152px] items-end gap-4 rounded-[32px] border border-primary-100 bg-white px-6 py-6 shadow-[0_16px_40px_rgba(139,92,246,0.08)]">
                 <div className="relative flex-1 self-stretch">
                   <textarea
                     ref={inputRef}
@@ -1115,24 +1132,13 @@ export default function LandingPage() {
                   type="button"
                   disabled={!userInputValue.trim()}
                   onClick={handleHeroSubmit}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-neutral-950 text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-neutral-950 text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-950 disabled:text-white disabled:opacity-35"
                   aria-label="링크 변환"
                 >
                   <ArrowUp className="w-5 h-5" />
                 </button>
               </div>
-              
-              {/* Social Proof */}
-              <div className="mt-8 flex items-center justify-center gap-3">
-                <div className="flex -space-x-2">
-                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-400" />
-                  <div className="w-7 h-7 rounded-full border-2 border-white bg-secondary-300" />
-                  <div className="w-7 h-7 rounded-full border-2 border-white bg-primary-200" />
-                </div>
-                <p className="text-sm font-medium text-neutral-600">
-                  Korean learners from 72+ countries are trying Linko.
-                </p>
-              </div>
+
             </div>
 
           </div>
