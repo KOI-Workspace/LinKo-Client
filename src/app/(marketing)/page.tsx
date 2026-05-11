@@ -170,22 +170,16 @@ export default function LandingPage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary-100 rounded-full blur-3xl opacity-30 pointer-events-none" />
 
           <div className="relative max-w-3xl mx-auto px-6 text-center">
-            {/* 배지 */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill bg-white border border-primary-200 text-primary-700 text-xs font-medium mb-8 shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
-              Loved by 10,000+ Korean learners worldwide
-            </div>
-
             <h1 className="text-5xl font-bold text-neutral-950 leading-tight tracking-tight mb-5">
-              Master Korean with your
+              Learn real Korean with any
               <br />
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                favorite YouTube videos
+                YouTube video
               </span>
             </h1>
 
             <p className="text-lg text-neutral-500 mb-10 max-w-lg mx-auto leading-relaxed">
-              Paste any YouTube link and get a personalized Korean lesson — vocabulary, grammar, and subtitles in seconds.
+              Just paste a link to get vocab, grammar notes, cultural insights, and dual subtitles.
             </p>
 
             <div className="flex items-center justify-center gap-3 mb-10">
