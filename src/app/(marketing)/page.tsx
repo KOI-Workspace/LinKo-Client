@@ -368,52 +368,148 @@ function UnsupportedCaseModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm">
-      <div className="relative w-full max-w-xl rounded-[28px] border border-neutral-200 bg-white p-6 shadow-[0_28px_80px_rgba(15,23,42,0.28)] sm:p-7">
-        <div>
+      <div className="relative w-full max-w-[560px] overflow-hidden rounded-[36px] border border-white/70 bg-white px-7 pb-9 pt-7 shadow-[0_30px_100px_rgba(15,23,42,0.28)] sm:px-10 sm:pb-11 sm:pt-8">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(124,140,255,0.14),transparent_68%)]" />
+        <div className="relative mx-auto max-w-[420px]">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-[#ff5f66]">
+            <div className="mt-1 flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-[#fff2f3] text-[#ff5f66] shadow-[0_12px_30px_rgba(255,95,102,0.12)]">
               <AlertCircle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-2xl font-semibold tracking-tight text-neutral-950">
+              <p className="text-[30px] font-semibold tracking-tight text-neutral-950 sm:text-[32px]">
                 This link is not supported yet
               </p>
-              <p className="mt-3 max-w-md text-sm leading-6 text-neutral-500">
+              <p className="mt-3 max-w-md text-[15px] leading-7 text-neutral-500 sm:text-base">
                 Linko currently supports standard Korean YouTube videos. Some formats still cannot be converted into learning materials.
               </p>
             </div>
           </div>
 
-          <div className="mt-7">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-neutral-400">
+          <div className="mt-9">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
               Unsupported cases
             </p>
             <div className="mt-4 grid gap-3">
               {UNSUPPORTED_CASES.map((item, index) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3.5"
+                  className="rounded-[20px] border border-neutral-200 bg-neutral-50 px-4 py-4"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950 shadow-sm">
                       {index + 1}
                     </div>
-                    <p className="text-sm leading-6 text-neutral-700">{item}</p>
+                    <p className="text-sm leading-6 text-neutral-700 sm:text-[15px]">{item}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-7 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <button
               type="button"
               onClick={onPickOtherVideos}
-              className="rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+              className="rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
             >
               Pick Other Videos
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** 로그인 안내 모달 */
+function LoginModal({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean
+  onClose: () => void
+}) {
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm">
+      <div className="relative w-full max-w-[560px] overflow-hidden rounded-[36px] border border-white/70 bg-white px-7 pb-9 pt-7 shadow-[0_30px_100px_rgba(15,23,42,0.28)] sm:px-10 sm:pb-11 sm:pt-8">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(124,140,255,0.14),transparent_68%)]" />
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full text-neutral-300 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
+          aria-label="로그인 모달 닫기"
+        >
+          <X className="h-6 w-6 stroke-[1.75]" />
+        </button>
+
+        <div className="relative mx-auto flex max-w-[420px] flex-col items-center text-center">
+          <div className="mt-4 flex h-20 w-20 items-center justify-center rounded-[28px] bg-[radial-gradient(circle_at_30%_30%,#65d8ff_0%,#5a63ff_42%,#6c3cff_72%,#2b175e_100%)] shadow-[0_20px_50px_rgba(90,99,255,0.28)]">
+            <div className="h-11 w-11 rounded-[18px] bg-white/18 backdrop-blur-[2px]" />
+          </div>
+          <div className="mt-8">
+            <p className="text-[42px] font-bold tracking-tight text-neutral-950 sm:text-[48px]">
+              LinKo
+            </p>
+            <h2 className="mt-5 text-[28px] font-semibold tracking-tight text-neutral-950 sm:text-[34px]">
+              Start learning in seconds
+            </h2>
+            <p className="mt-3 text-[16px] leading-7 text-neutral-500 sm:text-[17px]">
+              Sign in with Google to turn your favorite YouTube videos into Korean lessons.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="mt-10 flex w-full items-center justify-center gap-3 rounded-[20px] border border-neutral-200 bg-neutral-50 px-6 py-5 text-[18px] font-semibold text-neutral-950 transition-all hover:border-primary-200 hover:bg-white hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:text-[19px]"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className="h-5 w-5"
+              >
+                <path
+                  fill="#EA4335"
+                  d="M12 10.2v3.9h5.5c-.24 1.26-.96 2.33-2.04 3.05l3.3 2.56c1.92-1.77 3.03-4.38 3.03-7.5 0-.72-.06-1.4-.18-2.06H12Z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 22c2.7 0 4.96-.9 6.61-2.45l-3.3-2.56c-.91.62-2.08.99-3.31.99-2.54 0-4.7-1.72-5.47-4.03l-3.42 2.64C4.74 19.87 8.07 22 12 22Z"
+                />
+                <path
+                  fill="#4A90E2"
+                  d="M6.53 13.95A5.98 5.98 0 0 1 6.22 12c0-.68.12-1.33.31-1.95L3.11 7.41A10 10 0 0 0 2 12c0 1.61.38 3.13 1.11 4.59l3.42-2.64Z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M12 5.98c1.47 0 2.79.5 3.83 1.48l2.87-2.87C16.95 2.98 14.69 2 12 2 8.07 2 4.74 4.13 3.11 7.41l3.42 2.64c.77-2.31 2.93-4.07 5.47-4.07Z"
+                />
+              </svg>
+            </span>
+            <span>Login with Google</span>
+          </button>
+
+          <p className="mt-8 max-w-[360px] text-[14px] leading-7 text-neutral-400 sm:text-[15px]">
+            By continuing, you agree to our{' '}
+            <button
+              type="button"
+              className="font-semibold text-neutral-500 underline underline-offset-4"
+            >
+              Terms of Service
+            </button>{' '}
+            and{' '}
+            <button
+              type="button"
+              className="font-semibold text-neutral-500 underline underline-offset-4"
+            >
+              Privacy Policy
+            </button>
+            .
+          </p>
         </div>
       </div>
     </div>
@@ -510,6 +606,7 @@ export default function LandingPage() {
   const [isFocused, setIsFocused] = useState(false)
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
   const [isUnsupportedModalOpen, setIsUnsupportedModalOpen] = useState(false)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
   const showPlaceholderPreview = isFocused && !userInputValue
@@ -612,15 +709,30 @@ export default function LandingPage() {
   }
 
   const handleHeroSubmit = () => {
-    if (!userInputValue.trim()) {
+    const trimmedValue = userInputValue.trim()
+
+    if (!trimmedValue) {
       return
     }
 
-    setIsUnsupportedModalOpen(true)
+    if (!trimmedValue.startsWith('https://')) {
+      setIsUnsupportedModalOpen(true)
+      return
+    }
+
+    setIsLoginModalOpen(true)
   }
 
   const handleCloseUnsupportedModal = () => {
     setIsUnsupportedModalOpen(false)
+  }
+
+  const handleOpenLoginModal = () => {
+    setIsLoginModalOpen(true)
+  }
+
+  const handleCloseLoginModal = () => {
+    setIsLoginModalOpen(false)
   }
 
   const handlePickOtherVideos = () => {
@@ -633,6 +745,10 @@ export default function LandingPage() {
 
   return (
     <>
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={handleCloseLoginModal}
+      />
       <UnsupportedCaseModal
         isOpen={isUnsupportedModalOpen}
         onPickOtherVideos={handlePickOtherVideos}
@@ -747,6 +863,15 @@ export default function LandingPage() {
               {VIDEO_EXAMPLES.map((video) => (
                 <div
                   key={video.title}
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleOpenLoginModal}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      handleOpenLoginModal()
+                    }
+                  }}
                   className="rounded-xl bg-neutral-100 border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all"
                 >
                   <div className="aspect-video flex items-center justify-center bg-neutral-100 group-hover:bg-neutral-200 transition-colors relative">
@@ -837,7 +962,11 @@ export default function LandingPage() {
               Start learning through your favorite videos.
             </p>
             <div className="flex items-center justify-center">
-              <button className="rounded-pill bg-white text-primary-700 font-semibold text-sm px-6 py-3 hover:bg-primary-50 transition-colors shadow-lg">
+              <button
+                type="button"
+                onClick={handleOpenLoginModal}
+                className="rounded-pill bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-lg transition-colors hover:bg-primary-50"
+              >
                 Get Started for Free
               </button>
             </div>
