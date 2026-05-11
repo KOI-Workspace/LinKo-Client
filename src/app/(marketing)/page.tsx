@@ -1111,7 +1111,7 @@ export default function LandingPage() {
                   <br />
                   with any
                   <br />
-                  YouTube Video
+                  <span className="text-primary-600">YouTube Video</span>
                 </h1>
               </div>
 
