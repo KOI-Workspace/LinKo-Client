@@ -429,7 +429,7 @@ export default function LandingPage() {
         {/* ── Video Explorer ── */}
         <section id="video-explorer-section" className="py-20 bg-white">
           <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-xl mb-10">
+            <div className="max-w-xl mx-auto mb-10 text-center">
               <h2 className="text-3xl font-bold text-neutral-950 mt-2 mb-3">
                 Start with these videos
               </h2>
@@ -484,8 +484,12 @@ export default function LandingPage() {
         {/* ── Features ── */}
         <section id="features" className="py-16 bg-white border-t border-neutral-100">
           <div className="max-w-6xl mx-auto px-6">
-            <h2 className="text-2xl font-bold text-neutral-950 text-center mb-2">Introducing the features</h2>
-            <p className="text-sm text-neutral-400 text-center mb-0">(TBD)</p>
+            <h2 className="text-3xl font-bold text-neutral-950 text-center mb-2">
+              Everything you need to learn Korean naturally
+            </h2>
+            <p className="text-sm text-neutral-500 text-center mb-0 max-w-2xl mx-auto">
+              From Dual Subtitles to Personalized quizzed, Linko turns video into an interactive lessons.
+            </p>
 
             <div className="divide-y divide-neutral-100">
               {FEATURE_LIST.map((feature) => (
