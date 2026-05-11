@@ -41,6 +41,23 @@
     }
   }
 
+  @keyframes text-shimmer {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .animate-text-shimmer {
+    background-size: 300% auto;
+    animation: text-shimmer 6s linear infinite;
+  }
+
   /* 스크롤바 숨기기 (가로 스크롤 섹션용) */
   .scrollbar-hide {
     -ms-overflow-style: none;

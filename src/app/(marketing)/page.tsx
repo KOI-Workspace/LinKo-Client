@@ -1111,7 +1111,9 @@ export default function LandingPage() {
                   <br />
                   with any
                   <br />
-                  <span className="text-primary-600">YouTube Video</span>
+                  <span className="bg-gradient-to-r from-primary-800 via-primary-500 via-primary-400 via-primary-500 to-primary-800 bg-clip-text text-transparent animate-text-shimmer">
+                    YouTube Video
+                  </span>
                 </h1>
               </div>
 
