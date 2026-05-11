@@ -1,9 +1,66 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle } from 'lucide-react'
+import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle, Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import DotField from '@/components/ui/DotField'
+import { saveAuthToken } from '@/lib/api'
+import { loginWithGoogleIdToken } from '@/lib/authApi'
+import { createWaitlistEntry } from '@/lib/waitlistApi'
+
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        id?: {
+          initialize: (config: {
+            client_id: string
+            callback: (response: { credential?: string }) => void
+          }) => void
+          renderButton: (
+            parent: HTMLElement,
+            options: {
+              theme?: 'outline' | 'filled_blue' | 'filled_black'
+              size?: 'large' | 'medium' | 'small'
+              type?: 'standard' | 'icon'
+              shape?: 'rectangular' | 'pill' | 'circle' | 'square'
+              text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin'
+              width?: number
+            },
+          ) => void
+        }
+      }
+    }
+  }
+}
+
+const GOOGLE_SCRIPT_ID = 'google-identity-services'
+
+function loadGoogleIdentityScript() {
+  return new Promise<void>((resolve, reject) => {
+    if (window.google?.accounts?.id) {
+      resolve()
+      return
+    }
+
+    const existing = document.getElementById(GOOGLE_SCRIPT_ID) as HTMLScriptElement | null
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('Could not load Google sign-in.')), { once: true })
+      return
+    }
+
+    const script = document.createElement('script')
+    script.id = GOOGLE_SCRIPT_ID
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Could not load Google sign-in.'))
+    document.head.appendChild(script)
+  })
+}
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
 
@@ -401,10 +458,9 @@ function FaqItem({
         </div>
       </button>
 
-      <div 
-        className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${
-          isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
-        }`}
+      <div
+        className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
       >
         <div className="pb-8 pl-10 pr-12">
           <p className="max-w-3xl text-base leading-8 text-neutral-500">
@@ -691,12 +747,71 @@ function EarlyAccessModal({
 function LoginModal({
   isOpen,
   onClose,
-  onGoogleLogin,
+  onGoogleCredential,
+  googleLoginError,
+  isGoogleLoginLoading,
 }: {
   isOpen: boolean
   onClose: () => void
-  onGoogleLogin: () => void
+  onGoogleCredential: (credential: string) => void
+  googleLoginError?: string | null
+  isGoogleLoginLoading?: boolean
 }) {
+  const googleButtonRef = useRef<HTMLDivElement | null>(null)
+  const [googleButtonError, setGoogleButtonError] = useState<string | null>(null)
+  const [isGoogleButtonReady, setIsGoogleButtonReady] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    let cancelled = false
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
+    setGoogleButtonError(null)
+    setIsGoogleButtonReady(false)
+
+    if (!clientId) {
+      setGoogleButtonError('Google client id is missing. Add NEXT_PUBLIC_GOOGLE_CLIENT_ID.')
+      return
+    }
+
+    loadGoogleIdentityScript()
+      .then(() => {
+        if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return
+
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response) => {
+            if (!response.credential) {
+              setGoogleButtonError('Google did not return a credential.')
+              return
+            }
+            onGoogleCredential(response.credential)
+          },
+        })
+
+        googleButtonRef.current.replaceChildren()
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          type: 'standard',
+          shape: 'pill',
+          text: 'continue_with',
+          width: 320,
+        })
+        setIsGoogleButtonReady(true)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setGoogleButtonError(err instanceof Error ? err.message : 'Could not load Google sign-in.')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isOpen, onGoogleCredential])
+
   if (!isOpen) {
     return null
   }
@@ -714,37 +829,22 @@ function LoginModal({
           description="Sign in with Google to turn your favorite YouTube videos into Korean lessons."
         />
 
-        <button
-          type="button"
-          onClick={onGoogleLogin}
-          className="mt-10 flex w-full items-center justify-center gap-3 rounded-[20px] border border-neutral-200 bg-neutral-50 px-6 py-5 text-[18px] font-semibold text-neutral-950 transition-all hover:border-primary-200 hover:bg-white hover:shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:text-[19px]"
-        >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              className="h-5 w-5"
-            >
-              <path
-                fill="#EA4335"
-                d="M12 10.2v3.9h5.5c-.24 1.26-.96 2.33-2.04 3.05l3.3 2.56c1.92-1.77 3.03-4.38 3.03-7.5 0-.72-.06-1.4-.18-2.06H12Z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 22c2.7 0 4.96-.9 6.61-2.45l-3.3-2.56c-.91.62-2.08.99-3.31.99-2.54 0-4.7-1.72-5.47-4.03l-3.42 2.64C4.74 19.87 8.07 22 12 22Z"
-              />
-              <path
-                fill="#4A90E2"
-                d="M6.53 13.95A5.98 5.98 0 0 1 6.22 12c0-.68.12-1.33.31-1.95L3.11 7.41A10 10 0 0 0 2 12c0 1.61.38 3.13 1.11 4.59l3.42-2.64Z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M12 5.98c1.47 0 2.79.5 3.83 1.48l2.87-2.87C16.95 2.98 14.69 2 12 2 8.07 2 4.74 4.13 3.11 7.41l3.42 2.64c.77-2.31 2.93-4.07 5.47-4.07Z"
-              />
-            </svg>
-          </span>
-          <span>Login with Google</span>
-        </button>
+        <div className="mt-10 flex min-h-[44px] w-full items-center justify-center">
+          {!isGoogleButtonReady && !googleButtonError && (
+            <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+          )}
+          <div className={isGoogleLoginLoading ? 'pointer-events-none opacity-50' : ''} ref={googleButtonRef} />
+        </div>
+
+        {isGoogleLoginLoading && (
+          <p className="mt-4 text-sm font-medium text-neutral-400">Connecting...</p>
+        )}
+
+        {(googleLoginError || googleButtonError) && (
+          <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium leading-6 text-red-500">
+            {googleLoginError ?? googleButtonError}
+          </p>
+        )}
 
         <p className="mt-8 max-w-[360px] text-[14px] leading-7 text-neutral-400 sm:text-[15px]">
           By continuing, you agree to our{' '}
@@ -851,6 +951,7 @@ const VIDEO_EXAMPLES = [
 ]
 
 export default function LandingPage() {
+  const router = useRouter()
   const [userInputValue, setUserInputValue] = useState('')
   const [animatedValue, setAnimatedValue] = useState('')
   const [isTypingActive, setIsTypingActive] = useState(true)
@@ -861,6 +962,8 @@ export default function LandingPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isEarlyAccessModalOpen, setIsEarlyAccessModalOpen] = useState(false)
   const [loginModalSource, setLoginModalSource] = useState<'hero' | 'video' | 'cta' | null>(null)
+  const [isGoogleLoginLoading, setIsGoogleLoginLoading] = useState(false)
+  const [googleLoginError, setGoogleLoginError] = useState<string | null>(null)
   const [submittedVideoUrl, setSubmittedVideoUrl] = useState<string | null>(null)
   const [scrollY, setScrollY] = useState(0)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
@@ -1000,22 +1103,43 @@ export default function LandingPage() {
   }
 
   const handleOpenLoginModal = (source: 'video' | 'cta' = 'video') => {
+    setGoogleLoginError(null)
     setLoginModalSource(source)
     setIsLoginModalOpen(true)
   }
 
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false)
+    setGoogleLoginError(null)
   }
 
-  const handleGoogleLogin = () => {
-    setIsLoginModalOpen(false)
+  const handleGoogleCredential = (credential: string) => {
+    setIsGoogleLoginLoading(true)
+    setGoogleLoginError(null)
 
-    if (loginModalSource === 'hero') {
-      setIsEarlyAccessModalOpen(true)
-    }
+    loginWithGoogleIdToken(credential)
+      .then(async (login) => {
+        saveAuthToken(login.access_token)
+        setIsLoginModalOpen(false)
+        setGoogleLoginError(null)
 
-    setLoginModalSource(null)
+        if (loginModalSource === 'hero') {
+          if (submittedVideoUrl) {
+            await createWaitlistEntry(submittedVideoUrl)
+          }
+          setIsEarlyAccessModalOpen(true)
+        } else {
+          router.push('/home')
+        }
+
+        setLoginModalSource(null)
+      })
+      .catch((err) => {
+        setGoogleLoginError(err instanceof Error ? err.message : 'Google login failed.')
+      })
+      .finally(() => {
+        setIsGoogleLoginLoading(false)
+      })
   }
 
   const handleCloseEarlyAccessModal = () => {
@@ -1049,7 +1173,9 @@ export default function LandingPage() {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={handleCloseLoginModal}
-        onGoogleLogin={handleGoogleLogin}
+        onGoogleCredential={handleGoogleCredential}
+        googleLoginError={googleLoginError}
+        isGoogleLoginLoading={isGoogleLoginLoading}
       />
       <UnsupportedCaseModal
         isOpen={isUnsupportedModalOpen}
@@ -1084,9 +1210,9 @@ export default function LandingPage() {
             gradientTo="transparent" // 아래로 갈수록 투명하게
             glowColor="transparent"
             className="absolute inset-x-0 top-0 z-[1] h-[120%]" // 히어로 높이보다 20% 더 길게 확장
-            style={{ 
+            style={{
               maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' 
+              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
             }}
           />
 
@@ -1129,11 +1255,10 @@ export default function LandingPage() {
                     value={isAnimating ? animatedValue : userInputValue}
                     placeholder={INPUT_PLACEHOLDER_TEXT}
                     rows={2}
-                    className={`h-full w-full resize-none bg-transparent align-top outline-none text-[17px] leading-[1.6] ${
-                      showOverlayText
-                        ? 'text-transparent caret-transparent placeholder:text-transparent'
-                        : 'text-neutral-950 caret-neutral-500 placeholder:text-neutral-400'
-                    }`}
+                    className={`h-full w-full resize-none bg-transparent align-top outline-none text-[17px] leading-[1.6] ${showOverlayText
+                      ? 'text-transparent caret-transparent placeholder:text-transparent'
+                      : 'text-neutral-950 caret-neutral-500 placeholder:text-neutral-400'
+                      }`}
                     onChange={(event) => setUserInputValue(event.target.value)}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
