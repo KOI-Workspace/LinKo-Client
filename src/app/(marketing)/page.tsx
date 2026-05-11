@@ -387,20 +387,24 @@ function FaqItem({
       <button
         type="button"
         onClick={onToggle}
-        className="grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 py-7 text-left transition-colors hover:text-neutral-950"
+        className="grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 py-7 text-left transition-colors hover:text-neutral-950 group"
       >
-        <span className="pt-1 text-sm font-semibold tracking-[0.18em] text-neutral-300">
+        <span className="pt-1 text-sm font-semibold tracking-[0.18em] text-neutral-300 transition-colors group-hover:text-neutral-400">
           {String(index + 1).padStart(2, '0')}
         </span>
         <span className="text-xl sm:text-2xl font-medium text-neutral-950">
           {item.question}
         </span>
-        <span className="shrink-0 text-neutral-950">
-          {isOpen ? <X className="h-7 w-7 stroke-[1.5]" /> : <Plus className="h-7 w-7 stroke-[1.5]" />}
-        </span>
+        <div className="relative h-7 w-7 shrink-0 transition-transform duration-300 ease-in-out" style={{ transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}>
+          <Plus className="absolute inset-0 h-7 w-7 stroke-[1.5] text-neutral-950" />
+        </div>
       </button>
 
-      {isOpen && (
+      <div 
+        className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${
+          isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
         <div className="pb-8 pl-10 pr-12">
           <p className="max-w-3xl text-base leading-8 text-neutral-500">
             {item.answer}
@@ -431,7 +435,7 @@ function FaqItem({
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -1242,7 +1246,9 @@ export default function LandingPage() {
             <div className="relative overflow-hidden">
               <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-white to-transparent sm:w-24" />
               <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white to-transparent sm:w-24" />
-              <div className="flex w-max gap-5 animate-[testimonial-marquee_96s_linear_infinite] will-change-transform">
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-white to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-white to-transparent" />
+              <div className="flex w-max gap-5 animate-[testimonial-marquee_96s_linear_infinite] will-change-transform py-4">
                 {[...REVIEWS, ...REVIEWS].map((review, index) => (
                   <ReviewCard key={`${review.name}-${index}`} {...review} />
                 ))}
