@@ -261,6 +261,7 @@ export default function LandingPage() {
   const handleBlur = () => {
     setIsFocused(false)
     if (!userInputValue) {
+      setAnimatedValue('')
       setIsTypingActive(true)
     }
   }
