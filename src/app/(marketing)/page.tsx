@@ -1099,7 +1099,6 @@ export default function LandingPage() {
                   <br />
                   <span className="relative inline-block">
                     YouTube Video
-                    <span className="absolute inset-x-2 bottom-3 -z-10 h-4 rounded-full bg-neutral-200/70 sm:bottom-4 sm:h-5" />
                   </span>
                 </h1>
               </div>
