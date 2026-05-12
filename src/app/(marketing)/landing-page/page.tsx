@@ -1,3 +1,3 @@
-import LandingPage from '../page'
+import LandingPageClient from '../LandingPageClient'
 
-export default LandingPage
+export default LandingPageClient

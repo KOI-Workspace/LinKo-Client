@@ -1,5 +1,5 @@
-import LandingPage from './(marketing)/page'
+import LandingPageClient from './(marketing)/LandingPageClient'
 
 export default function RootPage() {
-  return <LandingPage />
+  return <LandingPageClient />
 }
