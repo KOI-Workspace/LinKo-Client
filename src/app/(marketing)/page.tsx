@@ -823,13 +823,13 @@ function LoginModal({
 
   return (
     <ModalFrame ariaLabel="로그인 모달" onClose={onClose}>
-      <div className="relative mx-auto flex max-w-[420px] flex-col items-center text-center">
+      <div className="relative mx-auto flex max-w-[420px] flex-col items-center py-4 text-center sm:py-6">
         <ModalHeader
           title="Start learning in seconds"
           description="Sign in with Google to turn your favorite YouTube videos into Korean lessons."
         />
 
-        <div className="mt-6 flex min-h-[44px] w-full items-center justify-center sm:mt-10">
+        <div className="mt-8 flex min-h-[44px] w-full items-center justify-center sm:mt-10">
           {!isGoogleButtonReady && !googleButtonError && (
             <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
           )}
@@ -846,7 +846,7 @@ function LoginModal({
           </p>
         )}
 
-        <p className="mt-5 max-w-[360px] text-xs leading-6 text-neutral-400 sm:mt-8 sm:text-[14px] sm:leading-7">
+        <p className="mt-6 max-w-[360px] text-xs leading-6 text-neutral-400 sm:mt-8 sm:text-[13px] sm:leading-7">
           By continuing, you agree to our{' '}
           <button
             type="button"
