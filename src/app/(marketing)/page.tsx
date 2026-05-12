@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle, Loader2, CreditCard, Captions } from 'lucide-react'
 import { useRouter } from 'next/navigation'
