@@ -1351,7 +1351,7 @@ export default function LandingPage() {
         onPickOtherVideos={handlePickOtherVideos}
       />
 
-      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+      <header className="sticky top-0 z-50 -mb-16 bg-white/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-start">
           <span className="text-xl font-bold text-neutral-950 tracking-tight">LinKo</span>
         </div>
@@ -1377,11 +1377,7 @@ export default function LandingPage() {
             gradientFrom="#B8B8B8"
             gradientTo="transparent" // 아래로 갈수록 투명하게
             glowColor="transparent"
-            className="absolute inset-x-0 top-0 z-[1] h-[120%] marketing-hero-dot-field" // 모바일에서만 더 넓게 퍼지도록 CSS로 조정합니다.
-            style={{
-              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
-            }}
+            className="absolute inset-x-0 top-0 z-[1] h-full marketing-hero-dot-field"
           />
 
           {/* 3. 메인 콘텐츠 */}
