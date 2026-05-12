@@ -1640,28 +1640,32 @@ export default function LandingPage() {
 
       {/* ── Footer ── */}
       <footer className="bg-neutral-950 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-neutral-800">
-            <div className="md:col-span-2">
+        <div className="mx-auto max-w-6xl px-6 py-10 sm:py-12">
+          <div className="grid grid-cols-1 gap-10 border-b border-neutral-800 pb-10 text-center md:grid-cols-[1.2fr_0.8fr] md:gap-8 md:text-left">
+            <div className="md:pr-8">
               <span className="text-lg font-bold tracking-tight">LinKo</span>
-              <p className="text-sm text-neutral-400 mt-3 leading-relaxed max-w-xs">
+              <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-neutral-400 md:mx-0">
                 Turn any YouTube video into a personalized Korean lesson. Learn the language you actually want to speak.
               </p>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-4">Product</p>
-              {['Features', 'How it works', 'Pricing', 'Changelog'].map((link) => (
-                <p key={link} className="text-sm text-neutral-400 hover:text-white transition-colors cursor-pointer mb-2">{link}</p>
-              ))}
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-4">Company</p>
-              {['About', 'Blog', 'Contact', 'Privacy'].map((link) => (
-                <p key={link} className="text-sm text-neutral-400 hover:text-white transition-colors cursor-pointer mb-2">{link}</p>
-              ))}
+            <div className="grid gap-8 text-left sm:grid-cols-2 sm:gap-8">
+              <div className="text-left">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-500">Product</p>
+                <div className="space-y-2">
+                  <a href="#features" className="block text-sm text-neutral-400 transition-colors hover:text-white">
+                    Features
+                  </a>
+                  <a href="#video-explorer-section" className="block text-sm text-neutral-400 transition-colors hover:text-white">
+                    Start with these videos
+                  </a>
+                </div>
+              </div>
+              <div className="text-left sm:pt-[31px]">
+                <p className="text-sm text-neutral-400">Contact</p>
+              </div>
             </div>
           </div>
-          <div className="pt-6 flex items-center justify-between">
+          <div className="flex flex-col gap-2 pt-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
             <p className="text-xs text-neutral-600">© 2026 LinKo. All rights reserved.</p>
             <p className="text-xs text-neutral-600">Made for Korean learners everywhere</p>
           </div>
