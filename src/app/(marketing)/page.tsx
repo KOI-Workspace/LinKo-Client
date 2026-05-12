@@ -950,8 +950,6 @@ const VIDEO_EXAMPLES = [
   },
 ]
 
-export const revalidate = 0
-
 function LessonPreviewModal({
   isOpen,
   onClose,
