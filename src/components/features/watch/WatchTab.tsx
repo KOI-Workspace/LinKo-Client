@@ -963,8 +963,11 @@ export default function WatchTab({
   }, [isControlMenuOpen])
 
   useEffect(() => {
-    if (shouldStackMobile || !activeLine) return
-    lineRefs.current[activeLine.id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    if (!activeLine) return
+    lineRefs.current[activeLine.id]?.scrollIntoView({
+      behavior: 'smooth',
+      block: shouldStackMobile ? 'start' : 'nearest',
+    })
   }, [activeLine, shouldStackMobile])
 
   useEffect(() => {
@@ -1564,88 +1567,61 @@ export default function WatchTab({
 
         {sidePanelTab === 'transcript' ? (
           <div className="flex-1 overflow-y-auto">
-            <div className="sticky top-0 z-10 border-b border-neutral-800 bg-neutral-950/96 px-5 py-4 backdrop-blur">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Now Playing</span>
-                <span className="text-[10px] font-mono text-neutral-500">{formatTime(activeLine.startSec)}</span>
-              </div>
-              <button
-                onClick={() => seekTo(activeLine.startSec)}
-                className="w-full rounded-2xl border border-primary/20 bg-primary/[0.08] px-4 py-4 text-left transition-all hover:border-primary/35 hover:bg-primary/[0.12]"
-              >
-                {subtitleMode !== 'english' && (
-                  <p className="text-base font-semibold leading-[1.8] text-white">
-                    <SubtitleText
-                      text={activeLine.korean}
-                      forceTooltipBelow={activeLine.id === firstSubtitleId}
-                      {...subtitleProps}
-                    />
-                  </p>
-                )}
-                {subtitleMode !== 'korean' && (
-                  <p className={`leading-relaxed ${subtitleMode === 'english' ? 'text-base font-semibold text-white' : 'mt-1.5 text-sm text-neutral-300'}`}>
-                    {activeLine.english}
-                  </p>
-                )}
-              </button>
-            </div>
-
-            <div className="flex flex-col">
-              {upcomingTranscriptLines.map((line) => {
-                const isSentenceBookmarked = isBookmarked(`sentence-${lessonId}-${line.id}`)
-                const isNextUp = line.id === upcomingTranscriptLines[0]?.id
-                return (
-                  <div
-                    key={line.id}
-                    onClick={() => seekTo(line.startSec)}
-                    className={`cursor-pointer border-b border-neutral-800/60 px-5 py-3.5 transition-all ${
-                      isNextUp ? 'bg-neutral-800/55' : 'hover:bg-neutral-800/40'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 shrink-0 font-mono text-[10px] text-neutral-500">
-                        {formatTime(line.startSec)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        {subtitleMode !== 'english' && (
-                          <p className="text-sm leading-[1.9] text-neutral-300">
-                            <SubtitleText
-                              text={line.korean}
-                              forceTooltipBelow={line.id === firstSubtitleId}
-                              {...subtitleProps}
-                            />
-                          </p>
-                        )}
-                        {subtitleMode !== 'korean' && (
-                          <p className={`mt-0.5 text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
-                            {line.english}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleSentenceBookmark(line)
-                        }}
-                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all ${
-                          isSentenceBookmarked
-                            ? 'border-primary/30 bg-primary/15 text-primary'
-                            : 'border-white/10 bg-white/5 text-neutral-500 hover:border-white/20 hover:bg-white/10 hover:text-white'
-                        }`}
-                        title={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
-                        aria-label={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
-                      >
-                        {isSentenceBookmarked ? (
-                          <BookmarkCheck className="h-3.5 w-3.5" />
-                        ) : (
-                          <Bookmark className="h-3.5 w-3.5" />
-                        )}
-                      </button>
+            {subtitles.map((line) => {
+              const isActive = line.id === activeLine.id
+              const isSentenceBookmarked = isBookmarked(`sentence-${lessonId}-${line.id}`)
+              return (
+                <div
+                  key={line.id}
+                  ref={(el) => { lineRefs.current[line.id] = el }}
+                  onClick={() => seekTo(line.startSec)}
+                  className={`cursor-pointer border-b border-neutral-800/60 px-5 py-3.5 transition-all ${
+                    isActive ? 'border-l-2 border-l-primary bg-neutral-800' : 'hover:bg-neutral-800/40'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={`mt-0.5 shrink-0 font-mono text-[10px] ${isActive ? 'font-bold text-primary' : 'text-neutral-500'}`}>
+                      {formatTime(line.startSec)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      {subtitleMode !== 'english' && (
+                        <p className={`text-sm leading-[1.9] ${isActive ? 'font-medium text-white' : 'text-neutral-300'}`}>
+                          <SubtitleText
+                            text={line.korean}
+                            forceTooltipBelow={line.id === firstSubtitleId}
+                            {...subtitleProps}
+                          />
+                        </p>
+                      )}
+                      {subtitleMode !== 'korean' && (
+                        <p className={`mt-0.5 text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
+                          {line.english}
+                        </p>
+                      )}
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleSentenceBookmark(line)
+                      }}
+                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all ${
+                        isSentenceBookmarked
+                          ? 'border-primary/30 bg-primary/15 text-primary'
+                          : 'border-white/10 bg-white/5 text-neutral-500 hover:border-white/20 hover:bg-white/10 hover:text-white'
+                      }`}
+                      title={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
+                      aria-label={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
+                    >
+                      {isSentenceBookmarked ? (
+                        <BookmarkCheck className="h-3.5 w-3.5" />
+                      ) : (
+                        <Bookmark className="h-3.5 w-3.5" />
+                      )}
+                    </button>
                   </div>
-                )
-              })}
-            </div>
+                </div>
+              )
+            })}
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-5 py-4">

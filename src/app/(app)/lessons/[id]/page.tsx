@@ -199,7 +199,7 @@ export default function LessonDetailPage() {
       {/* ── 상단 레슨 정보 + 탭 ── */}
       <div className="shrink-0 border-b border-neutral-100 bg-white">
         {/* 브레드크럼 */}
-        <div className="px-8 pt-5 pb-4 flex items-center justify-between">
+        <div className="px-8 pt-3 pb-2 sm:pt-5 sm:pb-4 flex items-center justify-between">
           <button
             onClick={() => router.push('/lessons')}
             className="flex items-center gap-1.5 text-sm text-neutral-400 hover:text-neutral-700 transition-colors"
@@ -210,7 +210,7 @@ export default function LessonDetailPage() {
         </div>
 
         {/* 레슨 메타 정보 */}
-        <div className="px-8 pb-4">
+        <div className="px-8 pb-2 sm:pb-4">
           <h1 className="text-lg font-bold text-neutral-950 leading-snug truncate">
             {lesson.title}
           </h1>
@@ -226,7 +226,7 @@ export default function LessonDetailPage() {
         </div>
 
         {/* 탭 바 */}
-        <div className="px-8 flex items-center gap-1 border-t border-neutral-100">
+        <div className="px-3 sm:px-8 flex items-center gap-1 border-t border-neutral-100">
           {([
             { key: 'flashcard', label: 'Flashcard', icon: CreditCard },
             { key: 'watch',     label: 'Watch',     icon: Captions },
@@ -235,7 +235,7 @@ export default function LessonDetailPage() {
               key={key}
               onClick={() => setActiveTab(key)}
               disabled={isGenerating}
-              className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+              className={`flex items-center gap-1.5 px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-medium border-b-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                 activeTab === key
                   ? 'border-primary text-primary'
                   : 'border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-300'
