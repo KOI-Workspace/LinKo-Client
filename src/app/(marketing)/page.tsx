@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Play, ArrowUp, ChevronDown, Plus, AlertCircle, Loader2, CreditCard, Captions } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -951,6 +949,8 @@ const VIDEO_EXAMPLES = [
     profileImageUrl: createAvatarDataUrl('D', '#f59e0b'),
   },
 ]
+
+export const revalidate = 0
 
 function LessonPreviewModal({
   isOpen,
