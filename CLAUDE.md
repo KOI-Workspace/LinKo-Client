@@ -25,13 +25,17 @@ pnpm format       # Prettier
 src/app/
 ├── page.tsx                    # / → /home 리다이렉트
 ├── (marketing)/                # 비로그인 퍼블릭 영역 (Sidebar 없음)
-│   └── page.tsx                # 랜딩 페이지
+│   └── page.tsx                # 랜딩 페이지 — FlashcardTab/WatchTab 직접 포함 (공개 데모)
 └── (app)/                      # 인증 영역 — Sidebar + main 레이아웃
     ├── layout.tsx              # Sidebar + <main className="flex-1 overflow-y-auto">
     ├── home/page.tsx
     ├── lessons/page.tsx
+    ├── lessons/[id]/page.tsx   # Flashcard ↔ Watch 탭 전환, 완료 모달 포함
     ├── channels/page.tsx
-    └── recommendations/page.tsx
+    ├── recommendations/page.tsx
+    └── bookmarks/
+        ├── page.tsx            # 저장한 단어/문장 목록
+        └── review/page.tsx     # 북마크 복습 화면
 ```
 
 - `(app)` 레이아웃이 `Sidebar`를 주입하므로 새 앱 페이지는 `(app)/` 아래에 만들면 자동으로 레이아웃 적용
