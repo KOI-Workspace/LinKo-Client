@@ -58,6 +58,20 @@ src/app/
 - `generationStatus: 'ready'` → 썸네일 + 학습 상태 UI
 - `LessonData` 타입은 `MyLessonsSection.tsx`에서 export
 
+### FlashcardTab / WatchTab
+두 탭 모두 아래 두 prop으로 공개/모바일 모드를 전환한다.
+
+```tsx
+<WatchTab
+  lessonId="3"
+  isPublic      // true → /public/* API 사용 (랜딩 페이지 데모용)
+  mobileStacked // true → 모바일 세로 스택 레이아웃, false(기본) → 데스크톱 사이드 패널
+/>
+```
+
+- `isPublic` 미지정 시 인증 토큰이 필요한 `/lessons/:id/*` API 호출
+- `mobileStacked`일 때 사이드 패널 대신 영상 아래에 Transcript/Cultural Notes 영역을 배치
+
 ### UrlInput (`src/components/features/home/UrlInput.tsx`)
 YouTube URL을 받아 학습자료 생성을 요청하는 핵심 진입점. Home·Channels·Recommendations 히어로 섹션에서 공통 사용. 현재 `handleSubmit` 내부 API 연동이 TODO 상태.
 
