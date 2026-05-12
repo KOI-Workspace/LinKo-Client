@@ -7,7 +7,7 @@ import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import WatchTab from '@/components/features/watch/WatchTab'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import DotField from '@/components/ui/DotField'
-import { saveAuthToken, hasAuthToken } from '@/lib/api'
+import { saveAuthToken } from '@/lib/api'
 import { getPublicPreviewLessons, getLesson, checkVideoValidity, type LessonSummary } from '@/lib/lessonsApi'
 import { ArrowLeft } from 'lucide-react'
 import { loginWithGoogleIdToken } from '@/lib/authApi'
@@ -1507,23 +1507,15 @@ export default function LandingPageClient() {
                   tabIndex={0}
                   onClick={() => {
                     const lessonId = video.id || '3'
-                    if (hasAuthToken()) {
-                      setPreviewLessonId(lessonId)
-                    } else {
-                      setPendingLessonId(lessonId)
-                      handleOpenLoginModal('video')
-                    }
+                    setPendingLessonId(lessonId)
+                    handleOpenLoginModal('video')
                   }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
                       const lessonId = video.id || '3'
-                      if (hasAuthToken()) {
-                        setPreviewLessonId(lessonId)
-                      } else {
-                        setPendingLessonId(lessonId)
-                        handleOpenLoginModal('video')
-                      }
+                      setPendingLessonId(lessonId)
+                      handleOpenLoginModal('video')
                     }
                   }}
                   className="w-[82vw] max-w-[320px] shrink-0 rounded-xl border border-neutral-200 bg-neutral-100 overflow-hidden cursor-pointer group transition-all hover:border-neutral-300 hover:shadow-md sm:w-auto sm:max-w-none sm:shrink"
