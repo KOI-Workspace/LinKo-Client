@@ -1039,7 +1039,7 @@ export default function WatchTab({
 
   if (!shouldStackMobile) {
     const panelWidth = isSidePanelOpen ? sidePanelWidth : 48
-    const sidePanelStyle = { '--side-panel-width': `${panelWidth}px` } as CSSProperties
+    const sidePanelStyle = { width: panelWidth } as CSSProperties
 
     return (
       <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -1154,7 +1154,7 @@ export default function WatchTab({
         </div>
 
         <div
-          className={`relative shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden transition-[width] duration-300 ease-in-out ${
+          className={`relative min-w-0 shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden transition-[width] duration-300 ease-in-out ${
             isSidePanelOpen ? '' : 'w-12'
           }`}
           style={isSidePanelOpen ? sidePanelStyle : { width: 48 }}
