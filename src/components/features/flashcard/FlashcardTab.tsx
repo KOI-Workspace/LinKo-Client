@@ -560,7 +560,7 @@ export default function FlashcardTab({
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-full">
 
           {/* 좌: 영상 (공통) */}
-          <div className="p-8 lg:border-r border-neutral-100 flex flex-col gap-6">
+          <div className="order-2 flex flex-col gap-6 border-neutral-100 p-8 lg:order-1 lg:border-r">
             <div>
               <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">
                 Video Segment
@@ -578,7 +578,7 @@ export default function FlashcardTab({
           </div>
 
             {/* 우: 카드 타입별 콘텐츠 */}
-          <div className="p-8 flex flex-col gap-6">
+          <div className="order-1 flex flex-col gap-6 px-8 pb-6 pt-5 lg:order-2 lg:p-8">
 
             {/* ── 어미 변형 카드 ── */}
             {cardIsEnding ? (
@@ -695,7 +695,7 @@ export default function FlashcardTab({
           </div>
         </div>
 
-        <div className="-mt-2 px-8 pb-6 lg:hidden">
+        <div className="px-8 pb-6 lg:hidden">
           {relatedVideosSection}
         </div>
       </div>

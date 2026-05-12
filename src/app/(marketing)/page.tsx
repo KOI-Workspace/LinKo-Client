@@ -463,30 +463,30 @@ function FaqItem({
       </button>
 
       <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+        className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${isOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'
           }`}
       >
-        <div className="pb-8 pl-10 pr-12">
-          <p className="max-w-3xl text-base leading-8 text-neutral-500">
+        <div className="pb-8 pl-9 pr-4 sm:pl-10 sm:pr-12">
+          <p className="max-w-3xl text-[15px] leading-7 text-neutral-500 sm:text-base sm:leading-8">
             {item.answer}
           </p>
 
           {item.levels && (
-            <div className="mt-8 grid gap-4">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:gap-4">
               {item.levels.map((level: FaqLevel, levelIndex: number) => (
                 <div
                   key={level.title}
-                  className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.04)]"
+                  className="rounded-[22px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.03)] sm:rounded-[28px] sm:p-6 sm:shadow-[0_14px_40px_rgba(15,23,42,0.04)]"
                 >
-                  <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-sm font-semibold text-primary">
+                  <div className="flex items-start gap-4 sm:gap-6">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-xs font-semibold text-primary sm:h-12 sm:w-12 sm:rounded-2xl sm:text-sm">
                       {String(levelIndex + 1).padStart(2, '0')}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-2xl font-semibold tracking-tight text-neutral-950">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-semibold tracking-tight text-neutral-950 sm:text-2xl">
                         {level.title}
                       </p>
-                      <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-500">
+                      <p className="mt-1.5 text-xs leading-6 text-neutral-500 sm:mt-3 sm:text-sm sm:leading-7">
                         {level.description}
                       </p>
                     </div>
@@ -1077,7 +1077,7 @@ export default function LandingPage() {
   const [isTypingActive, setIsTypingActive] = useState(true)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null)
   const [isUnsupportedModalOpen, setIsUnsupportedModalOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isEarlyAccessModalOpen, setIsEarlyAccessModalOpen] = useState(false)
