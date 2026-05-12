@@ -7,7 +7,7 @@ import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import WatchTab from '@/components/features/watch/WatchTab'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import DotField from '@/components/ui/DotField'
-import { saveAuthToken } from '@/lib/api'
+import { saveAuthToken, hasAuthToken } from '@/lib/api'
 import { getPublicPreviewLessons, getLesson, checkVideoValidity, type LessonSummary } from '@/lib/lessonsApi'
 import { ArrowLeft } from 'lucide-react'
 import { loginWithGoogleIdToken } from '@/lib/authApi'
@@ -509,12 +509,12 @@ function ModalFrame({
 }: ModalFrameProps) {
   return (
     <div
-      className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-neutral-950/55 backdrop-blur-sm"
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className={`relative w-full sm:max-w-[560px] overflow-x-hidden overflow-y-auto rounded-t-[28px] sm:rounded-[36px] border border-white/70 bg-white px-5 pb-8 pt-6 shadow-[0_30px_100px_rgba(15,23,42,0.24)] sm:mx-4 sm:mb-8 sm:px-10 sm:pb-11 sm:pt-8 max-h-[90dvh] ${panelClassName}`}
+        className={`relative w-full max-w-[560px] overflow-hidden rounded-[28px] sm:rounded-[36px] border border-white/70 bg-white px-5 pb-6 pt-5 shadow-[0_30px_100px_rgba(15,23,42,0.24)] sm:px-10 sm:pb-11 sm:pt-8 ${panelClassName}`}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -540,14 +540,14 @@ function ModalHeader({
 }) {
   return (
     <div className="flex flex-col items-center text-center">
-      {badge ? <div className="mb-4 sm:mb-5">{badge}</div> : null}
-      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-400">
+      {badge ? <div className="mb-3 sm:mb-5">{badge}</div> : null}
+      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-neutral-400 sm:text-[11px]">
         {eyebrow}
       </p>
-      <h2 className="mt-3 text-[24px] font-semibold tracking-tight text-neutral-950 sm:mt-4 sm:text-[30px]">
+      <h2 className="mt-2 text-[20px] font-semibold tracking-tight text-neutral-950 sm:mt-4 sm:text-[30px]">
         {title}
       </h2>
-      <p className="mt-2 max-w-[420px] text-sm leading-7 text-neutral-500 sm:mt-3 sm:text-[15px]">
+      <p className="mt-1.5 max-w-[420px] text-xs leading-6 text-neutral-500 sm:mt-3 sm:text-[15px] sm:leading-7">
         {description}
       </p>
     </div>
@@ -573,36 +573,36 @@ function UnsupportedCaseModal({
       <div className="relative mx-auto max-w-[420px]">
         <ModalHeader
           badge={(
-            <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[#fff2f3] text-[#ff5f66] shadow-[0_16px_36px_rgba(255,95,102,0.12)]">
-              <AlertCircle className="h-7 w-7" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#fff2f3] text-[#ff5f66] shadow-[0_16px_36px_rgba(255,95,102,0.12)] sm:h-16 sm:w-16 sm:rounded-[24px]">
+              <AlertCircle className="h-5 w-5 sm:h-7 sm:w-7" />
             </div>
           )}
           title="This link is not supported yet"
           description="Linko currently supports standard Korean YouTube videos. Some formats still cannot be converted into learning materials."
         />
 
-        <div className="mt-6 sm:mt-9">
-          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-400">
+        <div className="mt-4 sm:mt-9">
+          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.24em] text-neutral-400 sm:text-[11px]">
             Unsupported cases
           </p>
-          <div className="mt-3 sm:mt-4 grid gap-2 sm:gap-3">
+          <div className="mt-2 sm:mt-4 grid gap-1.5 sm:gap-3">
             {UNSUPPORTED_CASES.map((item, index) => (
               <div
                 key={item}
-                className="rounded-[16px] sm:rounded-[20px] border border-neutral-200 bg-neutral-50 px-3 py-3 sm:px-4 sm:py-4"
+                className="rounded-[14px] sm:rounded-[20px] border border-neutral-200 bg-neutral-50 px-3 py-2 sm:px-4 sm:py-4"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950 shadow-sm">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-neutral-950 shadow-sm sm:h-9 sm:w-9 sm:text-sm">
                     {index + 1}
                   </div>
-                  <p className="text-sm leading-6 text-neutral-700 sm:text-[15px]">{item}</p>
+                  <p className="text-xs leading-5 text-neutral-700 sm:text-[15px] sm:leading-6">{item}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-6 sm:mt-8 flex justify-center">
+        <div className="mt-4 sm:mt-8 flex justify-center">
           <button
             type="button"
             onClick={onPickOtherVideos}
@@ -700,9 +700,9 @@ function EarlyAccessModal({
           description="When Linko officially launches, we&rsquo;ll email you an exclusive launch code."
         />
 
-        <div className="mt-5 sm:mt-7 w-full overflow-hidden rounded-[20px] sm:rounded-[24px] border border-neutral-200 bg-neutral-50 p-2.5 sm:p-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
+        <div className="mt-4 sm:mt-7 w-full overflow-hidden rounded-[20px] sm:rounded-[24px] border border-neutral-200 bg-neutral-50 p-2 sm:p-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
           <div className="relative overflow-hidden rounded-[16px] sm:rounded-[20px] bg-white">
-            <div className="relative aspect-[16/9] bg-neutral-100">
+            <div className="relative aspect-[16/7] bg-neutral-100 sm:aspect-[16/9]">
               {isPreviewLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[1px]">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
@@ -733,7 +733,7 @@ function EarlyAccessModal({
           {videoPreview.note}
         </p>
 
-        <div className="mt-5 sm:mt-6 flex justify-center">
+        <div className="mt-4 sm:mt-6 flex justify-center">
           <button
             type="button"
             onClick={onPickOtherVideos}
@@ -825,16 +825,11 @@ function LoginModal({
     <ModalFrame ariaLabel="로그인 모달" onClose={onClose}>
       <div className="relative mx-auto flex max-w-[420px] flex-col items-center text-center">
         <ModalHeader
-          badge={(
-            <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[radial-gradient(circle_at_30%_30%,#65d8ff_0%,#5a63ff_42%,#6c3cff_72%,#2b175e_100%)] shadow-[0_18px_44px_rgba(90,99,255,0.24)]">
-              <div className="h-9 w-9 rounded-[16px] bg-white/18 backdrop-blur-[2px]" />
-            </div>
-          )}
           title="Start learning in seconds"
           description="Sign in with Google to turn your favorite YouTube videos into Korean lessons."
         />
 
-        <div className="mt-10 flex min-h-[44px] w-full items-center justify-center">
+        <div className="mt-6 flex min-h-[44px] w-full items-center justify-center sm:mt-10">
           {!isGoogleButtonReady && !googleButtonError && (
             <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
           )}
@@ -851,7 +846,7 @@ function LoginModal({
           </p>
         )}
 
-        <p className="mt-8 max-w-[360px] text-[14px] leading-7 text-neutral-400 sm:text-[15px]">
+        <p className="mt-5 max-w-[360px] text-xs leading-6 text-neutral-400 sm:mt-8 sm:text-[14px] sm:leading-7">
           By continuing, you agree to our{' '}
           <button
             type="button"
@@ -1520,12 +1515,24 @@ export default function LandingPage() {
                   role="button"
                   tabIndex={0}
                   onClick={() => {
-                    setPreviewLessonId(video.id || '3')
+                    const lessonId = video.id || '3'
+                    if (hasAuthToken()) {
+                      setPreviewLessonId(lessonId)
+                    } else {
+                      setPendingLessonId(lessonId)
+                      handleOpenLoginModal('video')
+                    }
                   }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
-                      setPreviewLessonId(video.id || '3')
+                      const lessonId = video.id || '3'
+                      if (hasAuthToken()) {
+                        setPreviewLessonId(lessonId)
+                      } else {
+                        setPendingLessonId(lessonId)
+                        handleOpenLoginModal('video')
+                      }
                     }
                   }}
                   className="w-[82vw] max-w-[320px] shrink-0 rounded-xl border border-neutral-200 bg-neutral-100 overflow-hidden cursor-pointer group transition-all hover:border-neutral-300 hover:shadow-md sm:w-auto sm:max-w-none sm:shrink"
