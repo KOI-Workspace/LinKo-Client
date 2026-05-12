@@ -8,11 +8,9 @@ import {
   BookmarkCheck,
   Eye,
   EyeOff,
+  Settings2,
   Info,
   Check,
-  GripVertical,
-  PanelRightClose,
-  PanelRightOpen,
 } from 'lucide-react'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
@@ -40,9 +38,6 @@ interface SubtitleLine {
 
 type SubtitleDisplayMode = 'bilingual' | 'korean' | 'english'
 type SidePanelTab = 'transcript' | 'culture'
-
-const SIDE_PANEL_MIN_WIDTH = 280
-const SIDE_PANEL_DEFAULT_WIDTH = 336
 
 interface CulturalNote {
   id: string
@@ -768,9 +763,7 @@ export default function WatchTab({
   const [isBlind, setIsBlind]           = useState(false)
   const [subtitleMode, setSubtitleMode] = useState<SubtitleDisplayMode>('bilingual')
   const [sidePanelTab, setSidePanelTab] = useState<SidePanelTab>('transcript')
-  const [isSidePanelOpen, setIsSidePanelOpen] = useState(true)
-  const [sidePanelWidth, setSidePanelWidth] = useState(SIDE_PANEL_DEFAULT_WIDTH)
-  const [isResizingSidePanel, setIsResizingSidePanel] = useState(false)
+  const [isControlMenuOpen, setIsControlMenuOpen] = useState(false)
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
   const [apiData, setApiData] = useState<{
     youtubeId: string
@@ -782,7 +775,7 @@ export default function WatchTab({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
-  const lineRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const controlMenuRef = useRef<HTMLDivElement | null>(null)
   const completionFired = useRef(false)
 
   const hasMockLesson = Boolean(MOCK_FLASHCARDS[lessonId])
@@ -937,39 +930,32 @@ export default function WatchTab({
     isBlind, revealedCards, onRevealToggle: toggleReveal,
   }
   const firstSubtitleId = subtitles[0]?.id
+  const activeLineIndex = Math.max(0, subtitles.findIndex((line) => line.id === activeLine.id))
+  const upcomingTranscriptLines = subtitles.length > 1
+    ? [...subtitles.slice(activeLineIndex + 1), ...subtitles.slice(0, activeLineIndex)]
+    : []
 
   const subtitleModeOptions: Array<{ value: SubtitleDisplayMode; label: string }> = [
     { value: 'bilingual', label: 'Dual' },
     { value: 'korean', label: 'Korean' },
     { value: 'english', label: 'English' },
   ]
+  const playbackSpeedOptions = [0.5, 0.75, 1, 1.5]
   const shouldStackMobile = mobileStacked
 
   useEffect(() => {
-    if (!isResizingSidePanel) return
+    if (!isControlMenuOpen) return
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const nextWidth = window.innerWidth - event.clientX
-      const maxWidth = Math.floor(window.innerWidth / 2)
-      setSidePanelWidth(Math.min(maxWidth, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!controlMenuRef.current?.contains(event.target as Node)) {
+        setIsControlMenuOpen(false)
+      }
     }
-
-    const handleMouseUp = () => {
-      setIsResizingSidePanel(false)
-    }
-
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
 
     return () => {
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mousedown', handlePointerDown)
     }
-  }, [isResizingSidePanel])
+  }, [isControlMenuOpen])
 
   if (isLoading && !apiData && !hasMockLesson) {
     return (
