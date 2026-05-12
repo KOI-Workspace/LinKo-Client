@@ -7,7 +7,7 @@ import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import WatchTab from '@/components/features/watch/WatchTab'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import DotField from '@/components/ui/DotField'
-import { saveAuthToken } from '@/lib/api'
+import { hasAuthToken, saveAuthToken } from '@/lib/api'
 import { getPublicPreviewLessons, checkVideoValidity, type LessonSummary } from '@/lib/lessonsApi'
 import { ArrowLeft } from 'lucide-react'
 import { loginWithGoogleIdToken } from '@/lib/authApi'
@@ -1280,6 +1280,17 @@ export default function LandingPageClient() {
     setIsLoginModalOpen(true)
   }
 
+  const handlePreviewLessonRequest = (lessonId: string) => {
+    if (hasAuthToken()) {
+      setPendingLessonId(null)
+      setPreviewLessonId(lessonId)
+      return
+    }
+
+    setPendingLessonId(lessonId)
+    handleOpenLoginModal('video')
+  }
+
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false)
     setGoogleLoginError(null)
@@ -1513,15 +1524,13 @@ export default function LandingPageClient() {
                   tabIndex={0}
                   onClick={() => {
                     const lessonId = video.id || '3'
-                    setPendingLessonId(lessonId)
-                    handleOpenLoginModal('video')
+                    handlePreviewLessonRequest(lessonId)
                   }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
                       const lessonId = video.id || '3'
-                      setPendingLessonId(lessonId)
-                      handleOpenLoginModal('video')
+                      handlePreviewLessonRequest(lessonId)
                     }
                   }}
                   className="w-[82vw] max-w-[320px] shrink-0 rounded-xl border border-neutral-200 bg-neutral-100 overflow-hidden cursor-pointer group transition-all hover:border-neutral-300 hover:shadow-md sm:w-auto sm:max-w-none sm:shrink"
