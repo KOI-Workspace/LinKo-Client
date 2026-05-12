@@ -169,7 +169,7 @@ export default function LessonDetailPage() {
   }
 
   const isGenerating = lesson.generationStatus === 'generating'
-  const isFailed = lesson.generationStatus === 'failed'
+  const isFailed = lesson.generationStatus === 'failed' && lesson.transcriptStatus !== 'ready'
   const flashcardCardCount = MOCK_FLASHCARDS[id]?.cards.length ?? 0
 
   const handleFlashcardComplete = () => {

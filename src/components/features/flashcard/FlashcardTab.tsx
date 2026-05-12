@@ -370,14 +370,9 @@ export default function FlashcardTab({
 
   const isReviewMode = mode === 'review'
 
-  // 목업 데이터가 없는 레슨도 학습 화면을 확인할 수 있도록 기본 카드 세트를 재사용합니다.
   const fallbackData = useMemo(() => {
     if (!lessonId) return null
-    return MOCK_FLASHCARDS[lessonId] ?? {
-      ...MOCK_FLASHCARDS['3'],
-      lessonId,
-      lessonTitle: 'Generated lesson preview',
-    }
+    return MOCK_FLASHCARDS[lessonId] ?? null
   }, [lessonId])
   const data = apiData ?? fallbackData
   const cards = useMemo(

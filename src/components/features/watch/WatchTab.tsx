@@ -943,6 +943,11 @@ export default function WatchTab({
     { value: 'korean', label: 'Korean' },
     { value: 'english', label: 'English' },
   ]
+  const hasEnglishSubtitles = subtitles.some((line) => line.english.trim().length > 0)
+  const effectiveSubtitleMode = hasEnglishSubtitles ? subtitleMode : 'korean'
+  const visibleSubtitleModeOptions = hasEnglishSubtitles
+    ? subtitleModeOptions
+    : subtitleModeOptions.filter((option) => option.value === 'korean')
   const playbackSpeedOptions = [0.5, 0.75, 1, 1.5]
   const shouldStackMobile = mobileStacked
 
@@ -1057,7 +1062,7 @@ export default function WatchTab({
           </div>
 
           <div className="shrink-0 flex h-[220px] flex-col justify-start border-b border-neutral-800 px-8 py-6">
-            {subtitleMode !== 'english' && (
+            {effectiveSubtitleMode !== 'english' && (
               <p className="text-2xl font-semibold leading-[1.7] text-white">
                 <SubtitleText
                   text={activeLine.korean}
@@ -1066,8 +1071,8 @@ export default function WatchTab({
                 />
               </p>
             )}
-            {subtitleMode !== 'korean' && (
-              <p className={`text-2xl leading-relaxed ${subtitleMode === 'english' ? 'font-semibold text-white' : 'mt-2 text-neutral-400'}`}>
+            {effectiveSubtitleMode !== 'korean' && (
+              <p className={`text-2xl leading-relaxed ${effectiveSubtitleMode === 'english' ? 'font-semibold text-white' : 'mt-2 text-neutral-400'}`}>
                 {activeLine.english}
               </p>
             )}
@@ -1127,8 +1132,8 @@ export default function WatchTab({
               </button>
 
               <div className="inline-flex items-center rounded-pill border border-white/15 bg-white/5 p-1">
-                {subtitleModeOptions.map((option) => {
-                  const isSelected = subtitleMode === option.value
+                {visibleSubtitleModeOptions.map((option) => {
+                  const isSelected = effectiveSubtitleMode === option.value
                   return (
                     <button
                       key={option.value}
@@ -1263,7 +1268,7 @@ export default function WatchTab({
                         {formatTime(line.startSec)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        {subtitleMode !== 'english' && (
+                        {effectiveSubtitleMode !== 'english' && (
                           <p className={`text-sm leading-[1.9] ${
                             isActive ? 'font-medium text-white' : 'text-neutral-300'
                           }`}>
@@ -1274,8 +1279,8 @@ export default function WatchTab({
                             />
                           </p>
                         )}
-                        {subtitleMode !== 'korean' && (
-                          <p className={`mt-0.5 text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
+                        {effectiveSubtitleMode !== 'korean' && (
+                          <p className={`mt-0.5 text-sm leading-relaxed ${effectiveSubtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
                             {line.english}
                           </p>
                         )}
@@ -1482,8 +1487,8 @@ export default function WatchTab({
                           Blind
                         </button>
                         <span className="text-neutral-600">|</span>
-                        {subtitleModeOptions.map((option) => {
-                          const isSelected = subtitleMode === option.value
+                        {visibleSubtitleModeOptions.map((option) => {
+                          const isSelected = effectiveSubtitleMode === option.value
                           return (
                             <button
                               key={option.value}
@@ -1584,7 +1589,7 @@ export default function WatchTab({
                       {formatTime(line.startSec)}
                     </span>
                     <div className="min-w-0 flex-1">
-                      {subtitleMode !== 'english' && (
+                      {effectiveSubtitleMode !== 'english' && (
                         <p className={`text-sm leading-[1.9] ${isActive ? 'font-medium text-white' : 'text-neutral-300'}`}>
                           <SubtitleText
                             text={line.korean}
@@ -1593,8 +1598,8 @@ export default function WatchTab({
                           />
                         </p>
                       )}
-                      {subtitleMode !== 'korean' && (
-                        <p className={`mt-0.5 text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
+                      {effectiveSubtitleMode !== 'korean' && (
+                        <p className={`mt-0.5 text-sm leading-relaxed ${effectiveSubtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
                           {line.english}
                         </p>
                       )}
