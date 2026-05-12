@@ -66,4 +66,8 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .marketing-hero-dot-field {
+    /* Mask removed to fill the hero section completely */
+  }
 }

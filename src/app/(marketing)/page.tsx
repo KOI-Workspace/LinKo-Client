@@ -463,30 +463,30 @@ function FaqItem({
       </button>
 
       <div
-        className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+        className={`overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out ${isOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'
           }`}
       >
-        <div className="pb-8 pl-10 pr-12">
-          <p className="max-w-3xl text-base leading-8 text-neutral-500">
+        <div className="pb-8 pl-9 pr-4 sm:pl-10 sm:pr-12">
+          <p className="max-w-3xl text-[15px] leading-7 text-neutral-500 sm:text-base sm:leading-8">
             {item.answer}
           </p>
 
           {item.levels && (
-            <div className="mt-8 grid gap-4">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:gap-4">
               {item.levels.map((level: FaqLevel, levelIndex: number) => (
                 <div
                   key={level.title}
-                  className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.04)]"
+                  className="rounded-[22px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.03)] sm:rounded-[28px] sm:p-6 sm:shadow-[0_14px_40px_rgba(15,23,42,0.04)]"
                 >
-                  <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-sm font-semibold text-primary">
+                  <div className="flex items-start gap-4 sm:gap-6">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-xs font-semibold text-primary sm:h-12 sm:w-12 sm:rounded-2xl sm:text-sm">
                       {String(levelIndex + 1).padStart(2, '0')}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-2xl font-semibold tracking-tight text-neutral-950">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-semibold tracking-tight text-neutral-950 sm:text-2xl">
                         {level.title}
                       </p>
-                      <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-500">
+                      <p className="mt-1.5 text-xs leading-6 text-neutral-500 sm:mt-3 sm:text-sm sm:leading-7">
                         {level.description}
                       </p>
                     </div>
@@ -966,6 +966,7 @@ function LessonPreviewModal({
   const [activeTab, setActiveTab] = useState<'flashcard' | 'watch'>('flashcard')
   const [lesson, setLesson] = useState<LessonSummary | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
 
   // 레슨 정보 가져오기
   useEffect(() => {
@@ -996,6 +997,21 @@ function LessonPreviewModal({
       document.body.style.overflow = 'unset'
     }
   }, [isOpen])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1023px)')
+
+    const updateViewport = () => {
+      setIsMobileViewport(mediaQuery.matches)
+    }
+
+    updateViewport()
+    mediaQuery.addEventListener('change', updateViewport)
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateViewport)
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -1061,9 +1077,20 @@ function LessonPreviewModal({
             <Loader2 className="w-6 h-6 animate-spin" />
           </div>
         ) : activeTab === 'flashcard' ? (
-          <FlashcardTab lessonId={lessonId} isPublic={false} hideActions={true} onComplete={() => setActiveTab('watch')} />
+          <FlashcardTab
+            lessonId={lessonId}
+            isPublic={false}
+            hideActions={true}
+            hideRelatedVideos={true}
+            onComplete={() => setActiveTab('watch')}
+          />
         ) : (
-          <WatchTab lessonId={lessonId} isPublic={false} onComplete={onClose} mobileStacked />
+          <WatchTab
+            lessonId={lessonId}
+            isPublic={false}
+            onComplete={onClose}
+            mobileStacked={isMobileViewport}
+          />
         )}
       </div>
     </div>
@@ -1077,7 +1104,7 @@ export default function LandingPage() {
   const [isTypingActive, setIsTypingActive] = useState(true)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null)
   const [isUnsupportedModalOpen, setIsUnsupportedModalOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isEarlyAccessModalOpen, setIsEarlyAccessModalOpen] = useState(false)
@@ -1345,7 +1372,7 @@ export default function LandingPage() {
         onPickOtherVideos={handlePickOtherVideos}
       />
 
-      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+      <header className="sticky top-0 z-50 -mb-16 bg-white/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-start">
           <span className="text-xl font-bold text-neutral-950 tracking-tight">LinKo</span>
         </div>
@@ -1371,11 +1398,7 @@ export default function LandingPage() {
             gradientFrom="#B8B8B8"
             gradientTo="transparent" // 아래로 갈수록 투명하게
             glowColor="transparent"
-            className="absolute inset-x-0 top-0 z-[1] h-[120%] marketing-hero-dot-field" // 모바일에서만 더 넓게 퍼지도록 CSS로 조정합니다.
-            style={{
-              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
-            }}
+            className="absolute inset-x-0 top-0 z-[1] h-full marketing-hero-dot-field"
           />
 
           {/* 3. 메인 콘텐츠 */}
@@ -1634,28 +1657,32 @@ export default function LandingPage() {
 
       {/* ── Footer ── */}
       <footer className="bg-neutral-950 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-neutral-800">
-            <div className="md:col-span-2">
+        <div className="mx-auto max-w-6xl px-6 py-10 sm:py-12">
+          <div className="grid grid-cols-1 gap-10 border-b border-neutral-800 pb-10 text-center md:grid-cols-[1.2fr_0.8fr] md:gap-8 md:text-left">
+            <div className="md:pr-8">
               <span className="text-lg font-bold tracking-tight">LinKo</span>
-              <p className="text-sm text-neutral-400 mt-3 leading-relaxed max-w-xs">
+              <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-neutral-400 md:mx-0">
                 Turn any YouTube video into a personalized Korean lesson. Learn the language you actually want to speak.
               </p>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-4">Product</p>
-              {['Features', 'How it works', 'Pricing', 'Changelog'].map((link) => (
-                <p key={link} className="text-sm text-neutral-400 hover:text-white transition-colors cursor-pointer mb-2">{link}</p>
-              ))}
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-4">Company</p>
-              {['About', 'Blog', 'Contact', 'Privacy'].map((link) => (
-                <p key={link} className="text-sm text-neutral-400 hover:text-white transition-colors cursor-pointer mb-2">{link}</p>
-              ))}
+            <div className="grid gap-8 text-left sm:grid-cols-2 sm:gap-8">
+              <div className="text-left">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-500">Product</p>
+                <div className="space-y-2">
+                  <a href="#features" className="block text-sm text-neutral-400 transition-colors hover:text-white">
+                    Features
+                  </a>
+                  <a href="#video-explorer-section" className="block text-sm text-neutral-400 transition-colors hover:text-white">
+                    Start with these videos
+                  </a>
+                </div>
+              </div>
+              <div className="text-left sm:pt-[31px]">
+                <p className="text-sm text-neutral-400">Contact</p>
+              </div>
             </div>
           </div>
-          <div className="pt-6 flex items-center justify-between">
+          <div className="flex flex-col gap-2 pt-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
             <p className="text-xs text-neutral-600">© 2026 LinKo. All rights reserved.</p>
             <p className="text-xs text-neutral-600">Made for Korean learners everywhere</p>
           </div>
