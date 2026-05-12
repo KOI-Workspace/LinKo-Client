@@ -1388,7 +1388,7 @@ export default function WatchTab({
 
   return (
     <div className={shouldStackMobile ? 'flex flex-1 min-h-0 flex-col overflow-hidden lg:flex-row' : 'flex flex-1 min-h-0 overflow-hidden'}>
-      <div className={shouldStackMobile ? 'order-1 flex min-w-0 flex-col bg-neutral-950 lg:flex-1' : 'flex min-w-0 flex-1 flex-col bg-neutral-950'}>
+      <div className={shouldStackMobile ? 'order-1 flex shrink-0 min-w-0 flex-col bg-neutral-950 lg:flex-1 lg:shrink' : 'flex min-w-0 flex-1 flex-col bg-neutral-950'}>
         <div className={shouldStackMobile ? 'relative w-full aspect-video shrink-0 bg-black' : 'relative w-full aspect-video shrink-0 bg-black'}>
           {youtubeId ? (
             <iframe

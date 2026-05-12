@@ -40,6 +40,8 @@ declare global {
 }
 
 const GOOGLE_SCRIPT_ID = 'google-identity-services'
+let initializedGoogleClientId: string | null = null
+let activeGoogleCredentialHandler: ((response: { credential?: string }) => void) | null = null
 
 function loadGoogleIdentityScript() {
   return new Promise<void>((resolve, reject) => {
@@ -64,6 +66,24 @@ function loadGoogleIdentityScript() {
     script.onerror = () => reject(new Error('Could not load Google sign-in.'))
     document.head.appendChild(script)
   })
+}
+
+function initializeGoogleIdentity(clientId: string) {
+  if (!window.google?.accounts?.id) {
+    throw new Error('Could not load Google sign-in.')
+  }
+
+  if (initializedGoogleClientId === clientId) {
+    return
+  }
+
+  window.google.accounts.id.initialize({
+    client_id: clientId,
+    callback: (response) => {
+      activeGoogleCredentialHandler?.(response)
+    },
+  })
+  initializedGoogleClientId = clientId
 }
 
 // ─── 데이터 ────────────────────────────────────────────────────────────────
@@ -783,16 +803,15 @@ function LoginModal({
       .then(() => {
         if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return
 
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response) => {
-            if (!response.credential) {
-              setGoogleButtonError('Google did not return a credential.')
-              return
-            }
-            onGoogleCredential(response.credential)
-          },
-        })
+        const credentialHandler = (response: { credential?: string }) => {
+          if (!response.credential) {
+            setGoogleButtonError('Google did not return a credential.')
+            return
+          }
+          onGoogleCredential(response.credential)
+        }
+        activeGoogleCredentialHandler = credentialHandler
+        initializeGoogleIdentity(clientId)
 
         googleButtonRef.current.replaceChildren()
         const buttonWidth = Math.min(320, (googleButtonRef.current.parentElement?.offsetWidth ?? 360) - 32)
@@ -814,6 +833,7 @@ function LoginModal({
 
     return () => {
       cancelled = true
+      activeGoogleCredentialHandler = null
     }
   }, [isOpen, onGoogleCredential])
 
