@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, type CSSProperties } from 'react'
 import {
   Play,
   Pause,
@@ -753,11 +753,13 @@ function SubtitleText({
 export default function WatchTab({ 
   lessonId, 
   isPublic = false,
-  onComplete 
+  onComplete,
+  mobileStacked = false,
 }: { 
   lessonId: string; 
   isPublic?: boolean;
-  onComplete?: () => void 
+  onComplete?: () => void;
+  mobileStacked?: boolean;
 }) {
   const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentSec, setCurrentSec]     = useState(0)
@@ -832,7 +834,7 @@ export default function WatchTab({
     return () => {
       cancelled = true
     }
-  }, [lessonId])
+  }, [lessonId, isPublic])
 
   const activeLine = subtitles.slice().reverse().find((s) => currentSec >= s.startSec) ?? subtitles[0]
 
@@ -941,6 +943,7 @@ export default function WatchTab({
     { value: 'korean', label: 'Korean' },
     { value: 'english', label: 'English' },
   ]
+  const shouldStackMobile = mobileStacked
 
   useEffect(() => {
     if (!isResizingSidePanel) return
@@ -1001,21 +1004,22 @@ export default function WatchTab({
       exampleSentence: line.korean,
       exampleTranslation: line.english,
       type: 'sentence',
-    })  }
+    })
+  }
+
+  const panelWidth = isSidePanelOpen ? sidePanelWidth : 48
+  const sidePanelStyle = { '--side-panel-width': `${panelWidth}px` } as CSSProperties
 
   return (
-    <div className="flex flex-1 min-h-0 overflow-hidden">
-
-      {/* ── 좌: 영상 + 자막 + 컨트롤 ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-neutral-950">
-
-        {/* 유튜브 임베드 */}
-        <div className="relative w-full aspect-video shrink-0 bg-black">
+    <div className={shouldStackMobile ? 'flex flex-1 min-h-0 flex-col overflow-hidden lg:flex-row' : 'flex flex-1 min-h-0 overflow-hidden'}>
+      {/* ── 좌: 영상 + 조작 + 현재 자막 ── */}
+      <div className={shouldStackMobile ? 'order-1 flex min-w-0 flex-1 flex-col bg-neutral-950' : 'flex-1 flex min-w-0 flex-col overflow-y-auto bg-neutral-950'}>
+        <div className={shouldStackMobile ? 'relative order-1 w-full aspect-video shrink-0 bg-black' : 'relative w-full aspect-video shrink-0 bg-black'}>
           {youtubeId ? (
             <iframe
               ref={iframeRef}
               src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&controls=0&disablekb=1&playsinline=1&enablejsapi=1${youtubeOrigin ? `&origin=${encodeURIComponent(youtubeOrigin)}` : ''}`}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 h-full w-full"
               allow="autoplay; encrypted-media"
               allowFullScreen
               title="Lesson video"
@@ -1027,45 +1031,29 @@ export default function WatchTab({
           )}
         </div>
 
-        {/* 현재 자막 (크게) */}
-        <div className="shrink-0 flex h-[220px] flex-col justify-start border-b border-neutral-800 px-8 py-6">
-          {subtitleMode !== 'english' && (
-            <p className="text-white text-2xl font-semibold leading-[1.7]">
-              <SubtitleText
-                text={activeLine.korean}
-                forceTooltipBelow={activeLine.id === firstSubtitleId}
-                {...subtitleProps}
-              />
-            </p>
-          )}
-          {subtitleMode !== 'korean' && (
-            <p className={`text-2xl leading-relaxed ${subtitleMode === 'english' ? 'text-white font-semibold' : 'mt-2 text-neutral-400'}`}>
-              {activeLine.english}
-            </p>
-          )}
-        </div>
-
-        {/* 컨트롤 바 */}
-        <div className="shrink-0 px-8 py-5">
+        <div className={shouldStackMobile ? 'order-2 shrink-0 border-b border-neutral-800 px-4 py-4 sm:px-6 lg:order-3 lg:px-8 lg:py-5' : 'shrink-0 px-8 py-5'}>
           <input
             type="range"
-            min={0} max={totalDuration} value={currentSec} step={0.5}
+            min={0}
+            max={totalDuration}
+            value={currentSec}
+            step={0.5}
             onChange={(e) => {
               const nextSec = Number(e.target.value)
               setCurrentSec(nextSec)
               sendYouTubeCommand('seekTo', [nextSec, true])
             }}
-            className="w-full h-1 mb-1 cursor-pointer accent-violet-500"
+            className="mb-1 h-1 w-full cursor-pointer accent-violet-500"
           />
-          <div className="flex justify-between text-[10px] text-neutral-600 mb-5">
+          <div className="mb-4 flex justify-between text-[10px] text-neutral-600 lg:mb-5">
             <span>{formatTime(currentSec)}</span>
             <span>{formatTime(totalDuration)}</span>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={togglePlay}
-              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
             >
               {isPlaying
                 ? <Pause className="w-4 h-4" fill="white" />
@@ -1076,7 +1064,7 @@ export default function WatchTab({
             <select
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
-              className="bg-white/10 text-white text-xs px-3 py-2 rounded-lg border border-white/20 outline-none cursor-pointer"
+              className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs text-white outline-none"
             >
               <option value={0.5}>×0.5</option>
               <option value={0.75}>×0.75</option>
@@ -1086,13 +1074,13 @@ export default function WatchTab({
 
             <button
               onClick={toggleBlind}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
                 isBlind
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-white/10 text-neutral-400 border-white/20 hover:border-white/40 hover:text-white'
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-white/20 bg-white/10 text-neutral-400 hover:border-white/40 hover:text-white'
               }`}
             >
-              {isBlind ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {isBlind ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               Blind
             </button>
 
@@ -1114,23 +1102,40 @@ export default function WatchTab({
                 )
               })}
             </div>
-
           </div>
+        </div>
+
+        <div className={shouldStackMobile ? 'order-3 shrink-0 border-b border-neutral-800 px-4 py-5 sm:px-6 lg:order-2 lg:h-[220px] lg:px-8 lg:py-6' : 'shrink-0 flex h-[220px] flex-col justify-start border-b border-neutral-800 px-8 py-6'}>
+          {subtitleMode !== 'english' && (
+            <p className="text-2xl font-semibold leading-[1.7] text-white">
+              <SubtitleText
+                text={activeLine.korean}
+                forceTooltipBelow={activeLine.id === firstSubtitleId}
+                {...subtitleProps}
+              />
+            </p>
+          )}
+          {subtitleMode !== 'korean' && (
+            <p className={`mt-2 text-2xl leading-relaxed ${subtitleMode === 'english' ? 'font-semibold text-white' : 'text-neutral-400'}`}>
+              {activeLine.english}
+            </p>
+          )}
         </div>
       </div>
 
       {/* ── 우: 자막 목록 / 문화 해설 ── */}
       <div
-        className={`relative shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden transition-[width] duration-300 ease-in-out ${
-          isSidePanelOpen ? '' : 'w-12'
-        }`}
-        style={{ width: isSidePanelOpen ? sidePanelWidth : 48 }}
+        className={shouldStackMobile
+          ? 'order-2 relative shrink-0 flex flex-col min-h-0 overflow-hidden border-t border-neutral-800 bg-neutral-900 transition-[width] duration-300 ease-in-out lg:border-l lg:border-t-0 lg:[width:var(--side-panel-width)]'
+          : 'relative shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden transition-[width] duration-300 ease-in-out'
+        }
+        style={shouldStackMobile ? sidePanelStyle : { width: isSidePanelOpen ? sidePanelWidth : 48 }}
       >
         <button
           type="button"
           onMouseDown={() => setIsResizingSidePanel(true)}
-          className={`absolute -left-1.5 top-0 z-20 flex h-full w-3 cursor-col-resize items-center justify-center text-neutral-600 hover:text-neutral-300 transition-opacity duration-300 ${
-            isSidePanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          className={`absolute -left-1.5 top-0 z-20 ${shouldStackMobile ? 'hidden' : 'flex'} h-full w-3 cursor-col-resize items-center justify-center text-neutral-600 transition-opacity duration-300 lg:flex ${
+            isSidePanelOpen ? 'opacity-100 hover:text-neutral-300' : 'pointer-events-none opacity-0'
           }`}
           aria-label="자막 패널 너비 조정"
         >
@@ -1139,8 +1144,8 @@ export default function WatchTab({
           </span>
         </button>
 
-        <div className={`shrink-0 border-b border-neutral-800 transition-opacity duration-300 ${isSidePanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-          <div className="px-5 pt-4 flex items-start justify-between gap-3">
+        <div className={`shrink-0 border-b border-neutral-800 transition-opacity duration-300 ${isSidePanelOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+          <div className="flex items-start justify-between gap-3 px-5 pt-4">
             <div className="flex min-w-0 items-center gap-5">
               <button
                 onClick={() => setSidePanelTab('transcript')}
@@ -1172,32 +1177,33 @@ export default function WatchTab({
               <PanelRightClose className="h-4 w-4" />
             </button>
           </div>
+
           {sidePanelTab === 'transcript' ? (
-            <div className="px-5 py-4 flex items-center justify-between">
+            <div className="flex items-center justify-between px-5 py-4">
               <p className="text-sm font-semibold text-white">Transcript</p>
               <div className="flex items-center gap-2">
-                <div className="relative group">
-                  <button className="text-neutral-500 hover:text-neutral-300 transition-colors p-0.5">
+                <div className="group relative">
+                  <button className="p-0.5 text-neutral-500 transition-colors hover:text-neutral-300">
                     <Info className="w-3.5 h-3.5" />
                   </button>
-                  <div className="absolute right-0 top-full mt-1.5 z-50 invisible group-hover:visible bg-neutral-800 border border-neutral-700 rounded-xl px-3 py-2.5 shadow-xl w-44">
-                    <p className="text-[10px] text-neutral-400 font-medium mb-2">Word labels</p>
+                  <div className="invisible absolute right-0 top-full z-50 mt-1.5 w-44 rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 shadow-xl group-hover:visible">
+                    <p className="mb-2 text-[10px] font-medium text-neutral-400">Word labels</p>
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="rounded px-1 py-px text-[10px] font-medium text-neutral-100 bg-neutral-600/80 shrink-0">단어</span>
+                        <span className="shrink-0 rounded bg-neutral-600/80 px-1 py-px text-[10px] font-medium text-neutral-100">단어</span>
                         <span className="text-[10px] text-neutral-400">Previously bookmarked</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 rounded px-1 py-px text-[10px] font-semibold text-white bg-violet-600 shrink-0">
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded bg-violet-600 px-1 py-px text-[10px] font-semibold text-white">
                           단어
                           <span className="flex h-3 w-3 items-center justify-center rounded-full bg-violet-400/60">
-                            <Check className="w-2 h-2 text-white" />
+                            <Check className="h-2 w-2 text-white" />
                           </span>
                         </span>
                         <span className="text-[10px] text-neutral-400">Bookmarked in this flashcard lesson</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-medium text-violet-300 shrink-0">단어</span>
+                        <span className="shrink-0 text-[10px] font-medium text-violet-300">단어</span>
                         <span className="text-[10px] text-neutral-400">Appeared in this flashcard lesson</span>
                       </div>
                     </div>
@@ -1214,7 +1220,7 @@ export default function WatchTab({
         </div>
 
         {isSidePanelOpen && sidePanelTab === 'transcript' ? (
-          <div className="flex-1 overflow-y-auto">
+          <div className={shouldStackMobile ? 'flex-1 overflow-y-visible lg:overflow-y-auto' : 'flex-1 overflow-y-auto'}>
             {subtitles.map((line) => {
               const isActive = line.id === activeLine.id
               const isSentenceBookmarked = isBookmarked(`sentence-${lessonId}-${line.id}`)
@@ -1223,20 +1229,20 @@ export default function WatchTab({
                   key={line.id}
                   ref={(el) => { lineRefs.current[line.id] = el }}
                   onClick={() => seekTo(line.startSec)}
-                  className={`px-5 py-3.5 border-b border-neutral-800/60 cursor-pointer transition-all ${
-                    isActive ? 'bg-neutral-800 border-l-2 border-l-primary' : 'hover:bg-neutral-800/50'
+                  className={`cursor-pointer border-b border-neutral-800/60 px-5 py-3.5 transition-all ${
+                    isActive ? 'border-l-2 border-l-primary bg-neutral-800' : 'hover:bg-neutral-800/50'
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className={`text-[10px] font-mono shrink-0 mt-0.5 ${
-                      isActive ? 'text-primary font-bold' : 'text-neutral-500'
+                    <span className={`mt-0.5 shrink-0 font-mono text-[10px] ${
+                      isActive ? 'font-bold text-primary' : 'text-neutral-500'
                     }`}>
                       {formatTime(line.startSec)}
                     </span>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       {subtitleMode !== 'english' && (
                         <p className={`text-sm leading-[1.9] ${
-                          isActive ? 'text-white font-medium' : 'text-neutral-300'
+                          isActive ? 'font-medium text-white' : 'text-neutral-300'
                         }`}>
                           <SubtitleText
                             text={line.korean}
@@ -1246,7 +1252,7 @@ export default function WatchTab({
                         </p>
                       )}
                       {subtitleMode !== 'korean' && (
-                        <p className={`text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'mt-0.5 text-neutral-500'}`}>
+                        <p className={`mt-0.5 text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
                           {line.english}
                         </p>
                       )}
@@ -1276,7 +1282,7 @@ export default function WatchTab({
             })}
           </div>
         ) : isSidePanelOpen ? (
-          <div className="flex-1 overflow-y-auto px-5 py-4">
+          <div className={shouldStackMobile ? 'flex-1 overflow-y-visible px-5 py-4 lg:overflow-y-auto' : 'flex-1 overflow-y-auto px-5 py-4'}>
             {culturalNotes.length === 0 ? (
               <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-5">
                 <p className="text-sm font-medium text-white">No cultural notes yet</p>
@@ -1339,14 +1345,14 @@ export default function WatchTab({
           </div>
         ) : (
           <div className="absolute inset-0 flex items-start justify-center bg-neutral-900">
-          <button
-            onClick={() => setIsSidePanelOpen(true)}
-            className="mt-4 flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
-            aria-label="자막 패널 펼치기"
-            title="자막 패널 펼치기"
-          >
-            <PanelRightOpen className="h-4 w-4" />
-          </button>
+            <button
+              onClick={() => setIsSidePanelOpen(true)}
+              className="mt-4 flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="자막 패널 펼치기"
+              title="자막 패널 펼치기"
+            >
+              <PanelRightOpen className="h-4 w-4" />
+            </button>
           </div>
         )}
       </div>

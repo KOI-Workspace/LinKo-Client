@@ -415,16 +415,16 @@ function FeatureBlock({ chip, title, description, visualType }: typeof FEATURE_L
 /** 리뷰 카드 */
 function ReviewCard({ name, country, roleLabel, text }: typeof REVIEWS[number]) {
   return (
-    <article className="w-[320px] shrink-0 rounded-[28px] border border-neutral-200 bg-white p-6 sm:w-[420px] sm:p-8 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-      <div className="flex h-full flex-col justify-between gap-8">
-        <p className="text-base leading-[1.8] text-neutral-700 sm:text-[17px]">
+    <article className="w-[280px] shrink-0 rounded-[24px] border border-neutral-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.05)] sm:w-[420px] sm:rounded-[28px] sm:p-8">
+      <div className="flex h-full flex-col justify-between gap-6 sm:gap-8">
+        <p className="text-sm leading-[1.7] text-neutral-700 sm:text-[17px] sm:leading-[1.8]">
           &ldquo;{text}&rdquo;
         </p>
-        <div className="border-t border-neutral-100 pt-5">
-          <p className="text-base font-semibold text-neutral-950">{roleLabel}</p>
-          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0">
-            <p className="text-sm font-medium text-neutral-600">{name}</p>
-            <span className="text-sm text-neutral-400">{country}</span>
+        <div className="border-t border-neutral-100 pt-4 sm:pt-5">
+          <p className="text-sm font-semibold text-neutral-950 sm:text-base">{roleLabel}</p>
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0 sm:mt-2">
+            <p className="text-xs font-medium text-neutral-600 sm:text-sm">{name}</p>
+            <span className="text-xs text-neutral-400 sm:text-sm">{country}</span>
           </div>
         </div>
       </div>
@@ -1063,7 +1063,7 @@ function LessonPreviewModal({
         ) : activeTab === 'flashcard' ? (
           <FlashcardTab lessonId={lessonId} isPublic={false} hideActions={true} onComplete={() => setActiveTab('watch')} />
         ) : (
-          <WatchTab lessonId={lessonId} isPublic={false} onComplete={onClose} />
+          <WatchTab lessonId={lessonId} isPublic={false} onComplete={onClose} mobileStacked />
         )}
       </div>
     </div>
@@ -1371,7 +1371,7 @@ export default function LandingPage() {
             gradientFrom="#B8B8B8"
             gradientTo="transparent" // 아래로 갈수록 투명하게
             glowColor="transparent"
-            className="absolute inset-x-0 top-0 z-[1] h-[120%]" // 히어로 높이보다 20% 더 길게 확장
+            className="absolute inset-x-0 top-0 z-[1] h-[120%] marketing-hero-dot-field" // 모바일에서만 더 넓게 퍼지도록 CSS로 조정합니다.
             style={{
               maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
@@ -1379,22 +1379,22 @@ export default function LandingPage() {
           />
 
           {/* 3. 메인 콘텐츠 */}
-          <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-20">
+          <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-5 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20">
             <div className="max-w-5xl mx-auto w-full text-center">
               {/* Social Proof */}
-              <div className="mb-4 flex items-center justify-center gap-3">
+              <div className="mb-4 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
                 <div className="flex -space-x-2">
                   <img src="/images/social/user-1.png" alt="User" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                   <img src="/images/social/user-2.png" alt="User" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                   <img src="/images/social/user-3.png" alt="User" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
                 </div>
-                <p className="text-base font-medium text-neutral-500">
+                <p className="max-w-[18rem] text-center text-sm font-medium text-neutral-500 sm:max-w-none sm:text-base">
                   Korean learners from <span className="font-bold text-neutral-950">72+ countries</span> are trying Linko.
                 </p>
               </div>
 
               <div className="mx-auto max-w-4xl">
-                <h1 className="text-[clamp(3.25rem,7vw,5.125rem)] font-bold leading-[1.1] tracking-[-0.04em] text-neutral-950">
+                <h1 className="text-[clamp(2.5rem,11vw,5.125rem)] font-bold leading-[1.08] tracking-[-0.04em] text-neutral-950 sm:text-[clamp(3.25rem,7vw,5.125rem)]">
                   Learn Real Korean
                   <br />
                   with any
@@ -1405,19 +1405,19 @@ export default function LandingPage() {
                 </h1>
               </div>
 
-              <p className="mt-6 mx-auto max-w-2xl text-[clamp(1.125rem,2vw,1.3125rem)] leading-relaxed text-neutral-600">
+              <p className="mt-4 mx-auto max-w-2xl text-sm leading-relaxed text-neutral-600 sm:mt-6 sm:text-[clamp(1.125rem,2vw,1.3125rem)]">
                 Get <span className="font-bold text-neutral-950">vocab</span>, <span className="font-bold text-neutral-950">grammar notes</span>, and <span className="font-bold text-neutral-950">dual subtitles</span> from any video.
               </p>
 
               {/* URL 입력 */}
-              <div className="max-w-2xl mx-auto mt-14 flex min-h-[168px] items-end gap-4 rounded-[32px] border border-neutral-300 bg-white px-6 py-6 ring-[12px] ring-neutral-100/80 shadow-sm transition-all">
+              <div className="mx-auto mt-6 flex min-h-[140px] max-w-2xl items-end gap-3 rounded-[28px] border border-neutral-300 bg-white px-4 py-4 ring-[10px] ring-neutral-100/80 shadow-sm transition-all sm:mt-14 sm:min-h-[168px] sm:gap-4 sm:rounded-[32px] sm:px-6 sm:py-6 sm:ring-[12px]">
                 <div className="relative flex-1 self-stretch">
                   <textarea
                     ref={inputRef}
                     value={isAnimating ? animatedValue : userInputValue}
                     placeholder={INPUT_PLACEHOLDER_TEXT}
                     rows={2}
-                    className={`h-full w-full resize-none bg-transparent align-top outline-none text-[17px] leading-[1.6] ${showOverlayText
+                    className={`h-full w-full resize-none bg-transparent align-top outline-none text-[16px] leading-[1.55] sm:text-[17px] sm:leading-[1.6] ${showOverlayText
                       ? 'text-transparent caret-transparent placeholder:text-transparent'
                       : 'text-neutral-950 caret-neutral-500 placeholder:text-neutral-400'
                       }`}
@@ -1449,13 +1449,13 @@ export default function LandingPage() {
                   type="button"
                   disabled={!userInputValue.trim() || isLoadingVideoCheck}
                   onClick={handleHeroSubmit}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center self-end rounded-full bg-neutral-950 text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-950 disabled:text-white disabled:opacity-35"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center self-end rounded-full bg-neutral-950 text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-950 disabled:text-white disabled:opacity-35 sm:h-12 sm:w-12"
                   aria-label="링크 변환"
                 >
                   {isLoadingVideoCheck ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="h-[18px] w-[18px] animate-spin sm:h-5 sm:w-5" />
                   ) : (
-                    <ArrowUp className="w-5 h-5" />
+                    <ArrowUp className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                   )}
                 </button>
               </div>
@@ -1477,9 +1477,9 @@ export default function LandingPage() {
         </section>
 
         {/* ── Video Explorer ── */}
-        <section id="video-explorer-section" className="py-20 bg-white">
+        <section id="video-explorer-section" className="py-16 bg-white sm:py-20">
           <div className="max-w-6xl mx-auto px-6">
-            <div className="mx-auto mb-14 max-w-3xl text-center">
+            <div className="mx-auto mb-10 max-w-3xl text-center sm:mb-14">
               <h2 className="text-[40px] font-bold leading-[1.08] tracking-tight text-neutral-950 sm:text-[52px]">
                 Start with these videos
               </h2>
@@ -1488,8 +1488,8 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* 비디오 카드 그리드 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* 모바일에서는 가로 스크롤로 전환해서 세로 길이를 줄입니다. */}
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:mx-0 lg:grid-cols-3">
               {(previewLessons.length > 0 ? previewLessons : VIDEO_EXAMPLES).map((video: any) => (
                 <div
                   key={video.id || video.title}
@@ -1504,7 +1504,7 @@ export default function LandingPage() {
                       setPreviewLessonId(video.id || '3')
                     }
                   }}
-                  className="rounded-xl bg-neutral-100 border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all"
+                  className="w-[82vw] max-w-[320px] shrink-0 rounded-xl border border-neutral-200 bg-neutral-100 overflow-hidden cursor-pointer group transition-all hover:border-neutral-300 hover:shadow-md sm:w-auto sm:max-w-none sm:shrink"
                 >
                   <div className="aspect-video relative overflow-hidden bg-neutral-200">
                     <img
@@ -1561,13 +1561,13 @@ export default function LandingPage() {
         </section>
 
         {/* ── Reviews ── */}
-        <section className="py-20 bg-white border-t border-neutral-100">
+        <section className="border-t border-neutral-100 bg-white py-16 sm:py-20">
           <div className="max-w-6xl mx-auto px-6">
-            <div className="mx-auto mb-14 max-w-3xl text-center">
-              <h2 className="text-[40px] font-bold leading-[1.08] tracking-tight text-neutral-950 sm:text-[52px]">
+            <div className="mx-auto mb-10 max-w-3xl text-center sm:mb-14">
+              <h2 className="text-[30px] font-bold leading-[1.1] tracking-tight text-neutral-950 sm:text-[52px]">
                 Real reviews from Global Users
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-neutral-500 sm:text-lg">
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-neutral-500 sm:mt-5 sm:text-lg sm:leading-8">
                 Beta users across 72+ countries say LinKo fits naturally into their study routine.
               </p>
             </div>
@@ -1577,7 +1577,7 @@ export default function LandingPage() {
               <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white to-transparent sm:w-24" />
               <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-white to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-white to-transparent" />
-              <div className="flex w-max gap-5 animate-[testimonial-marquee_96s_linear_infinite] will-change-transform py-4">
+              <div className="flex w-max gap-4 py-4 will-change-transform animate-[testimonial-marquee_96s_linear_infinite] sm:gap-5">
                 {[...REVIEWS, ...REVIEWS].map((review, index) => (
                   <ReviewCard key={`${review.name}-${index}`} {...review} />
                 ))}

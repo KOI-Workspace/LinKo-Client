@@ -520,6 +520,23 @@ export default function FlashcardTab({
     else goNext()
   }
 
+  const relatedVideosSection = (
+    <div>
+      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+        This expression in other videos
+      </p>
+      {card.relatedVideos.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          {card.relatedVideos.map((rv) => <RelatedVideoItem key={rv.id} video={rv} />)}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed border-neutral-200 bg-neutral-50 py-5 text-center">
+          <p className="text-xs text-neutral-400">No other videos with this expression.</p>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-white relative">
       
@@ -555,19 +572,8 @@ export default function FlashcardTab({
               />
             </div>
 
-            <div>
-              <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">
-                This expression in other videos
-              </p>
-              {card.relatedVideos.length > 0 ? (
-                <div className="flex flex-col gap-2">
-                  {card.relatedVideos.map((rv) => <RelatedVideoItem key={rv.id} video={rv} />)}
-                </div>
-              ) : (
-                <div className="py-5 text-center rounded-xl border border-dashed border-neutral-200 bg-neutral-50">
-                  <p className="text-xs text-neutral-400">No other videos with this expression.</p>
-                </div>
-              )}
+            <div className="hidden lg:block">
+              {relatedVideosSection}
             </div>
           </div>
 
@@ -687,6 +693,10 @@ export default function FlashcardTab({
               </div>
             )}
           </div>
+        </div>
+
+        <div className="-mt-2 px-8 pb-6 lg:hidden">
+          {relatedVideosSection}
         </div>
       </div>
 

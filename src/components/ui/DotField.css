@@ -6,3 +6,11 @@
   pointer-events: none;
   z-index: 0;
 }
+
+@media (max-width: 639px) {
+  .marketing-hero-dot-field {
+    height: 145% !important;
+    mask-image: linear-gradient(to bottom, black 84%, transparent 100%) !important;
+    -webkit-mask-image: linear-gradient(to bottom, black 84%, transparent 100%) !important;
+  }
+}
