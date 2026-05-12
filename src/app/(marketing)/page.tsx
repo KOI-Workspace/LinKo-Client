@@ -1496,14 +1496,12 @@ export default function LandingPage() {
                   role="button"
                   tabIndex={0}
                   onClick={() => {
-                    setPendingLessonId(video.id || '15')
-                    handleOpenLoginModal('video')
+                    setPreviewLessonId(video.id || '3')
                   }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
-                      setPendingLessonId(video.id || '15')
-                      handleOpenLoginModal('video')
+                      setPreviewLessonId(video.id || '3')
                     }
                   }}
                   className="rounded-xl bg-neutral-100 border border-neutral-200 overflow-hidden cursor-pointer group hover:shadow-md hover:border-neutral-300 transition-all"
