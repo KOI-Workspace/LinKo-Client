@@ -1509,38 +1509,22 @@ export default function WatchTab({
         <div className="shrink-0 border-b border-neutral-800">
           <div className="flex items-start justify-between gap-3 px-5 pt-4">
             <div className="flex min-w-0 items-center gap-5">
-              <button
-                onClick={() => setSidePanelTab('transcript')}
-                className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
-                  sidePanelTab === 'transcript'
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
-                }`}
-              >
-                Transcript
-              </button>
-              <button
-                onClick={() => setSidePanelTab('culture')}
-                className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
-                  sidePanelTab === 'culture'
-                    ? 'border-primary text-white'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
-                }`}
-              >
-                Cultural Notes
-              </button>
-            </div>
-          </div>
-
-          {sidePanelTab === 'transcript' ? (
-            <div className="flex items-center justify-between px-5 py-4">
-              <p className="text-sm font-semibold text-white">Transcript</p>
-              <div className="flex items-center gap-2">
-                <div className="group relative">
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setSidePanelTab('transcript')}
+                  className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
+                    sidePanelTab === 'transcript'
+                      ? 'border-primary text-white'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  Transcript
+                </button>
+                <div className="group relative mb-2">
                   <button className="p-0.5 text-neutral-500 transition-colors hover:text-neutral-300">
                     <Info className="w-3.5 h-3.5" />
                   </button>
-                  <div className="invisible absolute right-0 top-full z-50 mt-1.5 w-44 rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 shadow-xl group-hover:visible">
+                  <div className="invisible absolute left-0 top-full z-50 mt-1.5 w-44 rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 shadow-xl group-hover:visible">
                     <p className="mb-2 text-[10px] font-medium text-neutral-400">Word labels</p>
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
@@ -1563,14 +1547,19 @@ export default function WatchTab({
                     </div>
                   </div>
                 </div>
-                <span className="text-xs text-neutral-500">{subtitles.length} lines</span>
               </div>
+              <button
+                onClick={() => setSidePanelTab('culture')}
+                className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
+                  sidePanelTab === 'culture'
+                    ? 'border-primary text-white'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-300'
+                }`}
+              >
+                Cultural Notes
+              </button>
             </div>
-          ) : (
-            <div className="px-5 py-4">
-              <p className="text-sm font-semibold text-white">Cultural Notes</p>
-            </div>
-          )}
+          </div>
         </div>
 
         {sidePanelTab === 'transcript' ? (
