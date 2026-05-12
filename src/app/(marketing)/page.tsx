@@ -966,6 +966,7 @@ function LessonPreviewModal({
   const [activeTab, setActiveTab] = useState<'flashcard' | 'watch'>('flashcard')
   const [lesson, setLesson] = useState<LessonSummary | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
 
   // 레슨 정보 가져오기
   useEffect(() => {
@@ -996,6 +997,21 @@ function LessonPreviewModal({
       document.body.style.overflow = 'unset'
     }
   }, [isOpen])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1023px)')
+
+    const updateViewport = () => {
+      setIsMobileViewport(mediaQuery.matches)
+    }
+
+    updateViewport()
+    mediaQuery.addEventListener('change', updateViewport)
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateViewport)
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -1069,7 +1085,12 @@ function LessonPreviewModal({
             onComplete={() => setActiveTab('watch')}
           />
         ) : (
-          <WatchTab lessonId={lessonId} isPublic={false} onComplete={onClose} mobileStacked />
+          <WatchTab
+            lessonId={lessonId}
+            isPublic={false}
+            onComplete={onClose}
+            mobileStacked={isMobileViewport}
+          />
         )}
       </div>
     </div>

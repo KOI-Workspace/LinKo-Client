@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, type CSSProperties } from 'react'
 import {
   Play,
   Pause,
@@ -11,6 +11,9 @@ import {
   Settings2,
   Info,
   Check,
+  GripVertical,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
@@ -418,6 +421,8 @@ const MOCK_CULTURAL_NOTES_BY_LESSON: Record<string, CulturalNote[]> = {
 
 const YOUTUBE_ID = 'dQw4w9WgXcQ'
 const TOTAL_DURATION = MOCK_SUBTITLES[MOCK_SUBTITLES.length - 1].endSec
+const SIDE_PANEL_MIN_WIDTH = 280
+const SIDE_PANEL_DEFAULT_WIDTH = 336
 
 // ─── 유틸 ─────────────────────────────────────────────────────────────────────
 
@@ -764,6 +769,9 @@ export default function WatchTab({
   const [subtitleMode, setSubtitleMode] = useState<SubtitleDisplayMode>('bilingual')
   const [sidePanelTab, setSidePanelTab] = useState<SidePanelTab>('transcript')
   const [isControlMenuOpen, setIsControlMenuOpen] = useState(false)
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(true)
+  const [sidePanelWidth, setSidePanelWidth] = useState(SIDE_PANEL_DEFAULT_WIDTH)
+  const [isResizingSidePanel, setIsResizingSidePanel] = useState(false)
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
   const [apiData, setApiData] = useState<{
     youtubeId: string
@@ -776,6 +784,7 @@ export default function WatchTab({
   const [error, setError] = useState<string | null>(null)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const controlMenuRef = useRef<HTMLDivElement | null>(null)
+  const lineRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const completionFired = useRef(false)
 
   const hasMockLesson = Boolean(MOCK_FLASHCARDS[lessonId])
@@ -946,10 +955,43 @@ export default function WatchTab({
       }
     }
 
+    document.addEventListener('mousedown', handlePointerDown)
+
     return () => {
       document.removeEventListener('mousedown', handlePointerDown)
     }
   }, [isControlMenuOpen])
+
+  useEffect(() => {
+    if (shouldStackMobile || !activeLine) return
+    lineRefs.current[activeLine.id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [activeLine, shouldStackMobile])
+
+  useEffect(() => {
+    if (shouldStackMobile || !isResizingSidePanel) return
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const nextWidth = window.innerWidth - event.clientX
+      const maxWidth = Math.floor(window.innerWidth / 2)
+      setSidePanelWidth(Math.min(maxWidth, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
+    }
+
+    const handleMouseUp = () => {
+      setIsResizingSidePanel(false)
+    }
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizingSidePanel, shouldStackMobile])
 
   if (isLoading && !apiData && !hasMockLesson) {
     return (
@@ -987,6 +1029,355 @@ export default function WatchTab({
     })
   }
 
+  if (!shouldStackMobile) {
+    const panelWidth = isSidePanelOpen ? sidePanelWidth : 48
+    const sidePanelStyle = { '--side-panel-width': `${panelWidth}px` } as CSSProperties
+
+    return (
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-1 min-w-0 flex-col overflow-y-auto bg-neutral-950">
+          <div className="relative w-full aspect-video shrink-0 bg-black">
+            {youtubeId ? (
+              <iframe
+                ref={iframeRef}
+                src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&controls=0&disablekb=1&playsinline=1&enablejsapi=1${youtubeOrigin ? `&origin=${encodeURIComponent(youtubeOrigin)}` : ''}`}
+                className="absolute inset-0 h-full w-full"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+                title="Lesson video"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-neutral-500">
+                Video is not available.
+              </div>
+            )}
+          </div>
+
+          <div className="shrink-0 flex h-[220px] flex-col justify-start border-b border-neutral-800 px-8 py-6">
+            {subtitleMode !== 'english' && (
+              <p className="text-2xl font-semibold leading-[1.7] text-white">
+                <SubtitleText
+                  text={activeLine.korean}
+                  forceTooltipBelow={activeLine.id === firstSubtitleId}
+                  {...subtitleProps}
+                />
+              </p>
+            )}
+            {subtitleMode !== 'korean' && (
+              <p className={`text-2xl leading-relaxed ${subtitleMode === 'english' ? 'font-semibold text-white' : 'mt-2 text-neutral-400'}`}>
+                {activeLine.english}
+              </p>
+            )}
+          </div>
+
+          <div className="shrink-0 px-8 py-5">
+            <input
+              type="range"
+              min={0}
+              max={totalDuration}
+              value={currentSec}
+              step={0.5}
+              onChange={(e) => {
+                const nextSec = Number(e.target.value)
+                setCurrentSec(nextSec)
+                sendYouTubeCommand('seekTo', [nextSec, true])
+              }}
+              className="mb-1 h-1 w-full cursor-pointer accent-violet-500"
+            />
+            <div className="mb-5 flex justify-between text-[10px] text-neutral-600">
+              <span>{formatTime(currentSec)}</span>
+              <span>{formatTime(totalDuration)}</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={togglePlay}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              >
+                {isPlaying
+                  ? <Pause className="h-4 w-4" fill="white" />
+                  : <Play className="h-4 w-4 translate-x-px" fill="white" />
+                }
+              </button>
+
+              <select
+                value={speed}
+                onChange={(e) => setSpeed(Number(e.target.value))}
+                className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs text-white outline-none"
+              >
+                <option value={0.5}>×0.5</option>
+                <option value={0.75}>×0.75</option>
+                <option value={1}>×1.0</option>
+                <option value={1.5}>×1.5</option>
+              </select>
+
+              <button
+                onClick={toggleBlind}
+                className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                  isBlind
+                    ? 'border-primary bg-primary text-white'
+                    : 'border-white/20 bg-white/10 text-neutral-400 hover:border-white/40 hover:text-white'
+                }`}
+              >
+                {isBlind ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                Blind
+              </button>
+
+              <div className="inline-flex items-center rounded-pill border border-white/15 bg-white/5 p-1">
+                {subtitleModeOptions.map((option) => {
+                  const isSelected = subtitleMode === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => setSubtitleMode(option.value)}
+                      className={`rounded-pill px-3 py-1.5 text-xs font-medium transition-all ${
+                        isSelected
+                          ? 'bg-primary text-white shadow-[0_6px_18px_rgba(139,92,246,0.28)]'
+                          : 'text-neutral-400 hover:text-white'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={`relative shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden transition-[width] duration-300 ease-in-out ${
+            isSidePanelOpen ? '' : 'w-12'
+          }`}
+          style={isSidePanelOpen ? sidePanelStyle : { width: 48 }}
+        >
+          <button
+            type="button"
+            onMouseDown={() => setIsResizingSidePanel(true)}
+            className={`absolute -left-1.5 top-0 z-20 flex h-full w-3 cursor-col-resize items-center justify-center text-neutral-600 transition-opacity duration-300 ${
+              isSidePanelOpen ? 'opacity-100 hover:text-neutral-300' : 'pointer-events-none opacity-0'
+            }`}
+            aria-label="자막 패널 너비 조정"
+          >
+            <span className="flex h-12 w-3 items-center justify-center rounded-full bg-neutral-800/80 opacity-0 transition-opacity hover:opacity-100">
+              <GripVertical className="h-3.5 w-3.5" />
+            </span>
+          </button>
+
+          <div className={`shrink-0 border-b border-neutral-800 transition-opacity duration-300 ${isSidePanelOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+            <div className="flex items-start justify-between gap-3 px-5 pt-4">
+              <div className="flex min-w-0 items-center gap-5">
+                <button
+                  onClick={() => setSidePanelTab('transcript')}
+                  className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
+                    sidePanelTab === 'transcript'
+                      ? 'border-primary text-white'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  Transcript
+                </button>
+                <button
+                  onClick={() => setSidePanelTab('culture')}
+                  className={`border-b-2 pb-3 text-sm font-semibold transition-colors ${
+                    sidePanelTab === 'culture'
+                      ? 'border-primary text-white'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-300'
+                  }`}
+                >
+                  Cultural Notes
+                </button>
+              </div>
+              <button
+                onClick={() => setIsSidePanelOpen(false)}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="자막 패널 접기"
+                title="자막 패널 접기"
+              >
+                <PanelRightClose className="h-4 w-4" />
+              </button>
+            </div>
+
+            {sidePanelTab === 'transcript' ? (
+              <div className="flex items-center justify-between px-5 py-4">
+                <p className="text-sm font-semibold text-white">Transcript</p>
+                <div className="flex items-center gap-2">
+                  <div className="group relative">
+                    <button className="p-0.5 text-neutral-500 transition-colors hover:text-neutral-300">
+                      <Info className="h-3.5 w-3.5" />
+                    </button>
+                    <div className="invisible absolute right-0 top-full z-50 mt-1.5 w-44 rounded-xl border border-neutral-700 bg-neutral-800 px-3 py-2.5 shadow-xl group-hover:visible">
+                      <p className="mb-2 text-[10px] font-medium text-neutral-400">Word labels</p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="shrink-0 rounded bg-neutral-600/80 px-1 py-px text-[10px] font-medium text-neutral-100">단어</span>
+                          <span className="text-[10px] text-neutral-400">Previously bookmarked</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded bg-violet-600 px-1 py-px text-[10px] font-semibold text-white">
+                            단어
+                            <span className="flex h-3 w-3 items-center justify-center rounded-full bg-violet-400/60">
+                              <Check className="h-2 w-2 text-white" />
+                            </span>
+                          </span>
+                          <span className="text-[10px] text-neutral-400">Bookmarked in this flashcard lesson</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="shrink-0 text-[10px] font-medium text-violet-300">단어</span>
+                          <span className="text-[10px] text-neutral-400">Appeared in this flashcard lesson</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-xs text-neutral-500">{subtitles.length} lines</span>
+                </div>
+              </div>
+            ) : (
+              <div className="px-5 py-4">
+                <p className="text-sm font-semibold text-white">Cultural Notes</p>
+              </div>
+            )}
+          </div>
+
+          {isSidePanelOpen && sidePanelTab === 'transcript' ? (
+            <div className="flex-1 overflow-y-auto">
+              {subtitles.map((line) => {
+                const isActive = line.id === activeLine.id
+                const isSentenceBookmarked = isBookmarked(`sentence-${lessonId}-${line.id}`)
+                return (
+                  <div
+                    key={line.id}
+                    ref={(el) => { lineRefs.current[line.id] = el }}
+                    onClick={() => seekTo(line.startSec)}
+                    className={`cursor-pointer border-b border-neutral-800/60 px-5 py-3.5 transition-all ${
+                      isActive ? 'border-l-2 border-l-primary bg-neutral-800' : 'hover:bg-neutral-800/50'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className={`mt-0.5 shrink-0 font-mono text-[10px] ${
+                        isActive ? 'font-bold text-primary' : 'text-neutral-500'
+                      }`}>
+                        {formatTime(line.startSec)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        {subtitleMode !== 'english' && (
+                          <p className={`text-sm leading-[1.9] ${
+                            isActive ? 'font-medium text-white' : 'text-neutral-300'
+                          }`}>
+                            <SubtitleText
+                              text={line.korean}
+                              forceTooltipBelow={line.id === firstSubtitleId}
+                              {...subtitleProps}
+                            />
+                          </p>
+                        )}
+                        {subtitleMode !== 'korean' && (
+                          <p className={`mt-0.5 text-sm leading-relaxed ${subtitleMode === 'english' ? 'text-neutral-200' : 'text-neutral-500'}`}>
+                            {line.english}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleSentenceBookmark(line)
+                        }}
+                        className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all ${
+                          isSentenceBookmarked
+                            ? 'border-primary/30 bg-primary/15 text-primary'
+                            : 'border-white/10 bg-white/5 text-neutral-500 hover:border-white/20 hover:bg-white/10 hover:text-white'
+                        }`}
+                        title={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
+                        aria-label={isSentenceBookmarked ? 'Remove sentence bookmark' : 'Save sentence bookmark'}
+                      >
+                        {isSentenceBookmarked ? (
+                          <BookmarkCheck className="h-3.5 w-3.5" />
+                        ) : (
+                          <Bookmark className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : isSidePanelOpen ? (
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {culturalNotes.length === 0 ? (
+                <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-5">
+                  <p className="text-sm font-medium text-white">No cultural notes yet</p>
+                  <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+                    Add notes for slang, idioms, and local context when this lesson needs them.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {culturalNotes.map((note) => {
+                    const isFocused = note.subtitleId === activeLine.id
+                    const linkedSubtitle = subtitles.find((line) => line.id === note.subtitleId)
+                    return (
+                      <div
+                        key={note.id}
+                        onClick={() => {
+                          if (linkedSubtitle) seekTo(linkedSubtitle.startSec)
+                        }}
+                        className={`cursor-pointer rounded-2xl border px-4 py-4 transition-all ${
+                          isFocused
+                            ? 'border-primary/30 bg-primary/[0.1] ring-1 ring-primary/20 shadow-[0_12px_28px_rgba(139,92,246,0.14)]'
+                            : 'border-white/8 bg-white/[0.03] hover:border-white/14 hover:bg-white/[0.05]'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className={`mt-0.5 h-12 w-1 shrink-0 rounded-full transition-colors ${
+                            isFocused ? 'bg-primary' : 'bg-transparent'
+                          }`} />
+                          <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                            <div>
+                              <h3 className={`text-base font-semibold ${isFocused ? 'text-white' : 'text-neutral-100'}`}>{note.title}</h3>
+                              <p className={`mt-1 text-[11px] font-medium uppercase tracking-[0.16em] ${
+                                isFocused ? 'text-primary-300' : 'text-primary-300/70'
+                              }`}>
+                                {note.keyword}
+                              </p>
+                            </div>
+                            <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ${
+                              isFocused
+                                ? 'bg-primary/18 text-primary'
+                                : 'bg-white/6 text-neutral-500'
+                            }`}>
+                              {formatTime(linkedSubtitle?.startSec ?? 0)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="pl-4">
+                          <p className={`mt-3 text-xs leading-6 ${isFocused ? 'text-white' : 'text-neutral-200'}`}>
+                            {note.explanation}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex h-full items-start justify-center pt-4">
+              <button
+                onClick={() => setIsSidePanelOpen(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="자막 패널 펼치기"
+                title="자막 패널 펼치기"
+              >
+                <PanelRightOpen className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={shouldStackMobile ? 'flex flex-1 min-h-0 flex-col overflow-hidden lg:flex-row' : 'flex flex-1 min-h-0 overflow-hidden'}>
       <div className={shouldStackMobile ? 'order-1 flex min-w-0 flex-col bg-neutral-950 lg:flex-1' : 'flex min-w-0 flex-1 flex-col bg-neutral-950'}>
@@ -1008,48 +1399,49 @@ export default function WatchTab({
         </div>
 
         <div className={shouldStackMobile ? 'shrink-0 border-b border-neutral-800 px-4 py-4 sm:px-6 lg:px-8 lg:py-5' : 'shrink-0 border-b border-neutral-800 px-8 py-5'}>
-          <input
-            type="range"
-            min={0}
-            max={totalDuration}
-            value={currentSec}
-            step={0.5}
-            onChange={(e) => {
-              const nextSec = Number(e.target.value)
-              setCurrentSec(nextSec)
-              sendYouTubeCommand('seekTo', [nextSec, true])
-            }}
-            className="mb-1 h-1 w-full cursor-pointer accent-violet-500"
-          />
-          <div className="flex items-center justify-between gap-3 text-[10px] text-neutral-600">
-            <span>{formatTime(currentSec)}</span>
-            <div className="relative" ref={controlMenuRef}>
-              <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={togglePlay}
+              className="flex h-9 w-9 shrink-0 items-center justify-center text-white transition-opacity hover:opacity-70"
+            >
+              {isPlaying
+                ? <Pause className="h-4 w-4" fill="white" />
+                : <Play className="h-4 w-4 translate-x-px" fill="white" />
+              }
+            </button>
+            <div className="min-w-0 flex-1">
+              <input
+                type="range"
+                min={0}
+                max={totalDuration}
+                value={currentSec}
+                step={0.5}
+                onChange={(e) => {
+                  const nextSec = Number(e.target.value)
+                  setCurrentSec(nextSec)
+                  sendYouTubeCommand('seekTo', [nextSec, true])
+                }}
+                className="mb-1 h-1 w-full cursor-pointer accent-violet-500"
+              />
+              <div className="flex justify-between text-[10px] text-neutral-600">
+                <span>{formatTime(currentSec)}</span>
                 <span>{formatTime(totalDuration)}</span>
-                <button
-                  type="button"
-                  onClick={() => setIsControlMenuOpen((prev) => !prev)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/8 text-neutral-200 transition-colors hover:bg-white/14 hover:text-white"
-                  aria-label="재생 설정 열기"
-                >
-                  <Settings2 className="h-4 w-4" />
-                </button>
               </div>
+            </div>
+
+            <div className="relative shrink-0" ref={controlMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsControlMenuOpen((prev) => !prev)}
+                className="flex h-9 w-9 items-center justify-center text-neutral-400 transition-colors hover:text-white"
+                aria-label="재생 설정 열기"
+              >
+                <Settings2 className="h-4 w-4" />
+              </button>
 
               {isControlMenuOpen && (
                 <div className="absolute right-0 top-12 z-30 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-white/10 bg-neutral-900/98 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.42)] backdrop-blur">
                   <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">Playback</p>
-                      <button
-                        onClick={togglePlay}
-                        className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-neutral-950 transition-transform hover:scale-[1.02]"
-                      >
-                        {isPlaying ? <Pause className="h-3.5 w-3.5" fill="currentColor" /> : <Play className="h-3.5 w-3.5" fill="currentColor" />}
-                        {isPlaying ? 'Pause' : 'Play'}
-                      </button>
-                    </div>
-
                     <div className="flex flex-col gap-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">Speed</p>
                       <div className="flex flex-wrap gap-2">
@@ -1074,7 +1466,7 @@ export default function WatchTab({
 
                     <div className="flex flex-col gap-2">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">Study Mode</p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           onClick={toggleBlind}
                           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
@@ -1086,6 +1478,7 @@ export default function WatchTab({
                           {isBlind ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                           Blind
                         </button>
+                        <span className="text-neutral-600">|</span>
                         {subtitleModeOptions.map((option) => {
                           const isSelected = subtitleMode === option.value
                           return (
