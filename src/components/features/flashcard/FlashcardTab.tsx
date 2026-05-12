@@ -347,6 +347,7 @@ interface FlashcardTabProps {
   onComplete?: () => void
   onClose?: () => void
   hideActions?: boolean
+  hideRelatedVideos?: boolean
 }
 
 export default function FlashcardTab({
@@ -358,6 +359,7 @@ export default function FlashcardTab({
   onComplete,
   onClose,
   hideActions = false,
+  hideRelatedVideos = false,
 }: FlashcardTabProps) {
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -520,7 +522,7 @@ export default function FlashcardTab({
     else goNext()
   }
 
-  const relatedVideosSection = (
+  const relatedVideosSection = hideRelatedVideos ? null : (
     <div>
       <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
         This expression in other videos

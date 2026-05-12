@@ -1061,7 +1061,13 @@ function LessonPreviewModal({
             <Loader2 className="w-6 h-6 animate-spin" />
           </div>
         ) : activeTab === 'flashcard' ? (
-          <FlashcardTab lessonId={lessonId} isPublic={false} hideActions={true} onComplete={() => setActiveTab('watch')} />
+          <FlashcardTab
+            lessonId={lessonId}
+            isPublic={false}
+            hideActions={true}
+            hideRelatedVideos={true}
+            onComplete={() => setActiveTab('watch')}
+          />
         ) : (
           <WatchTab lessonId={lessonId} isPublic={false} onComplete={onClose} mobileStacked />
         )}
