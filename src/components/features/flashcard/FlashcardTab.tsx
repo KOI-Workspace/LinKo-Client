@@ -560,7 +560,7 @@ export default function FlashcardTab({
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-full">
 
           {/* 좌: 영상 (공통) */}
-          <div className="order-2 flex flex-col gap-6 border-neutral-100 p-8 lg:order-1 lg:border-r">
+          <div className="order-1 flex flex-col gap-6 border-neutral-100 p-8 lg:order-1 lg:border-r">
             <div>
               <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">
                 Video Segment
@@ -578,7 +578,7 @@ export default function FlashcardTab({
           </div>
 
             {/* 우: 카드 타입별 콘텐츠 */}
-          <div className="order-1 flex flex-col gap-6 px-8 pb-6 pt-5 lg:order-2 lg:p-8">
+          <div className="order-2 flex flex-col gap-4 px-8 pb-4 pt-2 lg:order-2 lg:gap-6 lg:p-8">
 
             {/* ── 어미 변형 카드 ── */}
             {cardIsEnding ? (
@@ -664,20 +664,20 @@ export default function FlashcardTab({
                   </h2>
                 </div>
 
-                <p className="text-xl font-semibold text-primary mb-6">{card.meaning}</p>
-                <div className="h-px bg-neutral-100 mb-6" />
+                <p className="mb-4 text-xl font-semibold text-primary">{card.meaning}</p>
+                <div className="mb-4 h-px bg-neutral-100 lg:mb-6" />
 
                 <div>
-                  <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest mb-3">Example</p>
-                  <div className="bg-neutral-50 border border-neutral-100 rounded-xl p-4">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400 lg:mb-3">Example</p>
+                  <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-3 lg:p-4">
                     <p className="text-sm font-medium text-neutral-800 leading-relaxed mb-2">{card.exampleSentence}</p>
                     <p className="text-sm text-neutral-400 leading-relaxed">{card.exampleTranslation}</p>
                   </div>
                 </div>
 
                 {card.dailyConversation && card.dailyConversation.length > 0 && (
-                  <div className="mt-8 pt-6 border-t border-neutral-100">
-                    <div className="flex items-center gap-1.5 mb-4">
+                  <div className="mt-5 border-t border-neutral-100 pt-4 lg:mt-8 lg:pt-6">
+                    <div className="mb-3 flex items-center gap-1.5 lg:mb-4">
                       <MessageCircle className="w-3.5 h-3.5 text-neutral-400" />
                       <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
                         How It&apos;s Used in Real Life
