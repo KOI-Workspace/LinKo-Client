@@ -509,12 +509,12 @@ function ModalFrame({
 }: ModalFrameProps) {
   return (
     <div
-      className="fixed inset-0 z-[110] flex items-center justify-center bg-neutral-950/55 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-neutral-950/55 backdrop-blur-sm"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className={`relative w-full max-w-[560px] overflow-hidden rounded-[36px] border border-white/70 bg-white px-7 pb-9 pt-7 shadow-[0_30px_100px_rgba(15,23,42,0.24)] sm:px-10 sm:pb-11 sm:pt-8 ${panelClassName}`}
+        className={`relative w-full sm:max-w-[560px] overflow-x-hidden overflow-y-auto rounded-t-[28px] sm:rounded-[36px] border border-white/70 bg-white px-5 pb-8 pt-6 shadow-[0_30px_100px_rgba(15,23,42,0.24)] sm:mx-4 sm:mb-8 sm:px-10 sm:pb-11 sm:pt-8 max-h-[90dvh] ${panelClassName}`}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -540,14 +540,14 @@ function ModalHeader({
 }) {
   return (
     <div className="flex flex-col items-center text-center">
-      {badge ? <div className="mb-5">{badge}</div> : null}
+      {badge ? <div className="mb-4 sm:mb-5">{badge}</div> : null}
       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-400">
         {eyebrow}
       </p>
-      <h2 className="mt-4 text-[30px] font-semibold tracking-tight text-neutral-950 sm:text-[32px]">
+      <h2 className="mt-3 text-[24px] font-semibold tracking-tight text-neutral-950 sm:mt-4 sm:text-[30px]">
         {title}
       </h2>
-      <p className="mt-3 max-w-[420px] text-[15px] leading-7 text-neutral-500 sm:text-base">
+      <p className="mt-2 max-w-[420px] text-sm leading-7 text-neutral-500 sm:mt-3 sm:text-[15px]">
         {description}
       </p>
     </div>
@@ -581,18 +581,18 @@ function UnsupportedCaseModal({
           description="Linko currently supports standard Korean YouTube videos. Some formats still cannot be converted into learning materials."
         />
 
-        <div className="mt-9">
+        <div className="mt-6 sm:mt-9">
           <p className="text-center text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-400">
             Unsupported cases
           </p>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-3 sm:mt-4 grid gap-2 sm:gap-3">
             {UNSUPPORTED_CASES.map((item, index) => (
               <div
                 key={item}
-                className="rounded-[20px] border border-neutral-200 bg-neutral-50 px-4 py-4"
+                className="rounded-[16px] sm:rounded-[20px] border border-neutral-200 bg-neutral-50 px-3 py-3 sm:px-4 sm:py-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950 shadow-sm">
+                  <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-neutral-950 shadow-sm">
                     {index + 1}
                   </div>
                   <p className="text-sm leading-6 text-neutral-700 sm:text-[15px]">{item}</p>
@@ -602,7 +602,7 @@ function UnsupportedCaseModal({
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-6 sm:mt-8 flex justify-center">
           <button
             type="button"
             onClick={onPickOtherVideos}
@@ -700,8 +700,8 @@ function EarlyAccessModal({
           description="When Linko officially launches, we&rsquo;ll email you an exclusive launch code."
         />
 
-        <div className="mt-7 w-full overflow-hidden rounded-[24px] border border-neutral-200 bg-neutral-50 p-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
-          <div className="relative overflow-hidden rounded-[20px] bg-white">
+        <div className="mt-5 sm:mt-7 w-full overflow-hidden rounded-[20px] sm:rounded-[24px] border border-neutral-200 bg-neutral-50 p-2.5 sm:p-3 text-left shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
+          <div className="relative overflow-hidden rounded-[16px] sm:rounded-[20px] bg-white">
             <div className="relative aspect-[16/9] bg-neutral-100">
               {isPreviewLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[1px]">
@@ -716,9 +716,9 @@ function EarlyAccessModal({
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
             </div>
 
-            <div className="space-y-3 px-4 py-4">
+            <div className="space-y-2 px-3 py-3 sm:space-y-3 sm:px-4 sm:py-4">
               <div className="min-w-0">
-                <p className="text-[15px] font-semibold leading-6 text-neutral-950">
+                <p className="text-sm font-semibold leading-6 text-neutral-950 sm:text-[15px]">
                   {videoPreview.title}
                 </p>
                 <div className="mt-1 flex items-center gap-2 text-[12px] text-neutral-500">
@@ -733,7 +733,7 @@ function EarlyAccessModal({
           {videoPreview.note}
         </p>
 
-        <div className="mt-6 flex justify-center">
+        <div className="mt-5 sm:mt-6 flex justify-center">
           <button
             type="button"
             onClick={onPickOtherVideos}
@@ -795,13 +795,14 @@ function LoginModal({
         })
 
         googleButtonRef.current.replaceChildren()
+        const buttonWidth = Math.min(320, (googleButtonRef.current.parentElement?.offsetWidth ?? 360) - 32)
         window.google.accounts.id.renderButton(googleButtonRef.current, {
           theme: 'outline',
           size: 'large',
           type: 'standard',
           shape: 'pill',
           text: 'continue_with',
-          width: 320,
+          width: buttonWidth,
         })
         setIsGoogleButtonReady(true)
       })
