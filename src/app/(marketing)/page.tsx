@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Play, ArrowUp, ChevronDown, Plus, X, AlertCircle, Loader2, CreditCard, Captions } from 'lucide-react'
+import { Play, ArrowUp, ChevronDown, Plus, AlertCircle, Loader2, CreditCard, Captions } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import WatchTab from '@/components/features/watch/WatchTab'
@@ -1114,7 +1114,6 @@ export default function LandingPage() {
   const [previewLessonId, setPreviewLessonId] = useState<string | null>(null)
   const [pendingLessonId, setPendingLessonId] = useState<string | null>(null)
   const [isLoadingVideoCheck, setIsLoadingVideoCheck] = useState(false)
-  const [scrollY, setScrollY] = useState(0)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const isAnimating = isTypingActive && !isFocused && !userInputValue
   const showPlaceholderPreview = isFocused && !userInputValue
@@ -1125,14 +1124,6 @@ export default function LandingPage() {
     ? 'text-neutral-400'
     : 'text-neutral-950'
   const showOverlayText = isAnimating || showPlaceholderPreview
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   useEffect(() => {
     getPublicPreviewLessons()
