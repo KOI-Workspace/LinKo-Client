@@ -8,7 +8,7 @@ import WatchTab from '@/components/features/watch/WatchTab'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
 import DotField from '@/components/ui/DotField'
 import { saveAuthToken } from '@/lib/api'
-import { getPublicPreviewLessons, getLesson, checkVideoValidity, type LessonSummary } from '@/lib/lessonsApi'
+import { getPublicPreviewLessons, checkVideoValidity, type LessonSummary } from '@/lib/lessonsApi'
 import { ArrowLeft } from 'lucide-react'
 import { loginWithGoogleIdToken } from '@/lib/authApi'
 import { createWaitlistEntry } from '@/lib/waitlistApi'
@@ -974,26 +974,15 @@ function LessonPreviewModal({
   isOpen,
   onClose,
   lessonId,
+  lesson,
 }: {
   isOpen: boolean
   onClose: () => void
   lessonId: string
+  lesson?: LessonSummary | null
 }) {
   const [activeTab, setActiveTab] = useState<'flashcard' | 'watch'>('flashcard')
-  const [lesson, setLesson] = useState<LessonSummary | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
   const [isMobileViewport, setIsMobileViewport] = useState(false)
-
-  // 레슨 정보 가져오기
-  useEffect(() => {
-    if (isOpen && lessonId) {
-      setIsLoading(true)
-      getLesson(lessonId)
-        .then(data => setLesson(data))
-        .catch(err => console.error('Failed to fetch lesson:', err))
-        .finally(() => setIsLoading(false))
-    }
-  }, [isOpen, lessonId])
 
   // 모달이 열릴 때 상태 초기화
   useEffect(() => {
@@ -1049,7 +1038,7 @@ function LessonPreviewModal({
         {/* 레슨 메타 정보 */}
         <div className="px-8 pb-4">
           <h1 className="text-lg font-bold text-neutral-950 leading-snug truncate">
-            {lesson?.title || (isLoading ? 'Loading...' : 'Lesson')}
+            {lesson?.title || 'Lesson'}
           </h1>
           <div className="flex items-center gap-2 mt-1">
             {lesson?.channelName && (
@@ -1088,14 +1077,10 @@ function LessonPreviewModal({
 
       {/* ── Content ── */}
       <div className="flex-1 min-h-0 flex flex-col relative">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full text-neutral-400">
-            <Loader2 className="w-6 h-6 animate-spin" />
-          </div>
-        ) : activeTab === 'flashcard' ? (
+        {activeTab === 'flashcard' ? (
           <FlashcardTab
             lessonId={lessonId}
-            isPublic={false}
+            isPublic
             hideActions={true}
             hideRelatedVideos={true}
             onComplete={() => setActiveTab('watch')}
@@ -1103,7 +1088,7 @@ function LessonPreviewModal({
         ) : (
           <WatchTab
             lessonId={lessonId}
-            isPublic={false}
+            isPublic
             onComplete={onClose}
             mobileStacked={isMobileViewport}
           />
@@ -1359,6 +1344,7 @@ export default function LandingPageClient() {
         isOpen={!!previewLessonId}
         onClose={() => setPreviewLessonId(null)}
         lessonId={previewLessonId || '15'}
+        lesson={previewLessons.find((lesson) => lesson.id === previewLessonId) ?? null}
       />
       <EarlyAccessModal
         isOpen={isEarlyAccessModalOpen}
