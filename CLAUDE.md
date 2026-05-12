@@ -85,10 +85,33 @@ YouTube URL을 받아 학습자료 생성을 요청하는 핵심 진입점. Home
 - **내비게이션**: `useRouter().push('/path')` 사용 — `<Link>`는 일부 환경에서 동작 안 하는 이슈 있었음
 - 채널 전환 등 자식 컴포넌트 상태 초기화가 필요할 때: `key={selectedId}` prop 패턴 사용
 
+## API 레이어
+
+```
+src/lib/
+├── api.ts        # apiFetch 래퍼 — Authorization 헤더 자동 주입, ApiError 클래스
+├── lessonsApi.ts # 레슨 CRUD, 플래시카드/자막 조회, 공개 API
+├── authApi.ts    # Google OAuth ID 토큰 → JWT 교환
+└── waitlistApi.ts
+```
+
+- 인증 토큰은 `localStorage('linko_access_token')` 에 저장; 개발 시 `NEXT_PUBLIC_DEV_AUTH_TOKEN` 환경변수로 대체 가능
+- 공개 엔드포인트는 `/public/*` prefix — `isPublic` prop이 true인 컴포넌트에서 사용
+- `NEXT_PUBLIC_API_URL` 미설정 시 `http://127.0.0.1:8000/api` 로 폴백
+
+## 타입 시스템 핵심
+
+- `AnyFlashCard = FlashCard | EndingCard` — 단어 카드와 어미 카드를 구분. `card.type === 'ending'`으로 분기
+- `LessonSummary.generationStatus: 'generating' | 'ready' | 'failed'` — VideoCard 렌더링 분기 기준
+- `BookmarkedCard` — `useBookmarks` 훅이 localStorage로 관리; `type: 'sentence' | 'expression'`, `subType: 'word' | 'ending'`
+
 ## Mock 데이터 전략
-백엔드 미연동 상태. 모든 데이터는 각 페이지 파일 상단의 `MOCK_*` 상수로 관리.
+백엔드 미연동 상태. Mock 데이터 위치:
+- `src/data/mockLessons.ts` — 레슨 목록
+- `src/components/features/flashcard/mockFlashcards.ts` — 플래시카드 (lessonId 키)
+- `WatchTab.tsx` 상단 `MOCK_SUBTITLES`, `MOCK_CULTURAL_NOTES_BY_LESSON` — 자막·문화 노트
+- 각 페이지 파일 상단의 `MOCK_*` 상수 — 페이지별 로컬 데이터
 - `isLesson?: boolean` — channels 페이지 영상에서 레슨화 여부 구분 (`false`면 `showLearning={false}`)
-- 실제 API 연동 시 `NEXT_PUBLIC_API_URL` 환경변수 사용
 
 ## 디자인 시스템 (Lavender Pulse)
 - **`design.json`** — 색상·여백·라운딩 정확한 스펙. 컴포넌트 구현 시 참조, 값 임의 수정 금지
