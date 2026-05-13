@@ -289,24 +289,79 @@ function ConjugationBadgeTag({ badge }: { badge: ConjugationBadge }) {
   )
 }
 
-/** 문장에서 특정 단어를 Watch 스타일 블라인드로 처리
- *  레이아웃 유지를 위해 blind on/off 모두 동일한 padding 적용, 배경색만 전환 */
+/** 한국어 음절(가-힣) 여부 */
+function isKoreanSyllable(char: string | undefined): boolean {
+  if (!char) return false
+  const code = char.charCodeAt(0)
+  return code >= 0xAC00 && code <= 0xD7A3
+}
+
+/** 본문에서 단어(또는 활용형)의 위치를 찾는다.
+ *  1) 정확 일치를 우선 시도
+ *  2) 사전형(`다`로 끝남)이면 어간을 추출해 단어 경계에서 찾고,
+ *     뒤따르는 한글 음절을 최대 4자까지 확장해 활용형까지 포함 */
+function findBlindRange(text: string, word: string): { start: number; end: number } | null {
+  if (!word) return null
+
+  // 1. 정확 일치
+  const exactIdx = text.indexOf(word)
+  if (exactIdx !== -1) {
+    return { start: exactIdx, end: exactIdx + word.length }
+  }
+
+  // 2. 사전형 어간 매칭
+  if (!word.endsWith('다')) return null
+  const stem = word.slice(0, -1)
+  if (!stem) return null
+
+  const MAX_EXTENSION = 4 // 활용 어미 최대 길이
+  let searchStart = 0
+  while (searchStart < text.length) {
+    const stemIdx = text.indexOf(stem, searchStart)
+    if (stemIdx === -1) break
+
+    // 단어 경계(시작 위치 or 앞 글자가 한글 음절이 아님)에서만 매칭 허용
+    const prevChar = stemIdx > 0 ? text[stemIdx - 1] : undefined
+    if (!isKoreanSyllable(prevChar)) {
+      let endIdx = stemIdx + stem.length
+      let extension = 0
+      while (
+        endIdx < text.length &&
+        isKoreanSyllable(text[endIdx]) &&
+        extension < MAX_EXTENSION
+      ) {
+        endIdx++
+        extension++
+      }
+      return { start: stemIdx, end: endIdx }
+    }
+
+    searchStart = stemIdx + 1
+  }
+
+  return null
+}
+
+/** 문장에서 특정 단어를 Watch 스타일 블라인드로 처리.
+ *  레이아웃 유지를 위해 blind on/off 모두 동일한 padding 적용, 배경색만 전환.
+ *  사전형(`다` 끝) 단어는 활용형까지 함께 매칭 (예: `있다` → `있어요`). */
 function BlindHighlightWord({ text, word, isBlind, isPurple = false }: {
   text: string; word: string; isBlind: boolean; isPurple?: boolean
 }) {
-  if (!word) return <>{text}</>
-  const idx = text.indexOf(word)
-  if (idx === -1) return <>{text}</>
+  const range = findBlindRange(text, word)
+  if (!range) return <>{text}</>
+
   const wordClass = isBlind
     ? isPurple
       ? 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-primary/40 text-transparent select-none'
       : 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-neutral-400/60 text-transparent select-none'
     : 'rounded-[0.28em] px-[0.22em] py-[0.05em]'
+
   return (
     <>
-      {text.slice(0, idx)}
-      <span className={wordClass}>{word}</span>
-      {text.slice(idx + word.length)}
+      {text.slice(0, range.start)}
+      <span className={wordClass}>{text.slice(range.start, range.end)}</span>
+      {text.slice(range.end)}
     </>
   )
 }
