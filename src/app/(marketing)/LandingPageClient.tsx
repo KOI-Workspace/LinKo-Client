@@ -109,6 +109,17 @@ const FEATURE_LIST = [
   },
 ] as const
 
+const FEATURE_VIDEO_BY_TYPE = {
+  dualSubtitles: {
+    src: '/videos/DualSubtitleVid.mp4',
+    label: 'Dual subtitles feature preview',
+  },
+  flashcards: {
+    src: '/videos/FlashcardVid.mp4',
+    label: 'Flashcards feature preview',
+  },
+} as const
+
 const REVIEWS = [
   {
     name: 'Olivia M.',
@@ -310,27 +321,24 @@ const FAQ_ITEMS: FaqEntry[] = [
 
 /** 기능 시각 요소 */
 function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]['visualType'] }) {
-  if (visualType === 'dualSubtitles') {
+  const video = visualType === 'dualSubtitles' || visualType === 'flashcards'
+    ? FEATURE_VIDEO_BY_TYPE[visualType]
+    : null
+
+  if (video) {
     return (
-      <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-7 sm:p-10 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-        <div className="rounded-[24px] border border-neutral-200 bg-white overflow-hidden min-h-[440px]">
-          <div className="grid grid-cols-1 md:grid-cols-2 min-h-[440px]">
-            <div className="border-b md:border-b-0 md:border-r border-neutral-100 bg-neutral-950 px-6 py-8 text-left text-white flex flex-col justify-between min-h-[220px] md:min-h-full">
-              <div className="text-xs uppercase tracking-[0.24em] text-white/45">Korean</div>
-              <div className="space-y-3">
-                <p className="text-xl sm:text-2xl font-semibold leading-relaxed">오늘은 영상으로 공부해볼까요?</p>
-                <p className="text-base text-white/70 leading-relaxed">자막과 함께 자연스럽게 의미를 따라가 보세요.</p>
-              </div>
-            </div>
-            <div className="bg-white px-6 py-8 text-left text-neutral-950 flex flex-col justify-between min-h-[220px] md:min-h-full">
-              <div className="text-xs uppercase tracking-[0.24em] text-primary-500">Native language</div>
-              <div className="space-y-3">
-                <p className="text-xl sm:text-2xl font-semibold leading-relaxed">Learn from real content, side by side.</p>
-                <p className="text-base text-neutral-500 leading-relaxed">두 언어를 함께 보면 이해가 더 빠릅니다.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="overflow-hidden rounded-[28px] border border-neutral-200 bg-neutral-950 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+        <video
+          aria-label={video.label}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className="block aspect-[16/10] w-full bg-neutral-950 object-cover sm:aspect-video"
+        >
+          <source src={video.src} type="video/mp4" />
+        </video>
       </div>
     )
   }
@@ -370,43 +378,7 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
     )
   }
 
-  return (
-    <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-7 sm:p-10 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-      <div className="grid gap-4 md:grid-cols-[0.95fr_1.05fr] min-h-[440px]">
-        <div className="rounded-[22px] border border-neutral-200 bg-white p-6 sm:p-7 min-h-[440px] flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-400">Flashcards</span>
-            <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary">B1</span>
-          </div>
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-primary-100 bg-primary-50 px-5 py-5">
-              <p className="text-base font-semibold text-neutral-950">먹어보다</p>
-              <p className="mt-1 text-sm text-neutral-500">to try eating / to give it a try</p>
-            </div>
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-5">
-              <p className="text-base font-semibold text-neutral-950">-아/어요</p>
-              <p className="mt-1 text-sm text-neutral-500">polite present tense ending</p>
-            </div>
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-5">
-              <p className="text-base font-semibold text-neutral-950">진짜</p>
-              <p className="mt-1 text-sm text-neutral-500">really / seriously</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-[22px] bg-neutral-950 p-7 sm:p-9 text-white flex items-end justify-between min-h-[440px]">
-          <div className="max-w-sm">
-            <p className="text-xs uppercase tracking-[0.24em] text-white/45 mb-4">Review in context</p>
-            <p className="text-2xl sm:text-3xl font-semibold leading-tight">
-              Learn the expression, then see how it shows up again.
-            </p>
-          </div>
-          <div className="hidden sm:block rounded-full border border-white/15 px-4 py-2 text-xs text-white/70">
-            Similar usage across videos
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  return null
 }
 
 /** 기능 소개 한 블록 */
