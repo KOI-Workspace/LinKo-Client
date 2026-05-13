@@ -345,34 +345,71 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
 
   if (visualType === 'culturalNotes') {
     return (
-      <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-7 sm:p-10 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-        <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] min-h-[440px]">
-          <div className="rounded-[22px] bg-neutral-950 p-7 text-left text-white min-h-[440px] flex flex-col justify-between">
-            <p className="text-xs uppercase tracking-[0.24em] text-white/45 mb-6">Cultural Notes</p>
-            <div className="space-y-4">
-              <div className="rounded-2xl bg-white/8 border border-white/10 px-5 py-5">
-                <p className="text-base font-semibold">“대박”</p>
-                <p className="mt-1 text-base text-white/70">Used to express surprise, excitement, or admiration.</p>
+      <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8">
+        <div className="grid gap-4 lg:grid-cols-[1.35fr_0.85fr]">
+          <div className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white shadow-sm">
+            <div className="aspect-video bg-neutral-950" aria-label="문화 해설 예시 영상 이미지 영역" />
+
+            <div className="border-t border-neutral-100 px-5 py-5 text-left sm:px-7 sm:py-6">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">Dual Subtitles</span>
+                <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+                  Cultural highlight
+                </span>
               </div>
-              <div className="rounded-2xl bg-white/8 border border-white/10 px-5 py-5">
-                <p className="text-base font-semibold">Reaction culture</p>
-                <p className="mt-1 text-base text-white/70">Why people say things a certain way in everyday Korean videos.</p>
+
+              <div className="space-y-3">
+                <p className="text-[21px] font-semibold leading-relaxed text-neutral-950 sm:text-[28px]">
+                  이 장면에서
+                  {' '}
+                  <span className="rounded-md bg-primary-100 px-1.5 py-0.5 text-primary-800 ring-1 ring-primary-200">
+                    눈치
+                  </span>
+                  {' '}
+                  보는 게 진짜 중요해요.
+                </p>
+                <p className="text-base leading-relaxed text-neutral-500 sm:text-lg">
+                  In this scene, reading the room is really important.
+                </p>
               </div>
             </div>
           </div>
-          <div className="rounded-[22px] border border-neutral-200 bg-white p-7 min-h-[440px] flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="h-4 w-24 rounded-full bg-primary-200" />
-              <div className="h-4 w-4/5 rounded-full bg-neutral-200" />
-              <div className="h-4 w-2/3 rounded-full bg-neutral-100" />
+
+          <aside className="rounded-[22px] border border-neutral-200 bg-white p-6 text-left shadow-sm sm:p-7">
+            <div className="flex h-full min-h-[360px] flex-col">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
+                  Cultural Notes
+                </p>
+                <div className="mt-5 inline-flex rounded-full bg-primary-100 px-4 py-2 text-sm font-semibold text-primary-800">
+                  눈치
+                </div>
+              </div>
+
+              <div className="mt-7 space-y-4">
+                <div className="h-3 w-11/12 rounded-full bg-neutral-200" />
+                <div className="h-3 w-full rounded-full bg-neutral-100" />
+                <div className="h-3 w-4/5 rounded-full bg-neutral-100" />
+                <div className="h-3 w-10/12 rounded-full bg-neutral-100" />
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-primary-100 bg-primary-50 p-5">
+                <div className="h-3 w-24 rounded-full bg-primary-200" />
+                <div className="mt-4 space-y-3">
+                  <div className="h-2.5 w-full rounded-full bg-white" />
+                  <div className="h-2.5 w-5/6 rounded-full bg-white" />
+                </div>
+              </div>
+
+              <div className="mt-auto pt-8">
+                <div className="h-px bg-neutral-100" />
+                <div className="mt-5 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-primary-500" />
+                  <span className="text-sm font-medium text-neutral-500">Linked to highlighted subtitle</span>
+                </div>
+              </div>
             </div>
-            <div className="mt-6 rounded-2xl bg-neutral-50 border border-neutral-200 p-5">
-              <p className="text-xs uppercase tracking-[0.22em] text-neutral-400 mb-2">Reference</p>
-              <p className="text-base text-neutral-600 leading-relaxed">
-                Slang, tone, and context explained in one place.
-              </p>
-            </div>
-          </div>
+          </aside>
         </div>
       </div>
     )
