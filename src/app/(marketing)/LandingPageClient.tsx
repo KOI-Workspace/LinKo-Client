@@ -592,7 +592,7 @@ function UnsupportedCaseModal({
       <div className="relative mx-auto max-w-[420px]">
         <ModalHeader
           badge={(
-            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#fff2f3] text-[#ff5f66] shadow-[0_16px_36px_rgba(255,95,102,0.12)] sm:h-16 sm:w-16 sm:rounded-[24px]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-neutral-100 text-neutral-500 sm:h-16 sm:w-16 sm:rounded-[24px]">
               <AlertCircle className="h-5 w-5 sm:h-7 sm:w-7" />
             </div>
           )}

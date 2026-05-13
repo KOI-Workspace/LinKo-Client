@@ -34,8 +34,8 @@ function CompletionModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
-          <div className="bg-gradient-to-br from-primary-50 to-violet-50 px-6 pt-8 pb-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mx-auto mb-4">
+          <div className="px-6 pt-8 pb-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
               <PartyPopper className="w-8 h-8 text-primary" />
             </div>
             <h2 className="text-xl font-bold text-neutral-950 mb-1">Lesson complete!</h2>
@@ -62,8 +62,8 @@ function CompletionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
-        <div className="bg-gradient-to-br from-primary-50 to-violet-50 px-6 pt-8 pb-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center mx-auto mb-4">
+        <div className="px-6 pt-8 pb-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
             {justFinishedFlashcard
               ? <CreditCard className="w-8 h-8 text-primary" strokeWidth={1.5} />
               : <Captions className="w-8 h-8 text-primary" strokeWidth={1.5} />
