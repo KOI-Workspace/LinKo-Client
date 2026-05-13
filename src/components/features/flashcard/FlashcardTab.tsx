@@ -240,7 +240,11 @@ function RelatedVideoItem({ video }: { video: RelatedVideo }) {
   )
 }
 
-function ConversationBubble({ turn, onSpeak }: { turn: ConversationTurn; onSpeak: (text: string) => void }) {
+function ConversationBubble({ turn, onSpeak, isBlind = false }: {
+  turn: ConversationTurn
+  onSpeak: (text: string) => void
+  isBlind?: boolean
+}) {
   return (
     <div className={`flex ${turn.isQuestion ? 'justify-start' : 'justify-end'}`}>
       <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed relative group ${
@@ -249,8 +253,13 @@ function ConversationBubble({ turn, onSpeak }: { turn: ConversationTurn; onSpeak
           : 'bg-primary-50 text-primary-900 rounded-tr-sm border border-primary-100'
       }`}>
         <p>{turn.text}</p>
+        {isBlind && (
+          <div className={`absolute inset-0 rounded-2xl pointer-events-none ${
+            turn.isQuestion ? 'bg-neutral-400/80' : 'bg-primary/75'
+          }`} />
+        )}
         <button onClick={() => onSpeak(turn.text)}
-          className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center text-neutral-400 hover:text-primary transition-all">
+          className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center text-neutral-400 hover:text-primary transition-all z-10">
           <Volume2 className="w-3 h-3" />
         </button>
       </div>
@@ -378,6 +387,7 @@ export default function FlashcardTab({
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [expandedBadge, setExpandedBadge] = useState(false)
+  const [isBlind, setIsBlind] = useState(false)
   const [apiData, setApiData] = useState<LessonFlashcards | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -443,9 +453,10 @@ export default function FlashcardTab({
     if (currentIndex > 0) setCurrentIndex((i) => i - 1)
   }, [currentIndex])
 
-  // 카드 이동 시 배지 상세 패널 닫기
+  // 카드 이동 시 배지 패널 닫기 + 블라인드 모드 초기화
   useEffect(() => {
     setExpandedBadge(false)
+    setIsBlind(false)
   }, [currentIndex])
 
   useEffect(() => {
@@ -563,6 +574,18 @@ export default function FlashcardTab({
             <span className="mx-1 text-neutral-300">/</span>
             {total}
           </span>
+          {/* PC 전용 블라인드 버튼 */}
+          <button
+            onClick={() => setIsBlind(v => !v)}
+            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              isBlind
+                ? 'bg-neutral-950 text-white border-neutral-950'
+                : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
+            }`}
+          >
+            {isBlind ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            Blind
+          </button>
         </div>
       )}
 
@@ -596,7 +619,7 @@ export default function FlashcardTab({
               <div>
                 {/* 활용형 (영상에 나온 그대로) — 큰 글씨 */}
                 <div className="mb-1">
-                  <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
+                  <h2 className={`text-4xl font-bold text-neutral-950 leading-tight break-words transition-[filter] duration-200 ${isBlind ? 'blur-[6px] select-none' : ''}`}>
                     {card.conjugatedForm}
                   </h2>
                 </div>
@@ -657,10 +680,10 @@ export default function FlashcardTab({
                   </p>
                   <div className="bg-neutral-50 border border-neutral-100 rounded-xl p-4">
                     <p className="text-sm font-medium text-neutral-800 leading-relaxed mb-2">
-                      <HighlightedSentence
-                        sentence={card.scriptSentence}
-                        highlight={card.conjugatedForm}
-                      />
+                      {isBlind
+                        ? <BlindHighlightWord text={card.scriptSentence} word={card.conjugatedForm} isBlind={isBlind} />
+                        : <HighlightedSentence sentence={card.scriptSentence} highlight={card.conjugatedForm} />
+                      }
                     </p>
                     <p className="text-sm text-neutral-400 leading-relaxed">{card.scriptTranslation}</p>
                   </div>
@@ -670,7 +693,7 @@ export default function FlashcardTab({
               /* ── 단어 카드 (기존) ── */
               <div>
                 <div className="mb-2">
-                  <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
+                  <h2 className={`text-4xl font-bold text-neutral-950 leading-tight break-words transition-[filter] duration-200 ${isBlind ? 'blur-[6px] select-none' : ''}`}>
                     {card.expression}
                   </h2>
                 </div>
@@ -681,7 +704,9 @@ export default function FlashcardTab({
                 <div>
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400 lg:mb-3">Example</p>
                   <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-3 lg:p-4">
-                    <p className="text-sm font-medium text-neutral-800 leading-relaxed mb-2">{card.exampleSentence}</p>
+                    <p className="text-sm font-medium text-neutral-800 leading-relaxed mb-2">
+                      <BlindHighlightWord text={card.exampleSentence} word={card.expression} isBlind={isBlind} />
+                    </p>
                     <p className="text-sm text-neutral-400 leading-relaxed">{card.exampleTranslation}</p>
                   </div>
                 </div>
@@ -696,7 +721,7 @@ export default function FlashcardTab({
                     </div>
                     <div className="flex flex-col gap-3">
                       {card.dailyConversation.map((turn, i) => (
-                        <ConversationBubble key={i} turn={turn} onSpeak={speak} />
+                        <ConversationBubble key={i} turn={turn} onSpeak={speak} isBlind={isBlind} />
                       ))}
                     </div>
                   </div>
@@ -740,9 +765,20 @@ export default function FlashcardTab({
           className="flex items-center gap-1.5 px-4 py-2 rounded-pill text-sm font-medium border border-neutral-200 text-neutral-500 bg-white hover:border-neutral-400 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
           <ChevronLeft className="w-4 h-4" />Prev
         </button>
-        <div />
-        <button 
-          onClick={isLast && hideActions ? onComplete : goNext} 
+        {/* 모바일 전용 블라인드 버튼 */}
+        <button
+          onClick={() => setIsBlind(v => !v)}
+          className={`flex lg:hidden items-center gap-1.5 px-3 py-2 rounded-pill text-sm font-medium border transition-all ${
+            isBlind
+              ? 'bg-neutral-950 text-white border-neutral-950'
+              : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
+          }`}
+        >
+          {isBlind ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          Blind
+        </button>
+        <button
+          onClick={isLast && hideActions ? onComplete : goNext}
           disabled={isLast && !hideActions}
           className="flex items-center gap-1.5 px-4 py-2 rounded-pill text-sm font-medium border border-neutral-200 text-neutral-500 bg-white hover:border-neutral-400 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
