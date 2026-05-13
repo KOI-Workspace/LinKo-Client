@@ -1385,7 +1385,7 @@ export default function WatchTab({
               )}
             </div>
           ) : (
-            <div className="flex h-full items-start justify-center pt-4">
+            <div className="absolute inset-x-0 top-4 flex justify-center">
               <button
                 onClick={() => setIsSidePanelOpen(true)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
