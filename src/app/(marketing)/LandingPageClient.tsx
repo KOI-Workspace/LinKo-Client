@@ -1515,7 +1515,7 @@ export default function LandingPageClient() {
                 Start with these videos
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-neutral-500 sm:text-lg">
-                Start from videos people already love.
+                Start from sample videos people already love.
               </p>
             </div>
 
@@ -1688,7 +1688,7 @@ export default function LandingPageClient() {
                 </div>
               </div>
               <div className="text-left sm:pt-[31px]">
-                <p className="text-sm text-neutral-400">Contact</p>
+                <a href="mailto:wethekoi@gmail.com" className="text-sm text-neutral-400 transition-colors hover:text-white">Contact</a>
               </div>
             </div>
           </div>
