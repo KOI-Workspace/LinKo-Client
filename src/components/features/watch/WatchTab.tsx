@@ -453,6 +453,95 @@ function splitPlainTextToTokens(text: string): TextToken[] {
  * - 현재 레슨 vocab: WATCH_VOCAB 기준
  * - 이전 레슨 북마크: bookmarks 배열에서 다른 레슨 expression을 텍스트에서 탐색
  */
+// ─── 한글 활용형 감지 (FlashcardTab과 동일) ───────────────────────────────────────
+
+/** 한글 음절 범위 (0xAC00~0xD7A3) 판정 */
+function isKoreanSyllable(char: string | undefined): boolean {
+  if (!char) return false
+  const code = char.charCodeAt(0)
+  return code >= 0xAC00 && code <= 0xD7A3
+}
+
+/** ㅎ로 시작하는 한글 음절 (하/한/할/함/해/했 등) */
+function startsWithHieut(char: string | undefined): boolean {
+  if (!char) return false
+  const code = char.charCodeAt(0)
+  return code >= 0xD558 && code <= 0xD7A3
+}
+
+/** 자막에서 단어 위치 찾기 (정확 일치 + 활용형 감지) */
+function findWordRangeInText(text: string, word: string): { start: number; end: number } | null {
+  if (!word) return null
+
+  // 정확 일치
+  const exactIdx = text.indexOf(word)
+  if (exactIdx !== -1) {
+    return { start: exactIdx, end: exactIdx + word.length }
+  }
+
+  if (!word.endsWith('다')) return null
+
+  const MAX_EXTENSION = 4
+
+  // ~하다 동사 특수 처리
+  if (word.endsWith('하다') && word.length > 2) {
+    const prefix = word.slice(0, -2)
+    let searchStart = 0
+    while (searchStart < text.length) {
+      const prefixIdx = text.indexOf(prefix, searchStart)
+      if (prefixIdx === -1) break
+
+      const prevChar = prefixIdx > 0 ? text[prefixIdx - 1] : undefined
+      if (!isKoreanSyllable(prevChar)) {
+        const afterPrefix = prefixIdx + prefix.length
+        if (afterPrefix < text.length && startsWithHieut(text[afterPrefix])) {
+          let endIdx = afterPrefix + 1
+          let extension = 1
+          while (
+            endIdx < text.length &&
+            isKoreanSyllable(text[endIdx]) &&
+            extension < MAX_EXTENSION
+          ) {
+            endIdx++
+            extension++
+          }
+          return { start: prefixIdx, end: endIdx }
+        }
+      }
+      searchStart = prefixIdx + 1
+    }
+  }
+
+  // 일반 어간 매칭
+  const stem = word.slice(0, -1)
+  if (!stem) return null
+
+  let searchStart = 0
+  while (searchStart < text.length) {
+    const stemIdx = text.indexOf(stem, searchStart)
+    if (stemIdx === -1) break
+
+    const prevChar = stemIdx > 0 ? text[stemIdx - 1] : undefined
+    if (!isKoreanSyllable(prevChar)) {
+      let endIdx = stemIdx + stem.length
+      let extension = 0
+      while (
+        endIdx < text.length &&
+        isKoreanSyllable(text[endIdx]) &&
+        extension < MAX_EXTENSION
+      ) {
+        endIdx++
+        extension++
+      }
+      return { start: stemIdx, end: endIdx }
+    }
+
+    searchStart = stemIdx + 1
+  }
+
+  return null
+}
+
 function tokenizeSubtitle(
   text: string,
   vocabMap: Record<string, VocabEntry>,
@@ -480,11 +569,23 @@ function tokenizeSubtitle(
   // 텍스트 내 각 단어 위치 탐색 (긴 단어 우선으로 오버랩 방지)
   const matches: Array<{ start: number; end: number; word: string; entry: VocabEntry }> = []
   for (const { word, entry } of candidates.sort((a, b) => b.word.length - a.word.length)) {
-    let idx = text.indexOf(word)
-    while (idx !== -1) {
-      const hasOverlap = matches.some((m) => idx < m.end && idx + word.length > m.start)
-      if (!hasOverlap) matches.push({ start: idx, end: idx + word.length, word, entry })
-      idx = text.indexOf(word, idx + 1)
+    let searchStart = 0
+    while (searchStart < text.length) {
+      const range = findWordRangeInText(text.slice(searchStart), word)
+      if (!range) break
+
+      const actualStart = searchStart + range.start
+      const actualEnd = searchStart + range.end
+      const hasOverlap = matches.some((m) => actualStart < m.end && actualEnd > m.start)
+      if (!hasOverlap) {
+        matches.push({
+          start: actualStart,
+          end: actualEnd,
+          word: text.slice(actualStart, actualEnd),
+          entry,
+        })
+      }
+      searchStart = actualStart + 1
     }
   }
   matches.sort((a, b) => a.start - b.start)
