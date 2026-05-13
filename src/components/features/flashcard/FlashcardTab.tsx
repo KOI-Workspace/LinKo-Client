@@ -633,7 +633,7 @@ export default function FlashcardTab({
                         : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
                     }`}
                   >
-                    {isBlind ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    {isBlind ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     Blind
                   </button>
                 </div>
@@ -723,7 +723,7 @@ export default function FlashcardTab({
                         : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
                     }`}
                   >
-                    {isBlind ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    {isBlind ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     Blind
                   </button>
                 </div>
