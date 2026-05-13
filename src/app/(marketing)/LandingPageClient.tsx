@@ -783,6 +783,11 @@ function LoginModal({
   const googleButtonRef = useRef<HTMLDivElement | null>(null)
   const [googleButtonError, setGoogleButtonError] = useState<string | null>(null)
   const [isGoogleButtonReady, setIsGoogleButtonReady] = useState(false)
+  // 최신 콜백을 ref로 유지 — effect가 isOpen 변경 시에만 재실행되도록
+  const onGoogleCredentialRef = useRef(onGoogleCredential)
+  useEffect(() => {
+    onGoogleCredentialRef.current = onGoogleCredential
+  })
 
   useEffect(() => {
     if (!isOpen) return
@@ -807,7 +812,7 @@ function LoginModal({
             setGoogleButtonError('Google did not return a credential.')
             return
           }
-          onGoogleCredential(response.credential)
+          onGoogleCredentialRef.current(response.credential)
         }
         activeGoogleCredentialHandler = credentialHandler
         initializeGoogleIdentity(clientId)
@@ -834,7 +839,7 @@ function LoginModal({
       cancelled = true
       activeGoogleCredentialHandler = null
     }
-  }, [isOpen, onGoogleCredential])
+  }, [isOpen])
 
   if (!isOpen) {
     return null
