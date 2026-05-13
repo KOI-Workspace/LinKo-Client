@@ -978,26 +978,40 @@ export default function WatchTab({
   useEffect(() => {
     if (shouldStackMobile || !isResizingSidePanel) return
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const nextWidth = window.innerWidth - event.clientX
+    let rafId = 0
+    let latestClientX = 0
+
+    const applyWidth = () => {
+      rafId = 0
+      const nextWidth = window.innerWidth - latestClientX
       const maxWidth = Math.floor(window.innerWidth / 2)
       setSidePanelWidth(Math.min(maxWidth, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
     }
 
-    const handleMouseUp = () => {
+    const handlePointerMove = (event: PointerEvent) => {
+      latestClientX = event.clientX
+      if (rafId === 0) {
+        rafId = window.requestAnimationFrame(applyWidth)
+      }
+    }
+
+    const stopResizing = () => {
       setIsResizingSidePanel(false)
     }
 
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', stopResizing)
+    window.addEventListener('pointercancel', stopResizing)
 
     return () => {
+      if (rafId !== 0) window.cancelAnimationFrame(rafId)
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', stopResizing)
+      window.removeEventListener('pointercancel', stopResizing)
     }
   }, [isResizingSidePanel, shouldStackMobile])
 
@@ -1154,23 +1168,38 @@ export default function WatchTab({
         </div>
 
         <div
-          className={`relative min-w-0 shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden transition-[width] duration-300 ease-in-out ${
-            isSidePanelOpen ? '' : 'w-12'
-          }`}
+          className={`relative min-w-0 shrink-0 border-l border-neutral-800 flex flex-col min-h-0 bg-neutral-900 overflow-hidden ${
+            isResizingSidePanel ? '' : 'transition-[width] duration-300 ease-in-out'
+          } ${isSidePanelOpen ? '' : 'w-12'}`}
           style={isSidePanelOpen ? sidePanelStyle : { width: 48 }}
         >
-          <button
-            type="button"
-            onMouseDown={() => setIsResizingSidePanel(true)}
-            className={`absolute -left-1.5 top-0 z-20 flex h-full w-3 cursor-col-resize items-center justify-center text-neutral-600 transition-opacity duration-300 ${
-              isSidePanelOpen ? 'opacity-100 hover:text-neutral-300' : 'pointer-events-none opacity-0'
-            }`}
+          <div
+            role="separator"
+            aria-orientation="vertical"
             aria-label="자막 패널 너비 조정"
+            onPointerDown={(e) => {
+              e.preventDefault()
+              setIsResizingSidePanel(true)
+            }}
+            className={`group absolute -left-2 top-0 z-20 flex h-full w-4 cursor-col-resize items-center justify-center select-none ${
+              isSidePanelOpen ? '' : 'pointer-events-none opacity-0'
+            }`}
           >
-            <span className="flex h-12 w-3 items-center justify-center rounded-full bg-neutral-800/80 opacity-0 transition-opacity hover:opacity-100">
+            <span
+              className={`pointer-events-none h-full w-px transition-colors ${
+                isResizingSidePanel ? 'bg-primary/60' : 'bg-neutral-800 group-hover:bg-primary/50'
+              }`}
+            />
+            <span
+              className={`pointer-events-none absolute flex h-14 w-5 items-center justify-center rounded-full border border-neutral-700/80 bg-neutral-900 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all ${
+                isResizingSidePanel
+                  ? 'scale-110 border-primary/70 text-primary'
+                  : 'text-neutral-400 group-hover:scale-105 group-hover:border-primary/50 group-hover:text-primary'
+              }`}
+            >
               <GripVertical className="h-3.5 w-3.5" />
             </span>
-          </button>
+          </div>
 
           <div className={`shrink-0 border-b border-neutral-800 transition-opacity duration-300 ${isSidePanelOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
             <div className="flex items-start justify-between gap-3 px-5 pt-4">
