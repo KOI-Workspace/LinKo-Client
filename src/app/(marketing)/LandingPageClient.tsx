@@ -345,10 +345,10 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
 
   if (visualType === 'culturalNotes') {
     return (
-      <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8">
-        <div className="grid gap-4 lg:grid-cols-[1.35fr_0.85fr]">
+      <div className="aspect-[16/10] overflow-hidden rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-2.5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:aspect-video sm:p-4 lg:p-5">
+        <div className="grid h-full grid-cols-[1.35fr_0.85fr] gap-2 sm:gap-3 lg:gap-4">
           <div className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white shadow-sm">
-            <div className="aspect-video overflow-hidden bg-neutral-950">
+            <div className="h-[62%] overflow-hidden bg-neutral-950">
               <img
                 src="/images/social/CulturalNotes_image.png"
                 alt="Cultural notes example scene"
@@ -356,71 +356,73 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
               />
             </div>
 
-            <div className="border-t border-neutral-100 px-5 py-5 text-left sm:px-7 sm:py-6">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">Dual Subtitles</span>
-                <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+            <div className="flex h-[38%] flex-col justify-center border-t border-white/10 bg-neutral-950 px-3 py-2 text-left sm:px-5 sm:py-4 lg:px-6">
+              <div className="mb-1.5 flex items-center justify-between gap-2 sm:mb-3">
+                <span className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/45 sm:text-[10px] sm:tracking-[0.22em] lg:text-xs">Dual Subtitles</span>
+                <span className="rounded-full bg-primary-400/15 px-2 py-0.5 text-[8px] font-semibold text-primary-200 ring-1 ring-primary-300/20 sm:px-3 sm:py-1 sm:text-[10px] lg:text-xs">
                   Cultural highlight
                 </span>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-[21px] font-semibold leading-relaxed text-neutral-950 sm:text-[28px]">
-                  <span className="rounded-md bg-primary-100 px-1.5 py-0.5 text-primary-800 ring-1 ring-primary-200">
+              <div className="space-y-1 sm:space-y-2">
+                <p className="text-[13px] font-semibold leading-relaxed text-white sm:text-[20px] lg:text-[24px]">
+                  <span className="rounded-md bg-primary-400/20 px-1.5 py-0.5 text-primary-100 ring-1 ring-primary-300/30">
                     눈치
                   </span>
                   {' '}
                   를 잘보는
                   {' '}
-                  <span className="rounded-md bg-primary-100 px-1.5 py-0.5 text-primary-800 ring-1 ring-primary-200">
+                  <span className="rounded-md bg-primary-300 px-1.5 py-0.5 text-primary-950 ring-1 ring-primary-200">
                     젠득이
                   </span>
                   입니다.
                 </p>
-                <p className="text-base leading-relaxed text-neutral-500 sm:text-lg">
-                  In this scene, reading the room is really important.
+                <p className="text-[10px] leading-relaxed text-white/55 sm:text-sm lg:text-base">
+                  Jendeukie is good at reading the room.
                 </p>
               </div>
             </div>
           </div>
 
-          <aside className="rounded-[22px] border border-neutral-200 bg-white p-6 text-left shadow-sm sm:p-7">
-            <div className="flex h-full min-h-[360px] flex-col">
+          <aside className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white p-3 text-left shadow-sm sm:p-5 lg:p-6">
+            <div className="flex h-full flex-col">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
+                <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-neutral-400 sm:text-[10px] sm:tracking-[0.22em] lg:text-xs">
                   Cultural Notes
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-sm font-semibold text-primary-800">
+                <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2 py-1 text-[9px] font-semibold text-neutral-600 sm:px-3 sm:text-xs lg:px-4 lg:py-2 lg:text-sm">
                     눈치
+                    <span className="text-[8px] font-medium text-neutral-400 sm:text-[10px] lg:text-xs">0:03</span>
                   </span>
-                  <span className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-sm font-semibold text-primary-800">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-600 px-2 py-1 text-[9px] font-semibold text-white shadow-[0_10px_24px_rgba(124,58,237,0.24)] ring-2 ring-primary-200 sm:px-3 sm:text-xs lg:px-4 lg:py-2 lg:text-sm">
                     젠득이
+                    <span className="text-[8px] font-medium text-primary-100 sm:text-[10px] lg:text-xs">0:05</span>
                   </span>
                 </div>
               </div>
 
-              <div className="mt-7 space-y-4">
-                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-                  <p className="text-base font-semibold text-neutral-950">눈치 (Nunchi)</p>
-                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+              <div className="mt-3 space-y-2 sm:mt-5 sm:space-y-3 lg:mt-6">
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 sm:rounded-2xl sm:p-4 lg:p-5">
+                  <p className="text-[11px] font-semibold text-neutral-950 sm:text-sm lg:text-base">눈치 (Nunchi)</p>
+                  <p className="mt-1 text-[9px] leading-4 text-neutral-600 sm:mt-2 sm:text-xs sm:leading-5 lg:text-sm lg:leading-6">
                     The ability to read the room and sense how others feel without being told directly.
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-primary-100 bg-primary-50 p-5">
-                  <p className="text-base font-semibold text-neutral-950">젠득이 (Jendeukie)</p>
-                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+                <div className="rounded-xl border border-primary-100 bg-primary-50 p-2.5 sm:rounded-2xl sm:p-4 lg:p-5">
+                  <p className="text-[11px] font-semibold text-neutral-950 sm:text-sm lg:text-base">젠득이 (Jendeukie)</p>
+                  <p className="mt-1 text-[9px] leading-4 text-neutral-600 sm:mt-2 sm:text-xs sm:leading-5 lg:text-sm lg:leading-6">
                     A playful nickname blending Jennie and jjindeuk, meaning clingy. Created by Jisoo, it shows Jennie&apos;s affectionate, hug-loving side and the close bond between the members.
                   </p>
                 </div>
               </div>
 
-              <div className="mt-auto pt-8">
+              <div className="mt-auto pt-2 sm:pt-5 lg:pt-6">
                 <div className="h-px bg-neutral-100" />
-                <div className="mt-5 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-primary-500" />
-                  <span className="text-sm font-medium text-neutral-500">Linked to highlighted subtitle</span>
+                <div className="mt-2 flex items-center gap-1.5 sm:mt-4 sm:gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary-500 sm:h-2 sm:w-2" />
+                  <span className="text-[9px] font-medium text-neutral-500 sm:text-xs lg:text-sm">Linked to highlighted subtitle</span>
                 </div>
               </div>
             </div>
