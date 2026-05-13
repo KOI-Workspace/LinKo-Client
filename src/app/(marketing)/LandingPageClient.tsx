@@ -540,7 +540,6 @@ function ModalFrame({
         aria-modal="true"
         aria-label={ariaLabel}
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,rgba(124,140,255,0.14),transparent_68%)]" />
         {children}
       </div>
     </div>
