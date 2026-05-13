@@ -296,10 +296,18 @@ function isKoreanSyllable(char: string | undefined): boolean {
   return code >= 0xAC00 && code <= 0xD7A3
 }
 
+/** ㅎ로 시작하는 한글 음절 (하/한/할/함/해/했 등 — 하다 활용형 첫 글자) */
+function startsWithHieut(char: string | undefined): boolean {
+  if (!char) return false
+  const code = char.charCodeAt(0)
+  // ㅎ 초성 음절 범위: 하(0xD558) ~ 힣(0xD7A3)
+  return code >= 0xD558 && code <= 0xD7A3
+}
+
 /** 본문에서 단어(또는 활용형)의 위치를 찾는다.
- *  1) 정확 일치를 우선 시도
- *  2) 사전형(`다`로 끝남)이면 어간을 추출해 단어 경계에서 찾고,
- *     뒤따르는 한글 음절을 최대 4자까지 확장해 활용형까지 포함 */
+ *  1) 정확 일치
+ *  2) `~하다` 동사 특수 처리 (하 + 어미가 축약되는 케이스: 한/해/할/함/했…)
+ *  3) 일반 어간 매칭 (`다`만 제거하고 뒤 활용 어미 확장) */
 function findBlindRange(text: string, word: string): { start: number; end: number } | null {
   if (!word) return null
 
@@ -309,18 +317,50 @@ function findBlindRange(text: string, word: string): { start: number; end: numbe
     return { start: exactIdx, end: exactIdx + word.length }
   }
 
-  // 2. 사전형 어간 매칭
   if (!word.endsWith('다')) return null
+
+  const MAX_EXTENSION = 4
+
+  // 2. `~하다` 동사 특수 처리
+  //    예: 릴렉스하다 → 릴렉스한, 릴렉스해요, 릴렉스할게요
+  if (word.endsWith('하다') && word.length > 2) {
+    const prefix = word.slice(0, -2) // '하다' 제거
+    let searchStart = 0
+    while (searchStart < text.length) {
+      const prefixIdx = text.indexOf(prefix, searchStart)
+      if (prefixIdx === -1) break
+
+      const prevChar = prefixIdx > 0 ? text[prefixIdx - 1] : undefined
+      if (!isKoreanSyllable(prevChar)) {
+        const afterPrefix = prefixIdx + prefix.length
+        // prefix 바로 뒤가 ㅎ-시작 음절이면 하다 활용형으로 간주
+        if (afterPrefix < text.length && startsWithHieut(text[afterPrefix])) {
+          let endIdx = afterPrefix + 1
+          let extension = 1 // 첫 ㅎ-음절 이미 포함
+          while (
+            endIdx < text.length &&
+            isKoreanSyllable(text[endIdx]) &&
+            extension < MAX_EXTENSION
+          ) {
+            endIdx++
+            extension++
+          }
+          return { start: prefixIdx, end: endIdx }
+        }
+      }
+      searchStart = prefixIdx + 1
+    }
+  }
+
+  // 3. 일반 어간 매칭
   const stem = word.slice(0, -1)
   if (!stem) return null
 
-  const MAX_EXTENSION = 4 // 활용 어미 최대 길이
   let searchStart = 0
   while (searchStart < text.length) {
     const stemIdx = text.indexOf(stem, searchStart)
     if (stemIdx === -1) break
 
-    // 단어 경계(시작 위치 or 앞 글자가 한글 음절이 아님)에서만 매칭 허용
     const prevChar = stemIdx > 0 ? text[stemIdx - 1] : undefined
     if (!isKoreanSyllable(prevChar)) {
       let endIdx = stemIdx + stem.length
