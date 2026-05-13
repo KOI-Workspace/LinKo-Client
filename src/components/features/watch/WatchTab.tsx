@@ -976,44 +976,18 @@ export default function WatchTab({
   }, [activeLine, shouldStackMobile])
 
   useEffect(() => {
-    if (shouldStackMobile || !isResizingSidePanel) return
-
-    let rafId = 0
-    let latestClientX = 0
-
-    const applyWidth = () => {
-      rafId = 0
-      const nextWidth = window.innerWidth - latestClientX
-      const maxWidth = Math.floor(window.innerWidth / 2)
-      setSidePanelWidth(Math.min(maxWidth, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
-    }
-
-    const handlePointerMove = (event: PointerEvent) => {
-      latestClientX = event.clientX
-      if (rafId === 0) {
-        rafId = window.requestAnimationFrame(applyWidth)
-      }
-    }
-
-    const stopResizing = () => {
-      setIsResizingSidePanel(false)
-    }
-
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-    window.addEventListener('pointermove', handlePointerMove)
-    window.addEventListener('pointerup', stopResizing)
-    window.addEventListener('pointercancel', stopResizing)
-
-    return () => {
-      if (rafId !== 0) window.cancelAnimationFrame(rafId)
+    if (isResizingSidePanel) {
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    } else {
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', stopResizing)
-      window.removeEventListener('pointercancel', stopResizing)
     }
-  }, [isResizingSidePanel, shouldStackMobile])
+    return () => {
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isResizingSidePanel])
 
   if (isLoading && !apiData && !hasMockLesson) {
     return (
@@ -1177,24 +1151,36 @@ export default function WatchTab({
             role="separator"
             aria-orientation="vertical"
             aria-label="자막 패널 너비 조정"
-            onPointerDown={(e) => {
-              e.preventDefault()
-              setIsResizingSidePanel(true)
-            }}
-            className={`group absolute -left-2 top-0 z-20 flex h-full w-4 cursor-col-resize items-center justify-center select-none ${
-              isSidePanelOpen ? '' : 'pointer-events-none opacity-0'
+            className={`group absolute -left-2 top-0 z-20 flex h-full w-4 items-center justify-center select-none pointer-events-none ${
+              isSidePanelOpen ? 'opacity-100' : 'opacity-0'
             }`}
           >
+            <span className="pointer-events-none h-full w-px bg-neutral-800" />
             <span
-              className={`pointer-events-none h-full w-px transition-colors ${
-                isResizingSidePanel ? 'bg-primary/60' : 'bg-neutral-800 group-hover:bg-primary/50'
-              }`}
-            />
-            <span
-              className={`pointer-events-none absolute flex h-14 w-5 items-center justify-center rounded-full border border-neutral-700/80 bg-neutral-900 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all ${
+              onPointerDown={(e) => {
+                if (shouldStackMobile) return
+                e.preventDefault()
+                e.currentTarget.setPointerCapture(e.pointerId)
+                setIsResizingSidePanel(true)
+              }}
+              onPointerMove={(e) => {
+                if (!isResizingSidePanel) return
+                const nextWidth = window.innerWidth - e.clientX
+                const maxWidth = Math.floor(window.innerWidth / 2)
+                setSidePanelWidth(Math.min(maxWidth, Math.max(SIDE_PANEL_MIN_WIDTH, nextWidth)))
+              }}
+              onPointerUp={(e) => {
+                e.currentTarget.releasePointerCapture(e.pointerId)
+                setIsResizingSidePanel(false)
+              }}
+              onPointerCancel={(e) => {
+                e.currentTarget.releasePointerCapture(e.pointerId)
+                setIsResizingSidePanel(false)
+              }}
+              className={`pointer-events-auto absolute flex h-14 w-5 cursor-col-resize items-center justify-center rounded-full border border-neutral-700/80 bg-neutral-900 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all ${
                 isResizingSidePanel
                   ? 'scale-110 border-primary/70 text-primary'
-                  : 'text-neutral-400 group-hover:scale-105 group-hover:border-primary/50 group-hover:text-primary'
+                  : 'text-neutral-400 hover:scale-105 hover:border-primary/50 hover:text-primary'
               }`}
             >
               <GripVertical className="h-3.5 w-3.5" />
