@@ -386,10 +386,10 @@ function CulturalNotesVisual() {
                 {' '}
                 를 잘보는
                 {' '}
-                <span className="rounded-md bg-primary-300 px-1.5 py-0.5 text-primary-950 ring-1 ring-primary-200">
+                <span className="rounded-md bg-primary-300 px-1 py-0.5 text-primary-950 ring-1 ring-primary-200">
                   젠득이
                 </span>
-                입니다.
+                <span className="ml-1.5">입니다.</span>
               </p>
               <p className="text-base leading-relaxed text-white/55">
                 Jendeukie is good at reading the room.
@@ -1658,7 +1658,7 @@ export default function LandingPageClient() {
                 Real reviews from Global Users
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-neutral-500 sm:mt-5 sm:text-lg sm:leading-8">
-                Beta users across 72+ countries say LinKo fits naturally into their study routine.
+                Beta users across <span className="font-bold text-neutral-950">72+ countries</span> say LinKo fits naturally into their study routine.
               </p>
             </div>
 
