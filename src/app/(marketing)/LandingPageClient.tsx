@@ -348,7 +348,13 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
       <div className="rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-8">
         <div className="grid gap-4 lg:grid-cols-[1.35fr_0.85fr]">
           <div className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white shadow-sm">
-            <div className="aspect-video bg-neutral-950" aria-label="문화 해설 예시 영상 이미지 영역" />
+            <div className="aspect-video overflow-hidden bg-neutral-950">
+              <img
+                src="/images/social/CulturalNotes_image.png"
+                alt="Cultural notes example scene"
+                className="h-full w-full object-cover"
+              />
+            </div>
 
             <div className="border-t border-neutral-100 px-5 py-5 text-left sm:px-7 sm:py-6">
               <div className="mb-4 flex items-center justify-between">
@@ -360,13 +366,16 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
 
               <div className="space-y-3">
                 <p className="text-[21px] font-semibold leading-relaxed text-neutral-950 sm:text-[28px]">
-                  이 장면에서
-                  {' '}
                   <span className="rounded-md bg-primary-100 px-1.5 py-0.5 text-primary-800 ring-1 ring-primary-200">
                     눈치
                   </span>
                   {' '}
-                  보는 게 진짜 중요해요.
+                  를 잘보는
+                  {' '}
+                  <span className="rounded-md bg-primary-100 px-1.5 py-0.5 text-primary-800 ring-1 ring-primary-200">
+                    젠득이
+                  </span>
+                  입니다.
                 </p>
                 <p className="text-base leading-relaxed text-neutral-500 sm:text-lg">
                   In this scene, reading the room is really important.
@@ -381,23 +390,29 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
                   Cultural Notes
                 </p>
-                <div className="mt-5 inline-flex rounded-full bg-primary-100 px-4 py-2 text-sm font-semibold text-primary-800">
-                  눈치
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-sm font-semibold text-primary-800">
+                    눈치
+                  </span>
+                  <span className="inline-flex rounded-full bg-primary-100 px-4 py-2 text-sm font-semibold text-primary-800">
+                    젠득이
+                  </span>
                 </div>
               </div>
 
               <div className="mt-7 space-y-4">
-                <div className="h-3 w-11/12 rounded-full bg-neutral-200" />
-                <div className="h-3 w-full rounded-full bg-neutral-100" />
-                <div className="h-3 w-4/5 rounded-full bg-neutral-100" />
-                <div className="h-3 w-10/12 rounded-full bg-neutral-100" />
-              </div>
+                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+                  <p className="text-base font-semibold text-neutral-950">눈치 (Nunchi)</p>
+                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+                    The ability to read the room and sense how others feel without being told directly.
+                  </p>
+                </div>
 
-              <div className="mt-8 rounded-2xl border border-primary-100 bg-primary-50 p-5">
-                <div className="h-3 w-24 rounded-full bg-primary-200" />
-                <div className="mt-4 space-y-3">
-                  <div className="h-2.5 w-full rounded-full bg-white" />
-                  <div className="h-2.5 w-5/6 rounded-full bg-white" />
+                <div className="rounded-2xl border border-primary-100 bg-primary-50 p-5">
+                  <p className="text-base font-semibold text-neutral-950">젠득이 (Jendeukie)</p>
+                  <p className="mt-2 text-sm leading-6 text-neutral-600">
+                    A playful nickname blending Jennie and jjindeuk, meaning clingy. Created by Jisoo, it shows Jennie&apos;s affectionate, hug-loving side and the close bond between the members.
+                  </p>
                 </div>
               </div>
 
