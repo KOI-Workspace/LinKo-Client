@@ -288,20 +288,23 @@ function ConjugationBadgeTag({ badge }: { badge: ConjugationBadge }) {
   )
 }
 
-/** 문장에서 특정 단어를 Watch 스타일 블라인드로 처리 */
+/** 문장에서 특정 단어를 Watch 스타일 블라인드로 처리
+ *  레이아웃 유지를 위해 blind on/off 모두 동일한 padding 적용, 배경색만 전환 */
 function BlindHighlightWord({ text, word, isBlind, isPurple = false }: {
   text: string; word: string; isBlind: boolean; isPurple?: boolean
 }) {
-  if (!isBlind || !word) return <>{text}</>
+  if (!word) return <>{text}</>
   const idx = text.indexOf(word)
   if (idx === -1) return <>{text}</>
-  const blindClass = isPurple
-    ? 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-primary/40 text-transparent select-none'
-    : 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-neutral-400/60 text-transparent select-none'
+  const wordClass = isBlind
+    ? isPurple
+      ? 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-primary/40 text-transparent select-none'
+      : 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-neutral-400/60 text-transparent select-none'
+    : 'rounded-[0.28em] px-[0.22em] py-[0.05em]'
   return (
     <>
       {text.slice(0, idx)}
-      <span className={blindClass}>{word}</span>
+      <span className={wordClass}>{word}</span>
       {text.slice(idx + word.length)}
     </>
   )
@@ -617,7 +620,7 @@ export default function FlashcardTab({
                   <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
                     <span className={isBlind
                       ? 'rounded-[0.18em] px-[0.08em] bg-neutral-300/80 text-transparent select-none'
-                      : ''
+                      : 'rounded-[0.18em] px-[0.08em]'
                     }>
                       {card.conjugatedForm}
                     </span>
@@ -707,7 +710,7 @@ export default function FlashcardTab({
                   <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
                     <span className={isBlind
                       ? 'rounded-[0.18em] px-[0.08em] bg-neutral-300/80 text-transparent select-none'
-                      : ''
+                      : 'rounded-[0.18em] px-[0.08em]'
                     }>
                       {card.expression}
                     </span>
