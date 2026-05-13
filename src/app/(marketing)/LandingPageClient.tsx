@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Play, ArrowUp, ChevronDown, Plus, AlertCircle, Loader2, CreditCard, Captions } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import WatchTab from '@/components/features/watch/WatchTab'
 import ChannelAvatar from '@/components/features/home/ChannelAvatar'
@@ -1198,7 +1197,6 @@ function PreviewLessonCard({
 }
 
 export default function LandingPageClient() {
-  const router = useRouter()
   const [userInputValue, setUserInputValue] = useState('')
   const [animatedValue, setAnimatedValue] = useState('')
   const [isTypingActive, setIsTypingActive] = useState(true)
@@ -1413,8 +1411,8 @@ export default function LandingPageClient() {
           setPendingLessonId(null)
           handleCloseLoginModal()
         } else if (loginModalSource === 'cta') {
-          // CTA 버튼에서 로그인한 경우만 앱으로 이동
-          router.push('/home')
+          // CTA 로그인은 랜딩페이지에 계속 머무르게 합니다.
+          handleCloseLoginModal()
         } else {
           // 'video' 소스이거나 pendingLessonId가 없는 경우: 랜딩페이지에 머물기
           handleCloseLoginModal()
