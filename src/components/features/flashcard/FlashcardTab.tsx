@@ -394,7 +394,7 @@ export default function FlashcardTab({
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [expandedBadge, setExpandedBadge] = useState(false)
-  const [isBlind, setIsBlind] = useState(false)
+  const [isBlind, setIsBlind] = useState(true)
   const [apiData, setApiData] = useState<LessonFlashcards | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -463,7 +463,7 @@ export default function FlashcardTab({
   // 카드 이동 시 배지 패널 닫기 + 블라인드 모드 초기화
   useEffect(() => {
     setExpandedBadge(false)
-    setIsBlind(false)
+    setIsBlind(true)
   }, [currentIndex])
 
   useEffect(() => {
