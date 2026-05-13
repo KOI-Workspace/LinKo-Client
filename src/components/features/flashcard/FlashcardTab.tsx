@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   Volume2, ChevronLeft, ChevronRight, Play, Pause,
   ExternalLink, Bookmark, BookmarkCheck,
-  Repeat, Gauge, MessageCircle, ChevronDown, ChevronUp, X,
+  Repeat, Gauge, MessageCircle, ChevronDown, ChevronUp, X, EyeOff, Eye,
 } from 'lucide-react'
 import { MOCK_FLASHCARDS } from './mockFlashcards'
 import { useBookmarks } from '@/hooks/useBookmarks'
@@ -274,6 +274,20 @@ function ConjugationBadgeTag({ badge }: { badge: ConjugationBadge }) {
       )}
       <span className={addedTextColor}>+{badge.added}</span>
     </span>
+  )
+}
+
+/** 문장에서 특정 단어를 블라인드 처리 (블라인드 모드 전용) */
+function BlindHighlightWord({ text, word, isBlind }: { text: string; word: string; isBlind: boolean }) {
+  if (!isBlind || !word) return <>{text}</>
+  const idx = text.indexOf(word)
+  if (idx === -1) return <>{text}</>
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="blur-[6px] select-none inline-block">{word}</span>
+      {text.slice(idx + word.length)}
+    </>
   )
 }
 
