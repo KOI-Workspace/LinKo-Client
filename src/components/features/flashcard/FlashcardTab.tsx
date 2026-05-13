@@ -240,10 +240,11 @@ function RelatedVideoItem({ video }: { video: RelatedVideo }) {
   )
 }
 
-function ConversationBubble({ turn, onSpeak, blindWord = '' }: {
+function ConversationBubble({ turn, onSpeak, blindWord = '', isBlind = false }: {
   turn: ConversationTurn
   onSpeak: (text: string) => void
   blindWord?: string
+  isBlind?: boolean
 }) {
   return (
     <div className={`flex ${turn.isQuestion ? 'justify-start' : 'justify-end'}`}>
@@ -256,7 +257,7 @@ function ConversationBubble({ turn, onSpeak, blindWord = '' }: {
           <BlindHighlightWord
             text={turn.text}
             word={blindWord}
-            isBlind={!!blindWord}
+            isBlind={isBlind}
             isPurple={!turn.isQuestion}
           />
         </p>
@@ -751,7 +752,7 @@ export default function FlashcardTab({
                     </div>
                     <div className="flex flex-col gap-3">
                       {card.dailyConversation.map((turn, i) => (
-                        <ConversationBubble key={i} turn={turn} onSpeak={speak} blindWord={isBlind ? card.expression : ''} />
+                        <ConversationBubble key={i} turn={turn} onSpeak={speak} blindWord={card.expression} isBlind={isBlind} />
                       ))}
                     </div>
                   </div>
