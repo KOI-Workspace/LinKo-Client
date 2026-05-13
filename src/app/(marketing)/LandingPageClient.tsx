@@ -317,7 +317,134 @@ const FAQ_ITEMS: FaqEntry[] = [
   },
 ] as const
 
+const CULTURAL_VISUAL_WIDTH = 960
+const CULTURAL_VISUAL_HEIGHT = 540
+
 // ─── 서브 컴포넌트 ──────────────────────────────────────────────────────────
+
+/** 데스크톱 기준 UI를 작은 화면에서도 같은 비율로 축소해서 표시 */
+function CulturalNotesVisual() {
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    if (!wrapper) {
+      return
+    }
+
+    const updateScale = () => {
+      const nextScale = Math.min(1, wrapper.clientWidth / CULTURAL_VISUAL_WIDTH)
+      setScale(nextScale)
+    }
+
+    updateScale()
+    const resizeObserver = new ResizeObserver(updateScale)
+    resizeObserver.observe(wrapper)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="relative w-full overflow-hidden rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 shadow-[0_20px_60px_rgba(15,23,42,0.06)]"
+      style={{ aspectRatio: `${CULTURAL_VISUAL_WIDTH} / ${CULTURAL_VISUAL_HEIGHT}` }}
+    >
+      <div
+        className="absolute left-0 top-0 grid origin-top-left grid-cols-[1.35fr_0.85fr] gap-4 p-5"
+        style={{
+          width: CULTURAL_VISUAL_WIDTH,
+          height: CULTURAL_VISUAL_HEIGHT,
+          transform: `scale(${scale})`,
+        }}
+      >
+        <div className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white shadow-sm">
+          <div className="h-[62%] overflow-hidden bg-neutral-950">
+            <img
+              src="/images/social/CulturalNotes_image.png"
+              alt="Cultural notes example scene"
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          <div className="flex h-[38%] flex-col justify-center border-t border-white/10 bg-neutral-950 px-6 py-4 text-left">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.22em] text-white/45">Dual Subtitles</span>
+              <span className="rounded-full bg-primary-400/15 px-3 py-1 text-xs font-semibold text-primary-200 ring-1 ring-primary-300/20">
+                Cultural highlight
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[24px] font-semibold leading-relaxed text-white">
+                <span className="rounded-md bg-primary-400/20 px-1.5 py-0.5 text-primary-100 ring-1 ring-primary-300/30">
+                  눈치
+                </span>
+                {' '}
+                를 잘보는
+                {' '}
+                <span className="rounded-md bg-primary-300 px-1.5 py-0.5 text-primary-950 ring-1 ring-primary-200">
+                  젠득이
+                </span>
+                입니다.
+              </p>
+              <p className="text-base leading-relaxed text-white/55">
+                Jendeukie is good at reading the room.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <aside className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white p-6 text-left shadow-sm">
+          <div className="flex h-full flex-col">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
+                Cultural Notes
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-600">
+                  눈치
+                  <span className="text-xs font-medium text-neutral-400">0:03</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(124,58,237,0.24)] ring-2 ring-primary-200">
+                  젠득이
+                  <span className="text-xs font-medium text-primary-100">0:05</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+                <p className="text-base font-semibold text-neutral-950">눈치 (Nunchi)</p>
+                <p className="mt-2 text-sm leading-6 text-neutral-600">
+                  The ability to read the room and sense how others feel without being told directly.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-primary-100 bg-primary-50 p-5">
+                <p className="text-base font-semibold text-neutral-950">젠득이 (Jendeukie)</p>
+                <p className="mt-2 text-sm leading-6 text-neutral-600">
+                  A playful nickname blending Jennie and jjindeuk, meaning clingy. Created by Jisoo, it shows Jennie&apos;s affectionate, hug-loving side and the close bond between the members.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-auto pt-6">
+              <div className="h-px bg-neutral-100" />
+              <div className="mt-4 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-primary-500" />
+                <span className="text-sm font-medium text-neutral-500">Linked to highlighted subtitle</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  )
+}
 
 /** 기능 시각 요소 */
 function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]['visualType'] }) {
@@ -344,92 +471,7 @@ function FeatureVisual({ visualType }: { visualType: typeof FEATURE_LIST[number]
   }
 
   if (visualType === 'culturalNotes') {
-    return (
-      <div className="aspect-[16/10] overflow-hidden rounded-[28px] border border-neutral-200 bg-gradient-to-br from-white to-neutral-50 p-2.5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:aspect-video sm:p-4 lg:p-5">
-        <div className="grid h-full grid-cols-[1.35fr_0.85fr] gap-2 sm:gap-3 lg:gap-4">
-          <div className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white shadow-sm">
-            <div className="h-[62%] overflow-hidden bg-neutral-950">
-              <img
-                src="/images/social/CulturalNotes_image.png"
-                alt="Cultural notes example scene"
-                className="h-full w-full object-cover"
-              />
-            </div>
-
-            <div className="flex h-[38%] flex-col justify-center border-t border-white/10 bg-neutral-950 px-3 py-2 text-left sm:px-5 sm:py-4 lg:px-6">
-              <div className="mb-1.5 flex items-center justify-between gap-2 sm:mb-3">
-                <span className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/45 sm:text-[10px] sm:tracking-[0.22em] lg:text-xs">Dual Subtitles</span>
-                <span className="rounded-full bg-primary-400/15 px-2 py-0.5 text-[8px] font-semibold text-primary-200 ring-1 ring-primary-300/20 sm:px-3 sm:py-1 sm:text-[10px] lg:text-xs">
-                  Cultural highlight
-                </span>
-              </div>
-
-              <div className="space-y-1 sm:space-y-2">
-                <p className="text-[13px] font-semibold leading-relaxed text-white sm:text-[20px] lg:text-[24px]">
-                  <span className="rounded-md bg-primary-400/20 px-1.5 py-0.5 text-primary-100 ring-1 ring-primary-300/30">
-                    눈치
-                  </span>
-                  {' '}
-                  를 잘보는
-                  {' '}
-                  <span className="rounded-md bg-primary-300 px-1.5 py-0.5 text-primary-950 ring-1 ring-primary-200">
-                    젠득이
-                  </span>
-                  입니다.
-                </p>
-                <p className="text-[10px] leading-relaxed text-white/55 sm:text-sm lg:text-base">
-                  Jendeukie is good at reading the room.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <aside className="overflow-hidden rounded-[22px] border border-neutral-200 bg-white p-3 text-left shadow-sm sm:p-5 lg:p-6">
-            <div className="flex h-full flex-col">
-              <div>
-                <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-neutral-400 sm:text-[10px] sm:tracking-[0.22em] lg:text-xs">
-                  Cultural Notes
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-4 sm:gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2 py-1 text-[9px] font-semibold text-neutral-600 sm:px-3 sm:text-xs lg:px-4 lg:py-2 lg:text-sm">
-                    눈치
-                    <span className="text-[8px] font-medium text-neutral-400 sm:text-[10px] lg:text-xs">0:03</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-600 px-2 py-1 text-[9px] font-semibold text-white shadow-[0_10px_24px_rgba(124,58,237,0.24)] ring-2 ring-primary-200 sm:px-3 sm:text-xs lg:px-4 lg:py-2 lg:text-sm">
-                    젠득이
-                    <span className="text-[8px] font-medium text-primary-100 sm:text-[10px] lg:text-xs">0:05</span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-3 space-y-2 sm:mt-5 sm:space-y-3 lg:mt-6">
-                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 sm:rounded-2xl sm:p-4 lg:p-5">
-                  <p className="text-[11px] font-semibold text-neutral-950 sm:text-sm lg:text-base">눈치 (Nunchi)</p>
-                  <p className="mt-1 text-[9px] leading-4 text-neutral-600 sm:mt-2 sm:text-xs sm:leading-5 lg:text-sm lg:leading-6">
-                    The ability to read the room and sense how others feel without being told directly.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-primary-100 bg-primary-50 p-2.5 sm:rounded-2xl sm:p-4 lg:p-5">
-                  <p className="text-[11px] font-semibold text-neutral-950 sm:text-sm lg:text-base">젠득이 (Jendeukie)</p>
-                  <p className="mt-1 text-[9px] leading-4 text-neutral-600 sm:mt-2 sm:text-xs sm:leading-5 lg:text-sm lg:leading-6">
-                    A playful nickname blending Jennie and jjindeuk, meaning clingy. Created by Jisoo, it shows Jennie&apos;s affectionate, hug-loving side and the close bond between the members.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-auto pt-2 sm:pt-5 lg:pt-6">
-                <div className="h-px bg-neutral-100" />
-                <div className="mt-2 flex items-center gap-1.5 sm:mt-4 sm:gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary-500 sm:h-2 sm:w-2" />
-                  <span className="text-[9px] font-medium text-neutral-500 sm:text-xs lg:text-sm">Linked to highlighted subtitle</span>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    )
+    return <CulturalNotesVisual />
   }
 
   return null
@@ -930,76 +972,6 @@ const PLACEHOLDER_TEXTS = [
 
 const INPUT_PLACEHOLDER_TEXT = 'Paste a YouTube link to get started'
 
-function createAvatarDataUrl(label: string, color: string) {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
-      <defs>
-        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="${color}" />
-          <stop offset="100%" stop-color="#ffffff" stop-opacity="0.12" />
-        </linearGradient>
-      </defs>
-      <rect width="96" height="96" rx="48" fill="url(#g)" />
-      <text
-        x="48"
-        y="56"
-        text-anchor="middle"
-        font-family="Arial, sans-serif"
-        font-size="34"
-        font-weight="700"
-        fill="#ffffff"
-      >${label}</text>
-    </svg>
-  `
-
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
-}
-
-const VIDEO_EXAMPLES = [
-  {
-    title: 'Korean Pronunciation Guide...',
-    channelName: 'Korean Class 101',
-    duration: '8:15',
-    date: '2026.05.07',
-    profileImageUrl: createAvatarDataUrl('K', '#7c8cff'),
-  },
-  {
-    title: '10 Must-Know Korean Slang Words',
-    channelName: 'Talk To Me In Korean',
-    duration: '6:42',
-    date: '2026.05.06',
-    profileImageUrl: createAvatarDataUrl('T', '#9b7cff'),
-  },
-  {
-    title: 'Korean Food Vocabulary with Chef',
-    channelName: 'Maangchi',
-    duration: '15:20',
-    date: '2026.05.06',
-    profileImageUrl: createAvatarDataUrl('M', '#4db7ff'),
-  },
-  {
-    title: 'K-pop Lyrics Korean Lesson',
-    channelName: 'SMTOWN',
-    duration: '4:58',
-    date: '2026.05.05',
-    profileImageUrl: createAvatarDataUrl('S', '#6ee7b7'),
-  },
-  {
-    title: 'BTS Spring Day — 가사로 배우는 한국어',
-    channelName: 'BANGTANTV',
-    duration: '5:42',
-    date: '2026.05.05',
-    profileImageUrl: createAvatarDataUrl('B', '#ff8a6d'),
-  },
-  {
-    title: '눈물의 여왕 EP.14 — 명장면 대사 분석',
-    channelName: 'KBS Drama',
-    duration: '9:47',
-    date: '2026.05.04',
-    profileImageUrl: createAvatarDataUrl('D', '#f59e0b'),
-  },
-]
-
 function LessonPreviewModal({
   isOpen,
   onClose,
@@ -1138,6 +1110,93 @@ function LessonPreviewModal({
   )
 }
 
+function PreviewLessonSkeleton() {
+  return (
+    <div className="w-[82vw] max-w-[320px] shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 sm:w-auto sm:max-w-none sm:shrink">
+      <div className="aspect-video animate-pulse bg-neutral-200" />
+      <div className="px-4 py-4">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 h-8 w-8 shrink-0 animate-pulse rounded-full bg-neutral-200" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-4 w-4/5 animate-pulse rounded-full bg-neutral-200" />
+            <div className="h-3 w-3/5 animate-pulse rounded-full bg-neutral-200" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PreviewLessonCard({
+  lesson,
+  onOpen,
+}: {
+  lesson: LessonSummary
+  onOpen: (lessonId: string) => void
+}) {
+  const thumbnailUrl = lesson.thumbnailUrl || createPlaceholderThumbnail('Preview lesson')
+  const channelName = lesson.channelName || 'LinKo'
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(lesson.id)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onOpen(lesson.id)
+        }
+      }}
+      className="w-[82vw] max-w-[320px] shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 cursor-pointer group transition-all hover:border-neutral-300 hover:shadow-md sm:w-auto sm:max-w-none sm:shrink"
+    >
+      <div className="aspect-video relative overflow-hidden bg-neutral-200">
+        <img
+          src={thumbnailUrl}
+          alt={lesson.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-white/90 shadow-xl flex items-center justify-center scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
+            <Play className="w-5 h-5 text-neutral-900 ml-0.5" fill="currentColor" />
+          </div>
+        </div>
+        {lesson.duration && (
+          <div className="absolute bottom-2 right-2">
+            <span className="rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">
+              {lesson.duration}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="px-4 py-4">
+        <div className="flex items-start gap-3">
+          <ChannelAvatar
+            name={channelName}
+            profileImageUrl={lesson.profileImageUrl ?? undefined}
+            size="sm"
+            className="mt-0.5 shadow-sm"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-bold text-neutral-950 leading-tight truncate">
+              {lesson.title}
+            </p>
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <p className="text-[13px] font-medium text-neutral-500 truncate">{channelName}</p>
+              {lesson.date && (
+                <>
+                  <span className="text-[13px] text-neutral-300">·</span>
+                  <p className="text-[13px] font-medium text-neutral-500 shrink-0">{lesson.date}</p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPageClient() {
   const router = useRouter()
   const [userInputValue, setUserInputValue] = useState('')
@@ -1153,7 +1212,7 @@ export default function LandingPageClient() {
   const [isGoogleLoginLoading, setIsGoogleLoginLoading] = useState(false)
   const [googleLoginError, setGoogleLoginError] = useState<string | null>(null)
   const [submittedVideoUrl, setSubmittedVideoUrl] = useState<string | null>(null)
-  const [previewLessons, setPreviewLessons] = useState<any[]>([])
+  const [previewLessons, setPreviewLessons] = useState<LessonSummary[] | null>(null)
   const [previewLessonId, setPreviewLessonId] = useState<string | null>(null)
   const [pendingLessonId, setPendingLessonId] = useState<string | null>(null)
   const [isLoadingVideoCheck, setIsLoadingVideoCheck] = useState(false)
@@ -1171,11 +1230,9 @@ export default function LandingPageClient() {
   useEffect(() => {
     getPublicPreviewLessons()
       .then(lessons => {
-        if (lessons && lessons.length > 0) {
-          setPreviewLessons(lessons)
-        }
+        setPreviewLessons(lessons)
       })
-      .catch(err => console.error('Failed to fetch preview lessons:', err))
+      .catch(() => setPreviewLessons([]))
   }, [])
 
   useEffect(() => {
@@ -1399,7 +1456,7 @@ export default function LandingPageClient() {
         isOpen={!!previewLessonId}
         onClose={() => setPreviewLessonId(null)}
         lessonId={previewLessonId || '15'}
-        lesson={previewLessons.find((lesson) => lesson.id === previewLessonId) ?? null}
+        lesson={previewLessons?.find((lesson) => lesson.id === previewLessonId) ?? null}
       />
       <EarlyAccessModal
         isOpen={isEarlyAccessModalOpen}
@@ -1561,63 +1618,23 @@ export default function LandingPageClient() {
 
             {/* 모바일에서는 가로 스크롤로 전환해서 세로 길이를 줄입니다. */}
             <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:mx-0 lg:grid-cols-3">
-              {(previewLessons.length > 0 ? previewLessons : VIDEO_EXAMPLES).map((video: any) => (
-                <div
-                  key={video.id || video.title}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    const lessonId = video.id || '3'
-                    handlePreviewLessonRequest(lessonId)
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      const lessonId = video.id || '3'
-                      handlePreviewLessonRequest(lessonId)
-                    }
-                  }}
-                  className="w-[82vw] max-w-[320px] shrink-0 rounded-xl border border-neutral-200 bg-neutral-100 overflow-hidden cursor-pointer group transition-all hover:border-neutral-300 hover:shadow-md sm:w-auto sm:max-w-none sm:shrink"
-                >
-                  <div className="aspect-video relative overflow-hidden bg-neutral-200">
-                    <img
-                      src={video.thumbnailUrl || (video.youtubeId ? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg` : `https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg`)}
-                      alt={video.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-white/90 shadow-xl flex items-center justify-center scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300">
-                        <Play className="w-5 h-5 text-neutral-900 ml-0.5" fill="currentColor" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-2 right-2">
-                      <span className="rounded-md bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm">
-                        {video.duration || '0:00'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="px-4 py-4">
-                    <div className="flex items-start gap-3">
-                      <ChannelAvatar
-                        name={video.channelName}
-                        profileImageUrl={video.profileImageUrl}
-                        size="sm"
-                        className="mt-0.5 shadow-sm"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[15px] font-bold text-neutral-950 leading-tight truncate">
-                          {video.title}
-                        </p>
-                        <div className="mt-1.5 flex items-center gap-1.5">
-                          <p className="text-[13px] font-medium text-neutral-500 truncate">{video.channelName}</p>
-                          <span className="text-[13px] text-neutral-300">·</span>
-                          <p className="text-[13px] font-medium text-neutral-500 shrink-0">{video.date || 'Today'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              {previewLessons === null
+                ? Array.from({ length: 6 }).map((_, index) => (
+                  <PreviewLessonSkeleton key={`preview-loading-${index}`} />
+                ))
+                : previewLessons.map((lesson) => (
+                  <PreviewLessonCard
+                    key={lesson.id}
+                    lesson={lesson}
+                    onOpen={handlePreviewLessonRequest}
+                  />
+                ))}
+              {previewLessons?.length === 0 && (
+                <div className="col-span-full rounded-xl border border-neutral-200 bg-neutral-50 px-5 py-8 text-center">
+                  <p className="text-sm font-semibold text-neutral-950">Preview videos are being updated.</p>
+                  <p className="mt-1 text-sm text-neutral-500">Please paste a YouTube link above to start learning.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </section>

@@ -6,6 +6,7 @@ export interface LessonSummary {
   title: string
   channelName?: string
   thumbnailUrl?: string | null
+  profileImageUrl?: string | null
   duration?: string | null
   date?: string | null
   generationStatus: 'generating' | 'ready' | 'failed'
