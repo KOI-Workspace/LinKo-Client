@@ -470,6 +470,14 @@ export default function FlashcardTab({
     setIsBlind(true)
   }, [currentIndex])
 
+  // 레슨(영상) 변경 시 카드 인덱스 + 블라인드 초기화
+  // currentIndex가 이미 0이면 위 effect가 발동하지 않으므로 별도 처리
+  useEffect(() => {
+    setCurrentIndex(0)
+    setExpandedBadge(false)
+    setIsBlind(true)
+  }, [lessonId])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') goNext()
