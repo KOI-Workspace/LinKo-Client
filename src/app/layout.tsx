@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     title: 'LinKo — Learn Korean with YouTube',
     description: 'Master Korean with your favorite YouTube videos. One click to create Korean learning materials.',
     type: 'website',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'LinKo — Learn Korean with YouTube',
+      },
+    ],
   },
 }
 
