@@ -7,7 +7,6 @@ import { useBookmarks } from '@/hooks/useBookmarks'
 import FlashcardTab from '@/components/features/flashcard/FlashcardTab'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
 import { MOCK_SUBTITLES } from '@/components/features/watch/WatchTab'
-import { MOCK_DEMO_BOOKMARKS } from '@/data/mockBookmarks'
 import type { AnyFlashCard } from '@/components/features/flashcard/flashcard.types'
 
 function ReviewContent() {
@@ -18,14 +17,8 @@ function ReviewContent() {
   const tab = (searchParams.get('tab') || 'expression') as 'expression' | 'sentence'
   const initialCardId = searchParams.get('cardId')
 
-  // 데모 데이터 호환
-  const allBookmarks = useMemo(() => {
-    if (bookmarks.length === 0) return MOCK_DEMO_BOOKMARKS
-    return bookmarks
-  }, [bookmarks])
-
   const reviewCards = useMemo(() => {
-    const filtered = allBookmarks.filter(b => {
+    const filtered = bookmarks.filter(b => {
       const type = b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')
       return type === tab
     })
@@ -36,36 +29,7 @@ function ReviewContent() {
       const sourceCard = lesson?.cards.find(c => c.id === bm.cardId)
       if (sourceCard) return sourceCard
 
-      // 2. 데모 데이터 처리 (ID 매칭을 통해 원본 목데이터 복원)
-      if (bm.cardId.startsWith('demo-')) {
-        let realSourceId = ''
-        let demoLessonId = '3'
-        
-        if (bm.cardId === 'demo-1') realSourceId = 'fc-3-e1'
-        if (bm.cardId === 'demo-2') realSourceId = 'fc-3-e2'
-        if (bm.cardId === 'demo-3') { realSourceId = 'fc-4-e1'; demoLessonId = '4' }
-        if (bm.cardId === 'demo-4') realSourceId = 'fc-3-1'
-        
-        if (realSourceId) {
-          const realSource = MOCK_FLASHCARDS[demoLessonId]?.cards.find(c => c.id === realSourceId)
-          if (realSource) return { ...realSource, id: bm.cardId }
-        }
-
-        // 문장 데모 (demo-5)
-        if (bm.cardId === 'demo-5') {
-          return {
-            id: bm.cardId,
-            expression: bm.expression,
-            meaning: bm.meaning,
-            exampleSentence: '',
-            exampleTranslation: '',
-            video: { youtubeId: 'dQw4w9WgXcQ', startSec: 0, endSec: 5 },
-            relatedVideos: []
-          } as AnyFlashCard
-        }
-      }
-
-      // 3. 문장 북마크일 경우 자막 데이터에서 재구성
+      // 2. 문장 북마크일 경우 자막 데이터에서 재구성
       const isSentence = bm.type === 'sentence' || bm.cardId.startsWith('sentence-')
       if (isSentence) {
         const lineId = bm.cardId.split('-').pop()
@@ -85,7 +49,7 @@ function ReviewContent() {
         } as AnyFlashCard
       }
 
-      // 4. 찾을 수 없는 경우 최소 데이터
+      // 3. 찾을 수 없는 경우 최소 데이터
       return {
         id: bm.cardId,
         expression: bm.expression,
@@ -96,7 +60,7 @@ function ReviewContent() {
         relatedVideos: []
       } as AnyFlashCard
     })
-  }, [allBookmarks, tab])
+  }, [bookmarks, tab])
 
   const handleClose = () => {
     router.push('/bookmarks')

@@ -18,44 +18,47 @@ export interface BookmarkedCard {
   baseWord?: string
 }
 
-const STORAGE_KEY = 'linko_bookmarks'
+type BookmarkListener = (items: BookmarkedCard[]) => void
 
-function loadFromStorage(): BookmarkedCard[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as BookmarkedCard[]) : []
-  } catch {
-    return []
+let bookmarkStore: BookmarkedCard[] = []
+const listeners = new Set<BookmarkListener>()
+
+function notifyBookmarks() {
+  listeners.forEach((listener) => listener(bookmarkStore))
+}
+
+function subscribeBookmarks(listener: BookmarkListener) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
   }
 }
 
-function saveToStorage(items: BookmarkedCard[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+function setBookmarkStore(next: BookmarkedCard[]) {
+  bookmarkStore = next
+  notifyBookmarks()
+}
+
+export function resetBookmarks() {
+  if (bookmarkStore.length === 0) return
+  setBookmarkStore([])
 }
 
 export function useBookmarks() {
-  const [bookmarks, setBookmarks] = useState<BookmarkedCard[]>([])
+  const [bookmarks, setBookmarks] = useState<BookmarkedCard[]>(bookmarkStore)
 
   useEffect(() => {
-    setBookmarks(loadFromStorage())
+    setBookmarks(bookmarkStore)
+    return subscribeBookmarks(setBookmarks)
   }, [])
 
   const addBookmark = useCallback((card: Omit<BookmarkedCard, 'savedAt'>) => {
-    setBookmarks((prev) => {
-      if (prev.some((b) => b.cardId === card.cardId)) return prev
-      const next = [{ ...card, savedAt: new Date().toISOString() }, ...prev]
-      saveToStorage(next)
-      return next
-    })
+    if (bookmarkStore.some((bookmark) => bookmark.cardId === card.cardId)) return
+    setBookmarkStore([{ ...card, savedAt: new Date().toISOString() }, ...bookmarkStore])
   }, [])
 
   const removeBookmark = useCallback((cardId: string) => {
-    setBookmarks((prev) => {
-      const next = prev.filter((b) => b.cardId !== cardId)
-      saveToStorage(next)
-      return next
-    })
+    setBookmarkStore(bookmarkStore.filter((bookmark) => bookmark.cardId !== cardId))
   }, [])
 
   const isBookmarked = useCallback(

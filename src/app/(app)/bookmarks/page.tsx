@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bookmark, Trash2, ChevronRight, BookOpen, Search, ArrowUpDown, X, AlertTriangle } from 'lucide-react'
 import { useBookmarks, BookmarkedCard } from '@/hooks/useBookmarks'
-import { MOCK_DEMO_BOOKMARKS } from '@/data/mockBookmarks'
 
 type Tab = 'expression' | 'sentence'
 type SortOrder = 'newest' | 'oldest'
@@ -60,14 +59,8 @@ export default function BookmarksPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
-  const allBookmarks = useMemo(() => {
-    // 실제 북마크가 없으면 데모용 데이터를 보여줌
-    if (bookmarks.length === 0) return MOCK_DEMO_BOOKMARKS
-    return bookmarks
-  }, [bookmarks])
-
   const filteredAndSortedBookmarks = useMemo(() => {
-    let result = allBookmarks.filter((b) => {
+    let result = bookmarks.filter((b) => {
       const type = b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')
       if (activeTab === 'sentence') return type === 'sentence'
       return type === 'expression'
@@ -89,16 +82,16 @@ export default function BookmarksPage() {
     })
 
     return result
-  }, [allBookmarks, activeTab, searchQuery, sortOrder])
+  }, [bookmarks, activeTab, searchQuery, sortOrder])
 
   const counts = useMemo(() => {
-    const exprs = allBookmarks.filter(b => (b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')) === 'expression')
-    const sents = allBookmarks.filter(b => (b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')) === 'sentence')
+    const exprs = bookmarks.filter(b => (b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')) === 'expression')
+    const sents = bookmarks.filter(b => (b.type || (b.cardId.startsWith('sentence-') ? 'sentence' : 'expression')) === 'sentence')
     return {
       expression: exprs.length,
       sentence: sents.length,
     }
-  }, [allBookmarks])
+  }, [bookmarks])
 
   return (
     <div className="min-h-full bg-white">

@@ -90,14 +90,14 @@ function VideoSegmentPlayer({ youtubeId, startSec, endSec }: {
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const playbackBaseSec = useRef(startSec)
   const playbackStartedAt = useRef<number | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(true)
   const [loop, setLoop] = useState(true)
   const [isSlow, setIsSlow] = useState(false)
   const [currentVideoSec, setCurrentVideoSec] = useState(startSec)
   const origin = typeof window === 'undefined' ? '' : window.location.origin
   const params = new URLSearchParams({
     start: String(startSec), end: String(endSec),
-    autoplay: '0', rel: '0', modestbranding: '1',
+    autoplay: '1', rel: '0', modestbranding: '1',
     controls: '0', disablekb: '1', playsinline: '1', enablejsapi: '1',
     ...(origin ? { origin } : {}),
   })
@@ -117,11 +117,11 @@ function VideoSegmentPlayer({ youtubeId, startSec, endSec }: {
 
   useEffect(() => {
     playbackBaseSec.current = startSec
-    playbackStartedAt.current = null
+    playbackStartedAt.current = Date.now()
     setCurrentVideoSec(startSec)
-    setIsPlaying(false)
-    sendCommand('pauseVideo')
+    setIsPlaying(true)
     sendCommand('seekTo', [startSec, true])
+    sendCommand('playVideo')
   }, [endSec, sendCommand, startSec, youtubeId])
 
   useEffect(() => {
@@ -491,6 +491,7 @@ export default function FlashcardTab({
   hideRelatedVideos = false,
 }: FlashcardTabProps) {
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [expandedBadge, setExpandedBadge] = useState(false)
   const [isBlind, setIsBlind] = useState(true)
@@ -559,18 +560,24 @@ export default function FlashcardTab({
     if (currentIndex > 0) setCurrentIndex((i) => i - 1)
   }, [currentIndex])
 
-  // 카드 이동 시 배지 패널 닫기 + 블라인드 모드 초기화
+  // 카드 이동 시 배지 패널 닫기 + 블라인드 모드 초기화 + 스크롤 상단 이동
   useEffect(() => {
     setExpandedBadge(false)
     setIsBlind(true)
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0
+    }
   }, [currentIndex])
 
-  // 레슨(영상) 변경 시 카드 인덱스 + 블라인드 초기화
+  // 레슨(영상) 변경 시 카드 인덱스 + 블라인드 초기화 + 스크롤 상단 이동
   // currentIndex가 이미 0이면 위 effect가 발동하지 않으므로 별도 처리
   useEffect(() => {
     setCurrentIndex(0)
     setExpandedBadge(false)
     setIsBlind(true)
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0
+    }
   }, [lessonId])
 
   useEffect(() => {
@@ -692,7 +699,7 @@ export default function FlashcardTab({
       )}
 
       {/* 콘텐츠 */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-full">
 
           {/* 좌: 영상 (공통) */}

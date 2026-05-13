@@ -15,7 +15,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
 } from 'lucide-react'
-import { useBookmarks } from '@/hooks/useBookmarks'
+import { useBookmarks, resetBookmarks } from '@/hooks/useBookmarks'
 import type { BookmarkedCard } from '@/hooks/useBookmarks'
 import { MOCK_FLASHCARDS } from '@/components/features/flashcard/mockFlashcards'
 import { getLessonSubtitles, getPublicLessonSubtitles } from '@/lib/lessonsApi'
@@ -851,7 +851,7 @@ function SubtitleText({
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
-export default function WatchTab({ 
+export default function WatchTab({
   lessonId, 
   isPublic = false,
   onComplete,
@@ -863,6 +863,13 @@ export default function WatchTab({
   mobileStacked?: boolean;
 }) {
   const { bookmarks, addBookmark, removeBookmark, isBookmarked } = useBookmarks()
+
+  useEffect(() => {
+    return () => {
+      // watch를 벗어나면 북마크를 남기지 않고 즉시 초기화합니다.
+      resetBookmarks()
+    }
+  }, [])
   const [currentSec, setCurrentSec]     = useState(0)
   const [isPlaying, setIsPlaying]       = useState(false)
   const [speed, setSpeed]               = useState(1)
