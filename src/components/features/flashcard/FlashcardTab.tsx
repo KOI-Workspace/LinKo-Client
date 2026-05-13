@@ -240,10 +240,10 @@ function RelatedVideoItem({ video }: { video: RelatedVideo }) {
   )
 }
 
-function ConversationBubble({ turn, onSpeak, isBlind = false }: {
+function ConversationBubble({ turn, onSpeak, blindWord = '' }: {
   turn: ConversationTurn
   onSpeak: (text: string) => void
-  isBlind?: boolean
+  blindWord?: string
 }) {
   return (
     <div className={`flex ${turn.isQuestion ? 'justify-start' : 'justify-end'}`}>
@@ -252,14 +252,16 @@ function ConversationBubble({ turn, onSpeak, isBlind = false }: {
           ? 'bg-neutral-100 text-neutral-800 rounded-tl-sm'
           : 'bg-primary-50 text-primary-900 rounded-tr-sm border border-primary-100'
       }`}>
-        <p>{turn.text}</p>
-        {isBlind && (
-          <div className={`absolute inset-0 rounded-2xl pointer-events-none ${
-            turn.isQuestion ? 'bg-neutral-400/80' : 'bg-primary/75'
-          }`} />
-        )}
+        <p>
+          <BlindHighlightWord
+            text={turn.text}
+            word={blindWord}
+            isBlind={!!blindWord}
+            isPurple={!turn.isQuestion}
+          />
+        </p>
         <button onClick={() => onSpeak(turn.text)}
-          className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center text-neutral-400 hover:text-primary transition-all z-10">
+          className="absolute -bottom-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center text-neutral-400 hover:text-primary transition-all">
           <Volume2 className="w-3 h-3" />
         </button>
       </div>
@@ -286,15 +288,20 @@ function ConjugationBadgeTag({ badge }: { badge: ConjugationBadge }) {
   )
 }
 
-/** 문장에서 특정 단어를 블라인드 처리 (블라인드 모드 전용) */
-function BlindHighlightWord({ text, word, isBlind }: { text: string; word: string; isBlind: boolean }) {
+/** 문장에서 특정 단어를 Watch 스타일 블라인드로 처리 */
+function BlindHighlightWord({ text, word, isBlind, isPurple = false }: {
+  text: string; word: string; isBlind: boolean; isPurple?: boolean
+}) {
   if (!isBlind || !word) return <>{text}</>
   const idx = text.indexOf(word)
   if (idx === -1) return <>{text}</>
+  const blindClass = isPurple
+    ? 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-primary/40 text-transparent select-none'
+    : 'rounded-[0.28em] px-[0.22em] py-[0.05em] bg-neutral-400/60 text-transparent select-none'
   return (
     <>
       {text.slice(0, idx)}
-      <span className="blur-[6px] select-none inline-block">{word}</span>
+      <span className={blindClass}>{word}</span>
       {text.slice(idx + word.length)}
     </>
   )
@@ -574,18 +581,6 @@ export default function FlashcardTab({
             <span className="mx-1 text-neutral-300">/</span>
             {total}
           </span>
-          {/* PC 전용 블라인드 버튼 */}
-          <button
-            onClick={() => setIsBlind(v => !v)}
-            className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-              isBlind
-                ? 'bg-neutral-950 text-white border-neutral-950'
-                : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
-            }`}
-          >
-            {isBlind ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            Blind
-          </button>
         </div>
       )}
 
@@ -618,10 +613,26 @@ export default function FlashcardTab({
             {cardIsEnding ? (
               <div>
                 {/* 활용형 (영상에 나온 그대로) — 큰 글씨 */}
-                <div className="mb-1">
-                  <h2 className={`text-4xl font-bold text-neutral-950 leading-tight break-words transition-[filter] duration-200 ${isBlind ? 'blur-[6px] select-none' : ''}`}>
-                    {card.conjugatedForm}
+                <div className="mb-1 flex items-start justify-between gap-4">
+                  <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
+                    <span className={isBlind
+                      ? 'rounded-[0.18em] px-[0.08em] bg-neutral-300/80 text-transparent select-none'
+                      : ''
+                    }>
+                      {card.conjugatedForm}
+                    </span>
                   </h2>
+                  <button
+                    onClick={() => setIsBlind(v => !v)}
+                    className={`shrink-0 mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                      isBlind
+                        ? 'bg-neutral-950 text-white border-neutral-950'
+                        : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
+                    }`}
+                  >
+                    {isBlind ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    Blind
+                  </button>
                 </div>
 
                 {/* 원래 단어의 뜻 */}
@@ -692,10 +703,26 @@ export default function FlashcardTab({
             ) : (
               /* ── 단어 카드 (기존) ── */
               <div>
-                <div className="mb-2">
-                  <h2 className={`text-4xl font-bold text-neutral-950 leading-tight break-words transition-[filter] duration-200 ${isBlind ? 'blur-[6px] select-none' : ''}`}>
-                    {card.expression}
+                <div className="mb-2 flex items-start justify-between gap-4">
+                  <h2 className="text-4xl font-bold text-neutral-950 leading-tight break-words">
+                    <span className={isBlind
+                      ? 'rounded-[0.18em] px-[0.08em] bg-neutral-300/80 text-transparent select-none'
+                      : ''
+                    }>
+                      {card.expression}
+                    </span>
                   </h2>
+                  <button
+                    onClick={() => setIsBlind(v => !v)}
+                    className={`shrink-0 mt-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                      isBlind
+                        ? 'bg-neutral-950 text-white border-neutral-950'
+                        : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
+                    }`}
+                  >
+                    {isBlind ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    Blind
+                  </button>
                 </div>
 
                 <p className="mb-4 text-xl font-semibold text-primary">{card.meaning}</p>
@@ -721,7 +748,7 @@ export default function FlashcardTab({
                     </div>
                     <div className="flex flex-col gap-3">
                       {card.dailyConversation.map((turn, i) => (
-                        <ConversationBubble key={i} turn={turn} onSpeak={speak} isBlind={isBlind} />
+                        <ConversationBubble key={i} turn={turn} onSpeak={speak} blindWord={isBlind ? card.expression : ''} />
                       ))}
                     </div>
                   </div>
@@ -765,18 +792,7 @@ export default function FlashcardTab({
           className="flex items-center gap-1.5 px-4 py-2 rounded-pill text-sm font-medium border border-neutral-200 text-neutral-500 bg-white hover:border-neutral-400 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
           <ChevronLeft className="w-4 h-4" />Prev
         </button>
-        {/* 모바일 전용 블라인드 버튼 */}
-        <button
-          onClick={() => setIsBlind(v => !v)}
-          className={`flex lg:hidden items-center gap-1.5 px-3 py-2 rounded-pill text-sm font-medium border transition-all ${
-            isBlind
-              ? 'bg-neutral-950 text-white border-neutral-950'
-              : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-800'
-          }`}
-        >
-          {isBlind ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          Blind
-        </button>
+        <div />
         <button
           onClick={isLast && hideActions ? onComplete : goNext}
           disabled={isLast && !hideActions}
