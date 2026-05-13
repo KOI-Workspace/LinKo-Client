@@ -1037,6 +1037,16 @@ function LessonPreviewModal({
             <ArrowLeft className="w-4 h-4" />
             Back to Explorer
           </button>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 transition-colors"
+            aria-label="닫기"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
         {/* 레슨 메타 정보 */}
@@ -1319,8 +1329,12 @@ export default function LandingPageClient() {
           setPreviewLessonId(pendingLessonId)
           setPendingLessonId(null)
           handleCloseLoginModal()
-        } else {
+        } else if (loginModalSource === 'cta') {
+          // CTA 버튼에서 로그인한 경우만 앱으로 이동
           router.push('/home')
+        } else {
+          // 'video' 소스이거나 pendingLessonId가 없는 경우: 랜딩페이지에 머물기
+          handleCloseLoginModal()
         }
 
         setLoginModalSource(null)
