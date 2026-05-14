@@ -1401,6 +1401,11 @@ export default function LandingPageClient() {
         setIsLoginModalOpen(false)
         setGoogleLoginError(null)
 
+        // Meta 픽셀 회원가입/로그인 이벤트
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('track', 'CompleteRegistration')
+        }
+
         if (loginModalSource === 'hero') {
           if (submittedVideoUrl) {
             await createWaitlistEntry(submittedVideoUrl)
